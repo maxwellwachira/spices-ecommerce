@@ -594,6 +594,18 @@ abstract class Table extends \JObject implements \JObservableInterface, \JTableI
 	 */
 	public function bind($src, $ignore = array())
 	{
+		// JSON encode any fields required
+		if (!empty($this->_jsonEncode))
+		{
+			foreach ($this->_jsonEncode as $field)
+			{
+				if (isset($src[$field]) && is_array($src[$field]))
+				{
+					$src[$field] = json_encode($src[$field]);
+				}
+			}
+		}
+
 		// Check if the source value is an array or object
 		if (!is_object($src) && !is_array($src))
 		{
@@ -606,28 +618,16 @@ abstract class Table extends \JObject implements \JObservableInterface, \JTableI
 			);
 		}
 
-		// If the ignore value is a string, explode it over spaces.
-		if (!is_array($ignore))
-		{
-			$ignore = explode(' ', $ignore);
-		}
-
 		// If the source value is an object, get its accessible properties.
 		if (is_object($src))
 		{
 			$src = get_object_vars($src);
 		}
 
-		// JSON encode any fields required
-		if (!empty($this->_jsonEncode))
+		// If the ignore value is a string, explode it over spaces.
+		if (!is_array($ignore))
 		{
-			foreach ($this->_jsonEncode as $field)
-			{
-				if (isset($src[$field]) && is_array($src[$field]))
-				{
-					$src[$field] = json_encode($src[$field]);
-				}
-			}
+			$ignore = explode(' ', $ignore);
 		}
 
 		// Bind the source value, excluding the ignored fields.

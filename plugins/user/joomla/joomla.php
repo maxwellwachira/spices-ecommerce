@@ -354,9 +354,23 @@ class PlgUserJoomla extends JPlugin
 
 		if ($forceLogout)
 		{
-			$clientId = (!$sharedSessions) ? (int) $options['clientid'] : null;
+			$query = $this->db->getQuery(true)
+				->delete($this->db->quoteName('#__session'))
+				->where($this->db->quoteName('userid') . ' = ' . (int) $user['id']);
 
-			UserHelper::destroyUserSessions($user['id'], false, $clientId);
+			if (!$sharedSessions)
+			{
+				$query->where($this->db->quoteName('client_id') . ' = ' . (int) $options['clientid']);
+			}
+
+			try
+			{
+				$this->db->setQuery($query)->execute();
+			}
+			catch (RuntimeException $e)
+			{
+				return false;
+			}
 		}
 
 		// Delete "user state" cookie used for reverse caching proxies like Varnish, Nginx etc.

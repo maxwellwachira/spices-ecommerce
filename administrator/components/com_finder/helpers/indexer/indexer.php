@@ -513,43 +513,55 @@ abstract class FinderIndexer
 		// Get the database object.
 		$db = $this->db;
 
-		$query = clone $this->addTokensToDbQueryTemplate;
-
-		// Check if a single FinderIndexerToken object was given and make it to be an array of FinderIndexerToken objects
-		$tokens = is_array($tokens) ? $tokens : array($tokens);
-
 		// Count the number of token values.
 		$values = 0;
 
-		// Break into chunks of no more than 1000 items
-		$chunks = array_chunk($tokens, 128);
-
-		foreach ($chunks as $tokens)
+		if (($tokens instanceof FinderIndexerToken) === false)
 		{
-			$query->clear('values');
+			// Break into chunks of no more than 1000 items
+			$chunks = count($tokens) > 1000
+				? array_chunk($tokens, 1000)
+				: array($tokens);
 
-			// Iterate through the tokens to create SQL value sets.
-			foreach ($tokens as $token)
+			foreach ($chunks as $chunkTokens)
 			{
-				$query->values(
-					$db->quote($token->term) . ', '
-					. $db->quote($token->stem) . ', '
-					. (int) $token->common . ', '
-					. (int) $token->phrase . ', '
-					. $db->escape((float) $token->weight) . ', '
-					. (int) $context . ', '
-					. $db->quote($token->language)
-				);
-				++$values;
+				// Cloning a new query template is twice as fast as calling the clear function
+				$query = clone $this->addTokensToDbQueryTemplate;
+
+				// Iterate through the tokens to create SQL value sets.
+				foreach ($chunkTokens as $token)
+				{
+					$query->values(
+						$db->quote($token->term) . ', '
+						. $db->quote($token->stem) . ', '
+						. (int) $token->common . ', '
+						. (int) $token->phrase . ', '
+						. $db->escape((float) $token->weight) . ', '
+						. (int) $context . ', '
+						. $db->quote($token->language)
+					);
+					++$values;
+				}
+
+				$db->setQuery($query)->execute();
 			}
+		}
+		else
+		{
+			$query = clone $this->addTokensToDbQueryTemplate;
+
+			$query->values(
+				$db->quote($tokens->term) . ', '
+				. $db->quote($tokens->stem) . ', '
+				. (int) $tokens->common . ', '
+				. (int) $tokens->phrase . ', '
+				. $db->escape((float) $tokens->weight) . ', '
+				. (int) $context . ', '
+				. $db->quote($tokens->language)
+			);
+			++$values;
 
 			$db->setQuery($query)->execute();
-
-			// Check if we're approaching the memory limit of the token table.
-			if ($values > static::$state->options->get('memory_table_limit', 10000))
-			{
-				$this->toggleTables(false);
-			}
 		}
 
 		return $values;

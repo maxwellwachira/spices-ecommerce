@@ -7,8 +7,6 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-use Joomla\CMS\User\UserHelper;
-
 defined('_JEXEC') or die;
 
 /**
@@ -225,9 +223,6 @@ class UsersModelReset extends JModelForm
 		{
 			return new JException(JText::sprintf('COM_USERS_USER_SAVE_FAILED', $user->getError()), 500);
 		}
-
-		// Destroy all active sessions for the user
-		UserHelper::destroyUserSessions($user->id);
 
 		// Flush the user data from the session.
 		$app->setUserState('com_users.reset.token', null);

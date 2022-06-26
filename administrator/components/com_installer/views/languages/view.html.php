@@ -42,11 +42,6 @@ class InstallerViewLanguages extends InstallerViewDefault
 	 */
 	public function display($tpl = null)
 	{
-		if (!JFactory::getUser()->authorise('core.admin'))
-		{
-			throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		// Get data from the model.
 		$this->state         = $this->get('State');
 		$this->items         = $this->get('Items');

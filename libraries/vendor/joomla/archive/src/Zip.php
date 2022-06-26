@@ -204,7 +204,7 @@ class Zip implements ExtractableInterface
 	 *
 	 * @since   1.0
 	 */
-	public function checkZipData($data)
+	public function checkZipData(&$data)
 	{
 		return strpos($data, $this->fileHeader) !== false;
 	}
@@ -237,29 +237,24 @@ class Zip implements ExtractableInterface
 			throw new \RuntimeException('Get ZIP Information failed');
 		}
 
-		foreach ($this->metadata as $i => $metadata)
+		for ($i = 0, $n = \count($this->metadata); $i < $n; $i++)
 		{
-			$lastPathCharacter = substr($metadata['name'], -1, 1);
+			$lastPathCharacter = substr($this->metadata[$i]['name'], -1, 1);
 
 			if ($lastPathCharacter !== '/' && $lastPathCharacter !== '\\')
 			{
 				$buffer = $this->getFileData($i);
-				$path   = Path::clean($destination . '/' . $metadata['name']);
-
-				if (!$this->isBelow($destination, $destination . '/' . $metadata['name']))
-				{
-					throw new \RuntimeException('Unable to write outside of destination path', 100);
-				}
+				$path   = Path::clean($destination . '/' . $this->metadata[$i]['name']);
 
 				// Make sure the destination folder exists
 				if (!Folder::create(\dirname($path)))
 				{
-					throw new \RuntimeException('Unable to create destination folder');
+					throw new \RuntimeException('Unable to create destination folder ' . \dirname($path));
 				}
 
 				if (!File::write($path, $buffer))
 				{
-					throw new \RuntimeException('Unable to write file');
+					throw new \RuntimeException('Unable to write entry to file ' . $path);
 				}
 			}
 		}
@@ -310,11 +305,6 @@ class Zip implements ExtractableInterface
 				throw new \RuntimeException('Unable to read ZIP entry');
 			}
 
-			if (!$this->isBelow($destination, $destination . '/' . $file))
-			{
-				throw new \RuntimeException('Unable to write outside of destination path', 100);
-			}
-
 			if (File::write($destination . '/' . $file, $buffer) === false)
 			{
 				throw new \RuntimeException('Unable to write ZIP entry to file ' . $destination . '/' . $file);
@@ -332,13 +322,13 @@ class Zip implements ExtractableInterface
 	 * <pre>
 	 * KEY: Position in zipfile
 	 * VALUES: 'attr'  --  File attributes
-	 *         'crc'   --  CRC checksum
-	 *         'csize' --  Compressed file size
-	 *         'date'  --  File modification time
-	 *         'name'  --  Filename
-	 *         'method'--  Compression method
-	 *         'size'  --  Original file size
-	 *         'type'  --  File type
+	 * 'crc'   --  CRC checksum
+	 * 'csize' --  Compressed file size
+	 * 'date'  --  File modification time
+	 * 'name'  --  Filename
+	 * 'method'--  Compression method
+	 * 'size'  --  Original file size
+	 * 'type'  --  File type
 	 * </pre>
 	 *
 	 * @param   string  $data  The ZIP archive buffer.
@@ -348,7 +338,7 @@ class Zip implements ExtractableInterface
 	 * @since   1.0
 	 * @throws  \RuntimeException
 	 */
-	private function readZipInfo($data)
+	private function readZipInfo(&$data)
 	{
 		$entries = array();
 
@@ -556,7 +546,7 @@ class Zip implements ExtractableInterface
 		$uncLen = \strlen($data);
 		$crc    = crc32($data);
 		$zdata  = gzcompress($data);
-		$zdata  = substr(substr($zdata, 0, -4), 2);
+		$zdata  = substr(substr($zdata, 0, \strlen($zdata) - 4), 2);
 		$cLen   = \strlen($zdata);
 
 		// CRC 32 information.
@@ -653,7 +643,7 @@ class Zip implements ExtractableInterface
 	 * @since   1.0
 	 * @todo	Review and finish implementation
 	 */
-	private function createZipFile(array $contents, array $ctrlDir, $path)
+	private function createZipFile(array &$contents, array &$ctrlDir, $path)
 	{
 		$data = implode('', $contents);
 		$dir  = implode('', $ctrlDir);
@@ -674,21 +664,5 @@ class Zip implements ExtractableInterface
 		"\x00\x00";
 
 		return File::write($path, $buffer);
-	}
-
-	/**
-	 * Check if a path is below a given destination path
-	 *
-	 * @param   string  $destination
-	 * @param   string  $path
-	 *
-	 * @return  boolean
-	 */
-	private function isBelow($destination, $path)
-	{
-		$absoluteRoot = Path::clean(Path::resolve($destination));
-		$absolutePath = Path::clean(Path::resolve($path));
-
-		return strpos($absolutePath, $absoluteRoot) === 0;
 	}
 }

@@ -9,7 +9,6 @@
 
 defined('_JEXEC') or die;
 
-use Joomla\CMS\User\UserHelper;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 
@@ -304,12 +303,6 @@ class UsersModelUser extends JModelAdmin
 			return false;
 		}
 
-		// Destroy all active sessions for the user after changing the password or blocking him
-		if ($data['password'] || $data['block'])
-		{
-			UserHelper::destroyUserSessions($user->id, true);
-		}
-
 		$this->setState('user.id', $user->id);
 
 		return true;
@@ -479,11 +472,6 @@ class UsersModelUser extends JModelAdmin
 							$this->setError($table->getError());
 
 							return false;
-						}
-
-						if ($table->block)
-						{
-							UserHelper::destroyUserSessions($table->id);
 						}
 
 						// Trigger the after save event
