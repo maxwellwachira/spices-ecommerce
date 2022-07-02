@@ -104,7 +104,7 @@ function j2storeSagepayDirectSubmit(button) {
 
 	(function($) {
 		$(button).attr('disabled', 'disabled');
-		$(button).val('<?php echo addslashes(JText::_('J2STORE_PAYMENT_PROCESSING_PLEASE_WAIT'));?>');
+		$(button).val('<?php echo JText::_('J2STORE_PAYMENT_PROCESSING_PLEASE_WAIT')?>');
 		var form = $('#j2store_sagepay_form');
 	    var values = form.serializeArray();
 
@@ -121,25 +121,25 @@ function j2storeSagepayDirectSubmit(button) {
 		jqXHR.done(function(json) {
 			form.find('.j2success, .j2warning, .j2attention, .j2information, .j2error').remove();
 			if(json == null) {
-				$(button).val('<?php echo addslashes(JText::_('J2STORE_PAYMENT_ERROR_PROCESSING'));?>');
-				form.find('.plugin_error_instruction').after('<br /><span class="j2error"><?php echo addslashes(JText::_('J2STORE_PAYMENT_ON_ERROR_INSTRUCTIONS')); ?></span>');
+				$(button).val('<?php echo JText::_('J2STORE_PAYMENT_ERROR_PROCESSING')?>');
+				form.find('.plugin_error_instruction').after('<br /><span class="j2error"><?php echo JText::_('J2STORE_PAYMENT_ON_ERROR_INSTRUCTIONS'); ?></span>');
 			}
 
 			if (json['error']) {
 				form.find('.plugin_error').after('<span class="j2error">' + json['error']+ '</span>');
-				form.find('.plugin_error_instruction').after('<br /><span class="j2error"><?php echo addslashes(JText::_('J2STORE_PAYMENT_ON_ERROR_INSTRUCTIONS')); ?></span>');
-				$(button).val('<?php echo addslashes(JText::_('J2STORE_PAYMENT_ERROR_PROCESSING'))?>');
+				form.find('.plugin_error_instruction').after('<br /><span class="j2error"><?php echo JText::_('J2STORE_PAYMENT_ON_ERROR_INSTRUCTIONS'); ?></span>');
+				$(button).val('<?php echo JText::_('J2STORE_PAYMENT_ERROR_PROCESSING')?>');
 			}
 
 			if (json['redirect']) {
-				$(button).val('<?php echo addslashes(JText::_('J2STORE_PAYMENT_COMPLETED_PROCESSING'))?>');
+				$(button).val('<?php echo JText::_('J2STORE_PAYMENT_COMPLETED_PROCESSING')?>');
 				window.location.href = json['redirect'];
 			}
 
 		});
 
 		jqXHR.fail(function() {
-			$(button).val('<?php echo addslashes(JText::_('J2STORE_PAYMENT_ERROR_PROCESSING'))?>');
+			$(button).val('<?php echo JText::_('J2STORE_PAYMENT_ERROR_PROCESSING')?>');
 		})
 
 		jqXHR.always(function() {

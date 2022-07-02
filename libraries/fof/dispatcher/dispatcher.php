@@ -4,9 +4,8 @@
  * @subpackage  dispatcher
  * @copyright   Copyright (C) 2010-2016 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @note        This file has been modified by the Joomla! Project and no longer reflects the original work of its author.
+ * @note	This file has been modified by the Joomla! Project in 2019 in order to ensure compatibility with PHP 7.3+ versions.
  */
-
 // Protect from unauthorized access
 defined('FOF_INCLUDED') or die;
 
@@ -702,7 +701,7 @@ class FOFDispatcher extends FOFUtilsObject
 	/**
 	 * Main function to detect if we're running in a CLI environment and we're admin
 	 *
-	 * @return  array  isCLI and isAdmin. It's not an associative array, so we can use list.
+	 * @return  array  isCLI and isAdmin. It's not an associtive array, so we can use list.
 	 */
 	public static function isCliAdmin()
 	{

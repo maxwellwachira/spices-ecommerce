@@ -3,13 +3,11 @@
  * @package     Joomla.Site
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
-
-use Joomla\CMS\Router\Route;
 
 /**
  * Registration model class for Users.
@@ -110,20 +108,14 @@ class UsersModelRegistration extends JModelForm
 		// Admin activation is on and user is verifying their email
 		if (($userParams->get('useractivation') == 2) && !$user->getParam('activate', 0))
 		{
-			$linkMode = $config->get('force_ssl', 0) == 2 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+			$linkMode = $config->get('force_ssl', 0) == 2 ? 1 : -1;
 
 			// Compile the admin notification mail values.
 			$data = $user->getProperties();
 			$data['activation'] = JApplicationHelper::getHash(JUserHelper::genRandomPassword());
 			$user->set('activation', $data['activation']);
 			$data['siteurl'] = JUri::base();
-			$data['activate'] = JRoute::link(
-				'site',
-				'index.php?option=com_users&task=registration.activate&token=' . $data['activation'],
-				false,
-				$linkMode,
-				true
-			);
+			$data['activate'] = JRoute::link('site', 'index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false, $linkMode);
 
 			$data['fromname'] = $config->get('fromname');
 			$data['mailfrom'] = $config->get('mailfrom');
@@ -170,7 +162,7 @@ class UsersModelRegistration extends JModelForm
 			{
 				$usercreator = JFactory::getUser($row->id);
 
-				if ($usercreator->authorise('core.create', 'com_users') && $usercreator->authorise('core.manage', 'com_users'))
+				if ($usercreator->authorise('core.create', 'com_users'))
 				{
 					$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $row->email, $emailSubject, $emailBody);
 
@@ -318,7 +310,7 @@ class UsersModelRegistration extends JModelForm
 	 * The base form is loaded from XML and then an event is fired
 	 * for users plugins to extend the form with extra fields.
 	 *
-	 * @param   array    $data      An optional array of data for the form to interrogate.
+	 * @param   array    $data      An optional array of data for the form to interogate.
 	 * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
 	 *
 	 * @return  JForm  A JForm object on success, false on failure
@@ -479,15 +471,9 @@ class UsersModelRegistration extends JModelForm
 		if ($useractivation == 2)
 		{
 			// Set the link to confirm the user email.
-			$linkMode = $config->get('force_ssl', 0) == 2 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+			$linkMode = $config->get('force_ssl', 0) == 2 ? 1 : -1;
 
-			$data['activate'] = JRoute::link(
-				'site',
-				'index.php?option=com_users&task=registration.activate&token=' . $data['activation'],
-				false,
-				$linkMode,
-				true
-			);
+			$data['activate'] = JRoute::link('site', 'index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false, $linkMode);
 
 			$emailSubject = JText::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',
@@ -522,15 +508,9 @@ class UsersModelRegistration extends JModelForm
 		elseif ($useractivation == 1)
 		{
 			// Set the link to activate the user account.
-			$linkMode = $config->get('force_ssl', 0) == 2 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+			$linkMode = $config->get('force_ssl', 0) == 2 ? 1 : -1;
 
-			$data['activate'] = JRoute::link(
-				'site',
-				'index.php?option=com_users&task=registration.activate&token=' . $data['activation'],
-				false,
-				$linkMode,
-				true
-			);
+			$data['activate'] = JRoute::link('site', 'index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false, $linkMode);
 
 			$emailSubject = JText::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',

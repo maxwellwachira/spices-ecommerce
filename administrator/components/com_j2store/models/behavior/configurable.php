@@ -73,13 +73,9 @@ class J2StoreModelProductsBehaviorConfigurable extends F0FModelBehavior {
 			$data['shippingmethods'] = implode(',',$data['shippingmethods']);
 		}
 
-        if(isset($data['item_options']) && is_object($data['item_options'])){
-            $data['item_options'] = (array)$data['item_options'];
-        }
-
-        if(isset($data['item_options']) && count($data['item_options']) > 0){
-            $data['has_options'] = 1;
-        }
+		if(isset($data['item_options']) && count($data['item_options']) > 0){
+			$data['has_options'] = 1;
+		}
 
 		//bind existing params
 		if($data['j2store_product_id'] ){
@@ -150,11 +146,6 @@ class J2StoreModelProductsBehaviorConfigurable extends F0FModelBehavior {
 				}else{
 					$this->_rawData['additional_images'] = json_encode($this->_rawData['additional_images']);
 				}
-                if(is_object($this->_rawData['additional_images_alt'])){
-                    $this->_rawData['additional_images_alt'] = json_encode(JArrayHelper::fromObject($this->_rawData['additional_images_alt']));
-                }else{
-                    $this->_rawData['additional_images_alt'] = json_encode($this->_rawData['additional_images_alt']);
-                }
 			}
 			$this->_rawData['product_id'] = $table->j2store_product_id;
 
@@ -306,7 +297,7 @@ class J2StoreModelProductsBehaviorConfigurable extends F0FModelBehavior {
 			if (! empty ( $child_opts )) {
 				$options = array ();
 				foreach ( $child_opts as $index => $attr ) {
-                    if (isset($attr ['optionvalue']) ) 				// if optionvalue exist or not. then only display form.otherwise form display only heading without option name
+					if (count ( $attr ['optionvalue'] ) > 0) 					// if optionvalue exist or not. then only display form.otherwise form display only heading without option name
 					{
 						array_push ( $options, $attr );
 					}
@@ -366,7 +357,7 @@ class J2StoreModelProductsBehaviorConfigurable extends F0FModelBehavior {
 			$base_price = $pricing->base_price;
 			$price = $pricing->price;
 		}
-        J2Store::plugin()->event('BeforeUpdateProductReturn',array(&$params,$product));
+
 		$return = array ();
 		$return ['pricing'] = array ();
 		$return ['pricing'] ['base_price'] = J2Store::product ()->displayPrice ( $base_price, $product, $params );
@@ -376,7 +367,6 @@ class J2StoreModelProductsBehaviorConfigurable extends F0FModelBehavior {
 		$return ['pricing'] ['orginal'] = array();
 		$return ['pricing'] ['orginal']['base_price'] = $base_price;
 		$return ['pricing'] ['orginal']['price'] = $price;
-        J2Store::plugin()->event('AfterUpdateProductReturn',array(&$return,$product,$params));
 		return $return;
 	}
 }

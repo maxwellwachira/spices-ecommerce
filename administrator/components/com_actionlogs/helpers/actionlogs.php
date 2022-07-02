@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_actionlogs
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -23,14 +23,6 @@ use Joomla\String\StringHelper;
  */
 class ActionlogsHelper
 {
-	/**
-	 * Array of characters starting a formula
-	 *
-	 * @var    array
-	 * @since  3.9.7
-	 */
-	private static $characters = array('=', '+', '-', '@');
-
 	/**
 	 * Method to convert logs objects array to an iterable type for use with a CSV export
 	 *
@@ -62,8 +54,6 @@ class ActionlogsHelper
 			return ActionlogsHelperPhp55::getCsvAsGenerator($data);
 		}
 
-		$disabledText = Text::_('COM_ACTIONLOGS_DISABLED');
-
 		$rows = array();
 
 		// Header row
@@ -78,11 +68,11 @@ class ActionlogsHelper
 
 			$rows[] = array(
 				'id'         => $log->id,
-				'message'    => self::escapeCsvFormula(strip_tags(static::getHumanReadableLogMessage($log, false))),
+				'message'    => strip_tags(static::getHumanReadableLogMessage($log, false)),
 				'date'       => $date->format('Y-m-d H:i:s T'),
-				'extension'  => self::escapeCsvFormula(Text::_($extension)),
-				'name'       => self::escapeCsvFormula($log->name),
-				'ip_address' => self::escapeCsvFormula($log->ip_address === 'COM_ACTIONLOGS_DISABLED' ? $disabledText : $log->ip_address)
+				'extension'  => Text::_($extension),
+				'name'       => $log->name,
+				'ip_address' => Text::_($log->ip_address),
 			);
 		}
 
@@ -215,19 +205,16 @@ class ActionlogsHelper
 			$messageData['type'] = Text::_($messageData['type']);
 		}
 
-		$linkMode = Factory::getApplication()->get('force_ssl', 0) >= 1 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+		$linkMode = Factory::getApplication()->get('force_ssl', 0) >= 1 ? 1 : -1;
 
 		foreach ($messageData as $key => $value)
 		{
-			// Escape any markup in the values to prevent XSS attacks
-			$value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-
 			// Convert relative url to absolute url so that it is clickable in action logs notification email
 			if ($generateLinks && StringHelper::strpos($value, 'index.php?') === 0)
 			{
 				if (!isset($links[$value]))
 				{
-					$links[$value] = Route::link('administrator', $value, false, $linkMode, true);
+					$links[$value] = Route::link('administrator', $value, false, $linkMode);
 				}
 
 				$value = $links[$value];
@@ -246,13 +233,12 @@ class ActionlogsHelper
 	 * @param   string   $contentType
 	 * @param   integer  $id
 	 * @param   string   $urlVar
-	 * @param   JObject  $object
 	 *
 	 * @return  string  Link to the content item
 	 *
 	 * @since   3.9.0
 	 */
-	public static function getContentTypeLink($component, $contentType, $id, $urlVar = 'id', $object = null)
+	public static function getContentTypeLink($component, $contentType, $id, $urlVar = 'id')
 	{
 		// Try to find the component helper.
 		$eName = str_replace('com_', '', $component);
@@ -267,7 +253,7 @@ class ActionlogsHelper
 
 			if (class_exists($cName) && is_callable(array($cName, 'getContentTypeLink')))
 			{
-				return $cName::getContentTypeLink($contentType, $id, $object);
+				return $cName::getContentTypeLink($contentType, $id);
 			}
 		}
 
@@ -352,29 +338,5 @@ class ActionlogsHelper
 
 		// Load com_privacy too.
 		$lang->load('com_privacy', JPATH_ADMINISTRATOR, null, false, true);
-	}
-
-	/**
-	 * Escapes potential characters that start a formula in a CSV value to prevent injection attacks
-	 *
-	 * @param   mixed  $value  csv field value
-	 *
-	 * @return  mixed
-	 *
-	 * @since   3.9.7
-	 */
-	protected static function escapeCsvFormula($value)
-	{
-		if ($value == '')
-		{
-			return $value;
-		}
-
-		if (in_array($value[0], self::$characters, true))
-		{
-			$value = ' ' . $value;
-		}
-
-		return $value;
 	}
 }

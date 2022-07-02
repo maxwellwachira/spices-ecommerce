@@ -25,7 +25,7 @@ class J2Html {
 	 * @result return html
 	 */
 	public static function label($text, $name='', $options=array()){
-		$options['class'] = isset($options['label_class']) ? $options['label_class'] : (isset($options['class']) ? $options['class'] : "") ;
+		$options['class'] = isset($options['label_class']) ? $options['label_class'] : isset($options['class']) ? $options['class'] : "" ;
 		$options['for'] = isset($options['for']) ? $options['for'] : $name;
 		$attribs = JArrayHelper::toString($options);
 		$html ='<label '.$attribs .'>'. $text.'</label>';
@@ -82,7 +82,7 @@ class J2Html {
 	 * @param object   A table record
 	 * @return string
 	 */
-	public static function price_with_data($prefix, $primary_key, $name, $value, $options, $data)
+	public static function price_with_data($prefix, $primary_key, $name, $value = null, $options = array(), $data)
 	{
 		$optionvalue = JArrayHelper::toString($options);
 		$symbol = J2Store::currency()->getSymbol();
@@ -369,7 +369,7 @@ class J2Html {
 			$html ='<div class="form-inline">';
 			$html .='<div class="input-group">';
 			$html .='<img class="j2store-media-slider-image-preview"  id="'.$image_id.'"	src="'.$image.'" alt="" />';
-			$html .='<input onchange="previewImage(this,jform_image_'. $id .')" image_id="'.$image_id.'" id="jform_image_'.$id.'" class="input-mini '.$class.'" value="'.htmlspecialchars($value, ENT_COMPAT, 'UTF-8').'" type="text" readonly="readonly"   name="'.$name.'" /> ';
+			$html .='<input onchange="previewImage(this,'. $id .')" image_id="'.$image_id.'" id="jform_image_'.$id.'" class="input-mini '.$class.'" value="'.htmlspecialchars($value, ENT_COMPAT, 'UTF-8').'" type="text" readonly="readonly"   name="'.$name.'" /> ';
 			$html .='<span class="input-group-btn">';
 			$html .='<a id="media-browse" style="display:inline;position:relative;" class="modal btn btn-success" rel="{handler:\'iframe\', size: {x: 800, y: 500}}" href="index.php?option=com_media&view=images&tmpl=component&asset='.$asset_id.'&author='.JFactory::getUser()->id.'&fieldid=jform_image_'.$id.'&folder='.$folder.'" title="'.JText::_('PLG_J2STORE_EXTRAIMAGES_SELECT') .'">';
 			$html .= JText::_('J2STORE_IMAGE_SELECT');
@@ -394,22 +394,23 @@ class J2Html {
 
 	public static function calendar($name,$value,$options=array()){
 		$id = isset($options['id']) ? $options['id']: self::clean($name);
-		$format = (isset($options['format']) && !empty($options['format'])) ? $options['format']: '%d-%m-%Y';
 		$nullDate = JFactory::getDbo()->getNullDate();
 		if($value == $nullDate || empty($value)) {
 			$value = $nullDate;
 		}
-		return JHtml::_('calendar', $value,$name,$id, $format,$options);
+		return JHtml::_('calendar', $value,$name,$id, $format = '%d-%m-%Y',$options);
 	}
 
 
-    /**
-     * @param $href
-     * @param $text
-     * @param array $options
-     * @return string
-     */
-	public static function link($href,$text,$options=array()){
+
+	/**
+	 * Creates Link field
+	 * TODO need to update
+	 * @param unknown_type $href
+	 * @param unknown_type $text
+	 * @param unknown_type $options
+	 */
+	public static function link($href='',$text,$options=array()){
 
 		$href = isset($href) && !empty($href) ? $href : 'javascript:void(0)';
 		$icon = isset($options['icon']) && !empty($options['icon']) ? '<i class="'.$options['icon'].'"></i>' : '';

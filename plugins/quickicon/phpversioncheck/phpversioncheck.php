@@ -3,7 +3,7 @@
  * @package     Joomla.Plugin
  * @subpackage  Quickicon.phpversioncheck
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -137,14 +137,6 @@ class PlgQuickiconPhpVersionCheck extends JPlugin
 				'security' => '2020-12-06',
 				'eos'      => '2021-12-06',
 			),
-			'7.4' => array(
-				'security' => '2021-11-28',
-				'eos'      => '2022-11-28',
-			),
-			'8.0' => array(
-				'security' => '2022-11-26',
-				'eos'      => '2023-11-26',
-			),
 		);
 
 		// Fill our return array with default values
@@ -175,23 +167,20 @@ class PlgQuickiconPhpVersionCheck extends JPlugin
 
 					if (version_compare($version, $activePhpVersion, 'ge') && ($today < $versionEndOfSupport))
 					{
-						$supportStatus['status']  = self::PHP_UNSUPPORTED;
-						$supportStatus['message'] = JText::sprintf(
-							'PLG_QUICKICON_PHPVERSIONCHECK_UNSUPPORTED',
-							PHP_VERSION,
-							$version,
-							$versionEndOfSupport->format(JText::_('DATE_FORMAT_LC4'))
-						);
+						$recommendedVersion             = $version;
+						$recommendedVersionEndOfSupport = $versionEndOfSupport;
 
-						return $supportStatus;
+						break;
 					}
 				}
 
-				// PHP version is not supported and we don't know of any supported versions.
 				$supportStatus['status']  = self::PHP_UNSUPPORTED;
-				$supportStatus['message'] = JText::sprintf('PLG_QUICKICON_PHPVERSIONCHECK_UNSUPPORTED_JOOMLA_OUTDATED', PHP_VERSION);
-
-				return $supportStatus;
+				$supportStatus['message'] = JText::sprintf(
+					'PLG_QUICKICON_PHPVERSIONCHECK_UNSUPPORTED',
+					PHP_VERSION,
+					$recommendedVersion,
+					$recommendedVersionEndOfSupport->format(JText::_('DATE_FORMAT_LC4'))
+				);
 			}
 
 			// If the version is still supported, check if it has reached eol minus 3 month

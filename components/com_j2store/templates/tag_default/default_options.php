@@ -10,7 +10,6 @@ defined('_JEXEC') or die;
 $options = $this->product->options;
 $product_id = $this->product->j2store_product_id;
 $product_helper = J2Store::product();
-$ajax_url = JRoute::_('index.php',false);
 ?>
 <?php if ($options) { ?>
 
@@ -28,7 +27,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<select
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			onChange="doAjaxPrice(<?php echo $product_id?>,
@@ -62,7 +61,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
           <?php foreach ($option['optionvalue'] as $option_value) { ?>
           	<?php $checked = ''; if($option_value['product_optionvalue_default']) $checked = 'checked="checked"'; ?>
           <input <?php echo $checked; ?> type="radio" autocomplete="off"
@@ -109,22 +108,12 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
           <?php foreach ($option['optionvalue'] as $option_value) { ?>
           <input type="checkbox"
 			name="product_option[<?php echo $option['productoption_id']; ?>][]"
 			value="<?php echo $option_value['product_optionvalue_id']; ?>"
 			id="option-value-<?php echo $option_value['product_optionvalue_id']; ?>" />
-              <?php if(
-                  $this->params->get('image_for_product_options', 0) &&
-                  isset($option_value['optionvalue_image']) &&
-                  !empty($option_value['optionvalue_image'])
-              ):
-                  ?>
-                  <img
-                          class="optionvalue-image-<?php echo $option_value['product_optionvalue_id']; ?>"
-                          src="<?php echo JUri::root(true).'/'.$option_value['optionvalue_image']; ?>" />
-              <?php endif; ?>
 		<label
 			for="option-value-<?php echo $option_value['product_optionvalue_id']; ?>"><?php echo stripslashes(JText::_($option_value['optionvalue_name'])); ?>
             <?php if ($option_value['product_optionvalue_price'] > 0 && $this->params->get('product_option_price', 1)) { ?>
@@ -163,7 +152,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<input type="text"
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			value="<?php echo $option['optionvalue']; ?>"
@@ -181,7 +170,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<textarea
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			cols="40" rows="5"><?php echo $option['optionvalue']; ?></textarea>
@@ -196,7 +185,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<button type="button"
 			id="product-option-<?php echo $option['productoption_id']; ?>"
 			data-loading-text="<?php echo JText::_('J2STORE_LOADING')?>"
@@ -220,7 +209,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<input type="text"
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			value="<?php echo $option['optionvalue']; ?>"
@@ -239,7 +228,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<input type="text"
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			value="<?php echo $option['optionvalue']; ?>"
@@ -256,7 +245,7 @@ $ajax_url = JRoute::_('index.php',false);
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
 		<input type="text"
 			name="product_option[<?php echo $option['productoption_id']; ?>]"
 			value="<?php echo $option['optionvalue']; ?>" class="j2store_time" />
@@ -284,7 +273,7 @@ $('#product-option-<?php echo $option['productoption_id']; ?>').on('click', func
 		if ($('#form-upload input[name=\'file\']').val() != '') {
 			clearInterval(timer);
 			$.ajax({
-				url: '<?php echo $ajax_url;?>?option=com_j2store&view=carts&task=upload&product_id='+<?php echo $this->product->j2store_product_id;?>,
+				url: 'index.php?option=com_j2store&view=carts&task=upload&product_id='+<?php echo $this->product->j2store_product_id;?>,
 				type: 'post',
 				dataType: 'json',
 				data: new FormData($('#form-upload')[0]),

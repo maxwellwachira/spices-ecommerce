@@ -32,11 +32,6 @@ class plgContentJ2Store extends JPlugin
 		if(JFactory::getApplication()->isAdmin()) {
 			return false;
 		}
-
-		// no need to run blog category and other category view
-        if(strpos($context, 'categories') !== false){
-            return false;
-        }
 		if(strpos($context, 'productlist') !== false){
 			$shortcode_matches = $this->parseShortCodes($article);
 
@@ -50,9 +45,7 @@ class plgContentJ2Store extends JPlugin
 			return;
 		}
 
-        $cache_control = $this->params->get("cache_control",1);
-
-			if($this->_cleaned == false && $cache_control) {
+			if($this->_cleaned == false) {
 				$cache = JFactory::getCache();
 				$cache->clean('com_content');
 				$cache->clean('com_j2store');
@@ -64,9 +57,6 @@ class plgContentJ2Store extends JPlugin
 
 			if(strpos($context, 'com_content') !== false) {
 				if($placement == 'default' || $placement == 'both') {
-                    if(!$this->checkPublishDate($article)){
-                        return;
-                    }
 					$this->defaultPosition($context, $article, $params, $page);
 				}
 			}
@@ -191,12 +181,6 @@ class plgContentJ2Store extends JPlugin
 					$product = F0FTable::getAnInstance('Product', 'J2StoreTable')->getClone();
 
 					if($product->get_product_by_id($values[0])) {
-                        $product_article = $this->getArticle($product->product_source_id);
-                        if(!$this->checkPublishDate($product_article)){
-                            $article->text = str_replace($newmatch[0], $html, $article->text);
-                            return;
-                        }
-
 						if($placement == 'tag' || $placement == 'both') {
 							// this is special. Because this is controlled by the placement switch
 							if(in_array('cart', $values)) {
@@ -357,29 +341,12 @@ class plgContentJ2Store extends JPlugin
 	}
 
 	function onContentBeforeDisplay($option, $item, $params) {
-        if(!$this->checkPublishDate($item)){
-            return;
-        }
-        $j2params = J2Store::config();
-        $placement = $j2params->get('addtocart_placement', 'default');
-        if($placement == 'tag') {
-            return;
-        }
 		return $this->getProductImages('beforecontent', $option, $item, $params);
 	}
 
 	function onContentAfterDisplay($option, $item, $params) {
 		if (strpos ( $option, 'com_content' ) === false)
 			return;
-
-        if(!$this->checkPublishDate($item)){
-            return;
-        }
-        $j2params = J2Store::config();
-        $placement = $j2params->get('addtocart_placement', 'default');
-        if($placement == 'tag') {
-            return;
-        }
 		//if it is a j2store product list, then we do not want to process further.
 		if($option == 'com_content.category.productlist') return;
 
@@ -482,7 +449,6 @@ class plgContentJ2Store extends JPlugin
 	 */
 	function onContentAfterSave($context, $data, $isNew)
 	{
-        J2Store::plugin()->event('ContentAfterSave',array($context, $data, $isNew));
 		// Check we are manipulating a valid form.
 		$context_array = array ('com_content.article');
 			if(JFactory::getApplication()->isSite()){
@@ -520,22 +486,15 @@ class plgContentJ2Store extends JPlugin
 				// convert the joomla article attributes from json to object
 				//check if it is a save as copy
 				if($task == 'save2copy') {
-                    if(in_array($attribs->j2store->product_type, array('variable','advancedvariable','flexivariable','variablesubscriptionproduct'))){
-                        return true;
-                    }
-                    $db = JFactory::getDBo();
-                    $query = $db->getQuery(true);
-                    $query->select('#__j2store_product_filters.filter_id')->from('#__j2store_product_filters')
-                        ->where('#__j2store_product_filters.product_id ='.$db->q($attribs->j2store->j2store_product_id))
-                        ->order('#__j2store_product_filters.filter_id ASC');
-                    $db->setQuery($query);
-                    $product_filter_list = $db->loadColumn();
+					if($attribs->j2store->product_type == 'variable'){
+						return true;
+					}
 					//we are copying the data. So reset the product id and the variant id
 					$attribs->j2store->j2store_product_id = null;
 					$attribs->j2store->j2store_variant_id = null;
 					$attribs->j2store->j2store_productimage_id = null;
 					$attribs->j2store->quantity->j2store_productquantity_id = null;
-                    $attribs->j2store->productfilter_ids = $product_filter_list;
+
 					unset($attribs->j2store->item_options);
 
 				}
@@ -727,26 +686,4 @@ class plgContentJ2Store extends JPlugin
 					END
 				 	');
 	}
-
-	function checkPublishDate($article){
-	    $check_publish_date = $this->params->get('check_publish_date',0);
-	    if(!$check_publish_date){
-	        return true;
-        }
-
-        $date = JFactory::getDate('now');
-        $db = JFactory::getDBo();
-        // Define null and now dates
-        $nullDate = $db->getNullDate();
-        //default to the sql formatted date
-        $nowDate = $date->toSql();
-        $status = false;
-        if(isset($article->publish_up) && isset($article->publish_down) &&
-            ((($article->publish_up == $nullDate) || ($article->publish_up <= $nowDate)) &&
-                (($article->publish_down == $nullDate) || ($article->publish_down >= $nowDate)))){
-
-            $status = true;
-        }
-        return $status;
-    }
 }

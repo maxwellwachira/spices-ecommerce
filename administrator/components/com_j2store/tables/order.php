@@ -256,8 +256,7 @@ class J2StoreTableOrder extends F0FTable
 
 		// We fire just a single plugin event here and pass the entire order object
 		// so the plugins can override whatever they need to
-        $order_obj = $this->get_order_obj();
-		J2Store::plugin ()->event ( "CalculateOrderTotals", array( &$order_obj ) );
+		J2Store::plugin ()->event ( "CalculateOrderTotals", array( &$this ) );
 
 	}
 
@@ -800,14 +799,7 @@ class J2StoreTableOrder extends F0FTable
 			// Because of one moment of stupidity we now have to do a separate calculation for vouchers as well. A brilliant way of implementing this would be via coupons.
 			// TODO: Merge vouchers with coupons in future. Both share similar characteristics
 			//$voucher_model = F0FModel::getTmpInstance ( 'Vouchers', 'J2StoreModel' );
-            $init_status = $voucher_model->init ();
-            if ( $app->isClient('administrator') ) {
-                $voucher_status = $voucher_model->is_admin_valid ( $this );
-            } else {
-                $voucher_status = $voucher_model->is_valid ( $this );
-            }
-
-            if ( $init_status && $voucher_status ) {
+			if ( $voucher_model->init () && $voucher_model->is_valid () ) {
 				$discount_amount = $voucher_model->get_discount_amount ( $price, $item, $this, $single = true );
 				//sanity check
 				$discount_amount = min ( $price, $discount_amount );
@@ -836,13 +828,13 @@ class J2StoreTableOrder extends F0FTable
 				}
 			}
 		}
-        $order_obj = $this->get_order_obj();
+
 		// allo plugins to modify
 		J2Store::plugin ()->event ( 'GetDiscountedPrice', array(
 			&$price,
 			&$item,
 			$add_totals,
-			&$order_obj
+			&$this
 		) );
 		return $price;
 	}
@@ -1047,8 +1039,8 @@ class J2StoreTableOrder extends F0FTable
 		}
 		$this->order_shipping = $order_shipping;
 		$this->order_shipping_tax = $order_shipping_tax;
-        $order_obj = $this->get_order_obj();
-		J2Store::plugin ()->event ( "CalculateShippingTotals", array( &$order_obj ) );
+
+		J2Store::plugin ()->event ( "CalculateShippingTotals", array( &$this ) );
 	}
 
 	function getOrderInformation ()
@@ -1535,7 +1527,7 @@ class J2StoreTableOrder extends F0FTable
 			$query = $db->getQuery ( true );
 			$query->select ( 'gz.*,gzr.*' )->from ( '#__j2store_geozones AS gz' )
 				->leftJoin ( '#__j2store_geozonerules AS gzr ON gzr.geozone_id = gz.j2store_geozone_id' )
-				->where ( 'gz.j2store_geozone_id=' . $db->q($geozone_id ))
+				->where ( 'gz.j2store_geozone_id=' . $geozone_id )
 				->where ( 'gzr.country_id=' . $db->q ( $country_id ) . ' AND (gzr.zone_id=0 OR gzr.zone_id=' . $db->q ( $zone_id ) . ')' );
 			$db->setQuery ( $query );
 			try {
@@ -1578,18 +1570,13 @@ class J2StoreTableOrder extends F0FTable
 
 		$values = array();
 		foreach ( $fields as $fieldName => $oneExtraField ) {
-
 			if ( isset( $data->$fieldName ) ) {
 				if ( !property_exists ( $orderinfo, $type . '_' . $fieldName ) && !property_exists ( $orderinfo, 'user_' . $fieldName ) && $fieldName != 'country_id' && $fieldName != 'zone_id' && $fieldName != 'option' && $fieldName != 'task' && $fieldName != 'view' ) {
-                    if(isset($oneExtraField->field_type) && $oneExtraField->field_type == 'zone'){
-                        $values[ $fieldName ][ 'zone_type' ] = $oneExtraField->field_options['zone_type'];
-                    }
 					$values[ $fieldName ][ 'label' ] = $oneExtraField->field_name;
 					$values[ $fieldName ][ 'value' ] = $data->$fieldName;
 				}
 			}
 		}
-
 		$registry = new JRegistry();
 		$registry->loadArray ( $values );
 		$json = $registry->toString ( 'JSON' );
@@ -1650,16 +1637,16 @@ class J2StoreTableOrder extends F0FTable
 			}
 			$this->user_email = $user_email;
 		}
-        $order_obj = $this->get_order_obj();
+
 		//trigger on before save
-		J2Store::plugin ()->event ( 'BeforeSaveOrder', array( &$order_obj ) );
+		J2Store::plugin ()->event ( 'BeforeSaveOrder', array( &$this ) );
 
 		if ( $this->is_update == 1 ) {
 			//trigger on before update
-			J2Store::plugin ()->event ( 'BeforeUpdateOrder', array( &$order_obj ) );
+			J2Store::plugin ()->event ( 'BeforeUpdateOrder', array( &$this ) );
 		} else {
 			//trigger on before create a new order
-			J2Store::plugin ()->event ( 'BeforeCreateNewOrder', array( &$order_obj ) );
+			J2Store::plugin ()->event ( 'BeforeCreateNewOrder', array( &$this ) );
 		}
 
 		try {
@@ -1693,18 +1680,18 @@ class J2StoreTableOrder extends F0FTable
 				$this->saveOrderDiscounts ();
 
 				$this->saveOrderFiles ();
-                $order_obj = $this->get_order_obj();
+
 				//trigger on before save
-				J2Store::plugin ()->event ( 'AfterSaveOrder', array( &$order_obj ) );
+				J2Store::plugin ()->event ( 'AfterSaveOrder', array( &$this ) );
 
 				if ( $this->is_update == 1 ) {
 					$this->add_history ( JText::_ ( 'J2STORE_ORDER_UPDATED_BY_CUSTOMER' ) );
 					//trigger on before update
-					J2Store::plugin ()->event ( 'AfterUpdateOrder', array( &$order_obj ) );
+					J2Store::plugin ()->event ( 'AfterUpdateOrder', array( &$this ) );
 				} else {
 					$this->add_history ( JText::_ ( 'J2STORE_NEW_ORDER_CREATED' ) );
 					//trigger on before update
-					J2Store::plugin ()->event ( 'AfterCreateNewOrder', array( &$order_obj ) );
+					J2Store::plugin ()->event ( 'AfterCreateNewOrder', array( &$this ) );
 				}
 			}
 
@@ -1970,9 +1957,9 @@ class J2StoreTableOrder extends F0FTable
 
 			$this->$slug = $newSlug;
 		}
-        $order_obj = $this->get_order_obj();
+
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger ( 'onBeforeStore', array( &$order_obj, $updateNulls ) );
+		$result = $this->tableDispatcher->trigger ( 'onBeforeStore', array( &$this, $updateNulls ) );
 
 		if ( in_array ( false, $result, true ) ) {
 			// Behavior failed, return false
@@ -1982,8 +1969,7 @@ class J2StoreTableOrder extends F0FTable
 		// Execute onBeforeStore<tablename> events in loaded plugins
 		if ( $this->_trigger_events ) {
 			$name = F0FInflector::pluralize ( $this->getKeyName () );
-            $order_obj = $this->get_order_obj();
-			$result = F0FPlatform::getInstance ()->runPlugins ( 'onBeforeStore' . ucfirst ( $name ), array( &$order_obj, $updateNulls ) );
+			$result = F0FPlatform::getInstance ()->runPlugins ( 'onBeforeStore' . ucfirst ( $name ), array( &$this, $updateNulls ) );
 
 			if ( in_array ( false, $result, true ) ) {
 				return false;
@@ -2080,7 +2066,6 @@ class J2StoreTableOrder extends F0FTable
 		//valid order statuses.
 		//3 = failed, 4 = pending, 5=new or incomplete
 		$valid_order_statuses = array( 3, 4, 5, 6 );
-        J2Store::plugin ()->event ( 'BeforePaymentValidStatus', array( &$valid_order_statuses, $this ) );
 		$old_status = $this->order_state_id;
 
 		if ( !empty( $this->order_id ) && $this->has_status ( $valid_order_statuses ) ) {
@@ -2202,60 +2187,65 @@ class J2StoreTableOrder extends F0FTable
 	{
 		//remove coupon from the cancelled order
 		if ( empty( $this->order_id ) ) return;
-		$table = F0FTable::getInstance ( 'Orderdiscount', 'J2StoreTable' )->getClone ();
+		$table = F0FTable::getInstance ( 'Ordercoupon', 'J2StoreTable' )->getClone ();
 		if ( $table->load ( array( 'order_id' => $this->order_id ) ) ) {
 			$table->delete ();
 		}
 	}
 
-    public function notify_customer ($is_admin_only = false)
-    {
-        if ( empty ( $this->order_id ) )
-            return;
+	public function notify_customer ()
+	{
+		if ( empty ( $this->order_id ) )
+			return;
 
-        $emailHelper = J2Store::email ();
-        J2Store::plugin ()->event ( 'BeforeOrderEmailNotification', array($this) );
-        if(!$is_admin_only){
-            // send customer emails
-            $customer_emails = $emailHelper->getOrderEmails ( $this, 'customer' );
-            foreach ( $customer_emails as $email ) {
-                if ( !isset( $email->mailer ) && !$email->mailer instanceof JMail ) continue;
-                J2Store::plugin ()->event ( 'BeforeOrderNotification', array(
-                    $this,
-                    &$email->mailer
-                ) );
-                try {
-                    if ( count ( $email->mailer->getAllRecipientAddresses () ) && $email->mailer->send () ) {
-                        $this->add_history ( JText::_ ( 'J2STORE_CUSTOMER_NOTIFIED_WITH_SUBJECT' ) . ' ' . $email->mailer->Subject );
-                        J2Store::plugin ()->event ( 'AfterOrderNotification', array(
-                            $this
-                        ) );
-                    }
-                } catch ( Exception $e ) {
-                    $this->add_history ( $e->getMessage () );
-                }
+		$app = JFactory::getApplication ();
+		$config = JFactory::getConfig ();
+		$params = J2Store::config ();
 
-            }
-        }
+		$sitename = $config->get ( 'sitename' );
 
-        // send admin emails
-        $admin_emails = $emailHelper->getOrderEmails ( $this, 'admin' );
-        foreach ( $admin_emails as $admin_email ) {
-            if ( !isset( $admin_email->mailer ) && !$admin_email->mailer instanceof JMail ) continue;
+		$emailHelper = J2Store::email ();
+		$orderinfo = $this->getOrderInformation ();
 
-            J2Store::plugin ()->event ( 'BeforeOrderNotificationAdmin', array(
-                $this,
-                &$admin_email->mailer
-            ) );
-            try {
-                if ( count ( $admin_email->mailer->getAllRecipientAddresses () ) && $admin_email->mailer->send () ) {
-                    $this->add_history ( JText::_ ( 'J2STORE_ADMINISTRATORS_NOTIFIED_WITH_SUBJECT' ) . ' ' . $admin_email->mailer->Subject );
-                }
-            } catch ( Exception $e ) {
-                $this->add_history ( $e->getMessage () );
-            }
-        }
-    }
+		// send customer emails
+		$customer_emails = $emailHelper->getOrderEmails ( $this, 'customer' );
+		foreach ( $customer_emails as $email ) {
+			if ( !isset( $email->mailer ) && !$email->mailer instanceof JMail ) continue;
+			J2Store::plugin ()->event ( 'BeforeOrderNotification', array(
+				$this,
+				&$email->mailer
+			) );
+			try {
+				if ( count ( $email->mailer->getAllRecipientAddresses () ) && $email->mailer->send () ) {
+					$this->add_history ( JText::_ ( 'J2STORE_CUSTOMER_NOTIFIED_WITH_SUBJECT' ) . ' ' . $email->mailer->Subject );
+					J2Store::plugin ()->event ( 'AfterOrderNotification', array(
+						$this
+					) );
+				}
+			} catch ( Exception $e ) {
+				$this->add_history ( $e->getMessage () );
+			}
+
+		}
+
+		// send admin emails
+		$admin_emails = $emailHelper->getOrderEmails ( $this, 'admin' );
+		foreach ( $admin_emails as $admin_email ) {
+			if ( !isset( $admin_email->mailer ) && !$admin_email->mailer instanceof JMail ) continue;
+
+			J2Store::plugin ()->event ( 'BeforeOrderNotificationAdmin', array(
+				$this,
+				&$admin_email->mailer
+			) );
+			try {
+				if ( count ( $admin_email->mailer->getAllRecipientAddresses () ) && $admin_email->mailer->send () ) {
+					$this->add_history ( JText::_ ( 'J2STORE_ADMINISTRATORS_NOTIFIED_WITH_SUBJECT' ) . ' ' . $admin_email->mailer->Subject );
+				}
+			} catch ( Exception $e ) {
+				$this->add_history ( $e->getMessage () );
+			}
+		}
+	}
 
 	public function reduce_order_stock ()
 	{
@@ -2345,7 +2335,7 @@ class J2StoreTableOrder extends F0FTable
 	{
 		if ( !isset( $this->order_id ) || empty( $this->order_id ) ) return;
 
-		$cart = F0FTable::getAnInstance ( 'Cart', 'J2StoreTable' )->getClone();
+		$cart = F0FTable::getAnInstance ( 'Carts', 'J2StoreTable' );
 		if ( $cart->load ( $this->cart_id ) ) {
 			$cartobject = $cart;
 			J2Store::plugin ()->event ( 'BeforeEmptyCart', array( $cartobject ) );
@@ -2474,11 +2464,10 @@ class J2StoreTableOrder extends F0FTable
 	/**
 	 * Get line item name .
 	 * @param $item - order item object
-     * @param string $receiver_type
 	 * @return string - item name
 	 *
 	*/
-	function get_formatted_lineitem_name ( $item, $receiver_type = '*' )
+	function get_formatted_lineitem_name ( $item )
 	{
 		$html = '<span class="cart-product-name">'.$item->orderitem_name.'</span><br />';
 		if ( isset( $item->orderitemattributes ) ) {
@@ -2497,10 +2486,9 @@ class J2StoreTableOrder extends F0FTable
 				}
 				$html .= $this->get_formatted_lineitem_attribute_value($attribute, $attribute_value);
 				//$html .= '<small>'.JText::_( $attribute->orderitemattribute_name ).' : '.$attribute_value.'</small><br />';
-				if(JFactory::getApplication()->isAdmin() && $receiver_type == 'admin' && $attribute->orderitemattribute_type=='file' && JFactory::getApplication()->input->getString('task')!='printOrder'){
+				if(JFactory::getApplication()->isAdmin() && $attribute->orderitemattribute_type=='file' && JFactory::getApplication()->input->getString('task')!='printOrder'){
 					$html .= '<a target="_blank" class="btn btn-primary"';
-					$url = JUri::base()."index.php?option=com_j2store&view=orders&task=download&ftoken=".$attribute->orderitemattribute_value;
-					$html .= 'href="'.$url.'"';
+					$html .= 'href="'.JRoute::_("index.php?option=com_j2store&view=orders&task=download&ftoken=".$attribute->orderitemattribute_value).'"';
 					$html .= '<i class="icon icon-download"></i>';
 					$html .= JText::_('J2STORE_DOWNLOAD');
 					$html .= '</a>';
@@ -2509,13 +2497,13 @@ class J2StoreTableOrder extends F0FTable
 			}
 			$html .= '</span>';
 		}
-		J2Store::plugin ()->event ( 'LineItemName', array($item,&$html,$receiver_type) );
+		J2Store::plugin ()->event ( 'LineItemName', array($item,&$html) );
 		return $html;
 	}
 
 	public function get_formatted_lineitem_attribute_value($attribute, $attribute_value)
 	{
-        $utility = J2Store::utilities();
+
 		$search = array( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 );
 
 		$replace = array( 'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine' );
@@ -2526,7 +2514,7 @@ class J2StoreTableOrder extends F0FTable
 		$html .= '<span class="item-option item-option-name ' . $attribute_class . '">';
 		$html .= JText::_( $attribute->orderitemattribute_name );
 		$html .= ' : ';
-		$html .= '<span class="item-option item-option-value ' . $attribute_class . '">' . nl2br($utility->text_sanitize($attribute_value)) . '</span>';
+		$html .= '<span class="item-option item-option-value ' . $attribute_class . '">' . nl2br($attribute_value) . '</span>';
 		$html .= '</span>';
 
 		$html .= '</small>';
@@ -2596,14 +2584,9 @@ class J2StoreTableOrder extends F0FTable
 
 		return $order_subtotal ;
 	}
-
-	function get_order_obj(){
-	    return $this;
-    }
-
+	
 	function get_formatted_grandtotal() {
-	    $order_obj = $this->get_order_obj();
-		J2Store::plugin()->event('GetFormattedGrandTotal', array(&$order_obj));
+		J2Store::plugin()->event('GetFormattedGrandTotal', array(&$this));
 		return $this->order_total;
 	}
 	
@@ -3039,8 +3022,7 @@ class J2StoreTableOrder extends F0FTable
 				$this->bind($data);
 			}
 			//trigger on before save
-            $order_obj = $this->get_order_obj();
-			J2Store::plugin()->event('BeforeSaveOrder', array(&$order_obj));
+			J2Store::plugin()->event('BeforeSaveOrder', array(&$this));
 			if($this->store()){
 				if(!isset($this->order_id) || empty($this->order_id) || !isset($this->is_update) || $this->is_update != 1) {
 					$this->order_id = time().$this->j2store_order_id;
@@ -3179,7 +3161,7 @@ class J2StoreTableOrder extends F0FTable
 		+ $this->final_shipping_tax//$this->order_shipping_tax
 		+ $this->order_tax
 		;
-
+	
 		$total = $subtotal+ $this->order_fees;
 		//if surcharge is set add that as well
 		if(isset($this->order_surcharge)) {
@@ -3194,8 +3176,7 @@ class J2StoreTableOrder extends F0FTable
 		
 		// We fire just a single plugin event here and pass the entire order object
 		// so the plugins can override whatever they need to
-        $order_obj = $this->get_order_obj();
-		J2Store::plugin()->event("CalculateOrderTotals", array( &$order_obj ) );
+		J2Store::plugin()->event("CalculateOrderTotals", array( &$this ) );
 	
 	}
 	
@@ -3380,7 +3361,7 @@ class J2StoreTableOrder extends F0FTable
 					$line_tax = $discounted_taxes->taxtotal;
 					$line_total = ($discounted_price * $item->orderitem_quantity) - $line_tax;
 				}
-
+	
 				foreach ( $discounted_taxes->taxes as $taxrate_id => $tax_rate ) {
 					if (! isset ( $this->_taxrates [$taxrate_id] )) {
 						$this->_taxrates [$taxrate_id] ['name'] = $tax_rate ['name'];
@@ -3500,23 +3481,16 @@ class J2StoreTableOrder extends F0FTable
 		$session = JFactory::getSession();				
 		$shipping_values = $session->get('shipping_values', array(), 'j2store');		
 		$session->clear('shipping_values', 'j2store');
-		$config = J2Store::config();
-        $voucher_apply_to_shipping = $config->get('backend_voucher_to_shipping',1);
+
 		if(isset($shipping_values['shipping_name'])) {			
 			$this->setAdminOrderShippingRate($shipping_values);
 			$this->order_shipping = $this->_shipping_totals->ordershipping_price + $this->_shipping_totals->ordershipping_extra;
-            $this->order_shipping_tax  = $this->_shipping_totals->ordershipping_tax;
-
 			$this->final_shipping_tax = 0;
-            $this->final_shipping = 0;
-            if($voucher_apply_to_shipping){
-                $this->final_shipping_tax = $this->get_admin_discounted_price($this->order_shipping_tax);
-                $this->final_shipping = $this->get_admin_discounted_price($this->order_shipping);
-            }else{
-                $this->final_shipping_tax = $this->order_shipping_tax;
-                $this->final_shipping = $this->order_shipping;
-            }
-
+			$this->order_shipping_tax  = $this->_shipping_totals->ordershipping_tax;
+			if($taxes){
+				$this->final_shipping_tax = $this->get_admin_discounted_price($this->order_shipping_tax);
+			}
+			$this->final_shipping = $this->get_admin_discounted_price($this->order_shipping);
 		}else{
 			$ordershipping_table = F0FTable::getAnInstance('Ordershipping', 'J2StoreTable');
 			$ordershipping_table->load(array(
@@ -3525,18 +3499,17 @@ class J2StoreTableOrder extends F0FTable
 			$this->order_shipping = $ordershipping_table->ordershipping_price + $ordershipping_table->ordershipping_extra;
 			$this->final_shipping_tax = 0;
 			$this->final_shipping = 0;
-			if($voucher_apply_to_shipping){
-				$this->final_shipping_tax = $this->get_admin_discounted_price($ordershipping_table->ordershipping_tax);
+			if($this->order_shipping > 0){
+				if($taxes){
+					$this->final_shipping_tax = $this->get_admin_discounted_price($ordershipping_table->ordershipping_tax);
+				}
 				$this->final_shipping = $this->get_admin_discounted_price($this->order_shipping);
-			}else{
-                $this->final_shipping_tax = $ordershipping_table->ordershipping_tax;
-                $this->final_shipping = $this->order_shipping;
-            }
+			}
 
 		}
 
 
-
+				
 	}
 
 	/**
@@ -3553,19 +3526,14 @@ class J2StoreTableOrder extends F0FTable
 		}
 
 		$app = JFactory::getApplication ();
+		$params = J2Store::config ();
+		$session = JFactory::getSession ();
 		$voucher_model = F0FModel::getTmpInstance ( 'Vouchers', 'J2StoreModel' );
 		if($voucher_model->has_voucher()) {
 			// Because of one moment of stupidity we now have to do a separate calculation for vouchers as well. A brilliant way of implementing this would be via coupons.
 			// TODO: Merge vouchers with coupons in future. Both share similar characteristics
 			//$voucher_model = F0FModel::getTmpInstance ( 'Vouchers', 'J2StoreModel' );
-            $init_status = $voucher_model->init ();
-            if ( $app->isClient('administrator') ) {
-                $voucher_status = $voucher_model->is_admin_valid ( $this );
-            } else {
-                $voucher_status = $voucher_model->is_valid ( $this );
-            }
-
-            if ( $init_status && $voucher_status ) {
+			if ($voucher_model->init () && $voucher_model->is_valid ()) {
 				$discount_amount = $voucher_model->get_admin_discount_amount ( $price );
 
 				//sanity check

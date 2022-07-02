@@ -20,7 +20,6 @@ $session_vendor_ids = $session->get('vendor_ids',array(), 'j2store');
 $session_productfilter_ids = $session->get('productfilter_ids',array(), 'j2store');
 
 $currency = $this->currency->getSymbol();
-$currency_value = $this->currency->getValue();
 $thousand = $this->currency->getThousandSysmbol();
 $decimal_place = $this->currency->getDecimalPlace();
 $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
@@ -63,8 +62,8 @@ $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
 			<div id="j2store-slider-range-box" class="price-input-box" >
 				<input class="btn btn-success" type="submit"   id="filterProductsBtn"  value="<?php echo JText::_('J2STORE_FILTER_GO');?>" />
 					<div class="pull-right">
-                        <span id="min_price" class="hide"><?php echo $pricefrom;?></span>
-                        <span id="max_price" class="hide"><?php echo $priceto;?></span>
+						<span id="min_price" class="hide"><?php echo $d_pricefrom;?></span>
+						<span id="max_price" class="hide"><?php echo $d_priceto;?></span>
 						<?php if($currency_position == 'pre') echo $currency;?><span id="min_price_display"><?php echo $d_pricefrom;?></span> <?php if($currency_position == 'post') echo $currency; ?>
 						<?php echo JText::_('J2STORE_TO_PRICE');?>
 						<?php if($currency_position == 'pre') echo $currency;?><span id="max_price_display"><?php echo $d_priceto;?></span><?php if($currency_position == 'post') echo $currency; ?>
@@ -109,7 +108,7 @@ $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
 					       <?php
 						         //onclick="document.getElementById('j2store-product-loading').style.display='block';document.getElementById('productsideFilters').submit()"
 						       ?>
-						<?php echo $this->escape($brand->company);?>
+						<?php echo $brand->company;?>
 
 					</label>
 				<?php
@@ -143,7 +142,7 @@ $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
 	  				    <!--
 	  				    onclick="document.getElementById('j2store-product-loading').style.display='block';document.getElementById('productsideFilters').submit()"
 	  				     onchange="jQuery('#j2store-product-loading').show();this.form.submit()" -->
-				   	<?php echo $this->escape($vendor->first_name .' '.$vendor->last_name);?>
+				   	<?php echo $vendor->first_name .' '.$vendor->last_name;?>
 			</label>
 		<?php endforeach;?>
 		</div>
@@ -159,7 +158,7 @@ $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
 			<?php foreach ($this->filters['productfilters'] as $pf_key => $filtergroup):?>
 				<?php $filter_script_id = J2Store::utilities ()->generateId ( $filtergroup['group_name'] ).'_'.$pf_key;?>
 				<div class="product-filter-group <?php echo $filter_script_id;?>">
-						<h4 class="product-filter-heading"><?php echo $this->escape(JText::_($filtergroup['group_name']));?></h4>
+						<h4 class="product-filter-heading"><?php echo JText::_($filtergroup['group_name']);?></h4>
 						<span>
 							<?php if($this->params->get('list_filter_productfilter_toggle',1)==1):?>
 								<span id="pf-filter-icon-minus-<?php echo $filter_script_id;?>"   onclick="getPFFilterToggle('<?php echo $filter_script_id;?>');"><i class="icon-minus"></i></span>
@@ -203,7 +202,7 @@ $tagid = JFactory::getApplication()->input->getInt('tagid',0);?>
 								<?php echo $checked;?>
 						value="<?php echo $filter->filter_id ;?>"  />
 						<!-- onclick="document.getElementById('j2store-product-loading').style.display='block';document.getElementById('productsideFilters').submit()" -->
-							<?php echo $this->escape(JText::_($filter->filter_name)); ?>
+							<?php echo JText::_($filter->filter_name); ?>
 					</label>
 					<?php endforeach; ?>
 				</div>
@@ -247,7 +246,6 @@ jQuery('document').ready(function (){
         //assign the values for price filters
         var min_value = jQuery( "#min_price" ).html();
         var max_value = jQuery( "#max_price" ).html();
-        var format_value = <?php echo $currency_value;?>;
         function formatCurrency(format_amount) {
             if(format_amount < 0) {
                 format_amount = Math.abs(format_amount);
@@ -257,25 +255,16 @@ jQuery('document').ready(function (){
             if(decimal_place == 0){
                 format_amount = format_amount+".";
             }
-
-            if(format_amount == ''){
-                format_amount = 0.0;
-            }
-
-            format_amount = parseFloat(format_amount);
-            format_amount = format_amount.toFixed(decimal_place);
-            format_amount = format_amount.toString();
             var replace_string = "$1<?php echo $thousand;?>";
+            format_amount = format_amount.toString();
             format_amount = format_amount.replace(/(\d)(?=(\d{3})+\.)/g, replace_string).toString();
             format_amount = format_amount.substring(0,format_amount.length);
-
-            //format_amount = format_amount.toFloat();
 
             return format_amount;
         }
 
-        jQuery( "#max_price_display" ).html(formatCurrency(max_value*format_value));
-        jQuery( "#min_price_display" ).html(formatCurrency(min_value*format_value));
+        jQuery( "#max_price_display" ).html(formatCurrency(max_value));
+        jQuery( "#min_price_display" ).html(formatCurrency(min_value));
 
         (function($) {
             $( "#j2store-slider-range" ).slider({
@@ -284,17 +273,15 @@ jQuery('document').ready(function (){
                 max: <?php echo $max_price;?>,
                 values: [ min_value,max_value],
                 slide: function( event, ui ) {
-                    $( "#amount1" ).val( '<?php if($currency_position == 'pre') echo $currency;?>' + ui.values[ 0 ] + ' <?php if($currency_position == 'post') echo $currency;?>  - <?php if($currency_position == 'pre') echo $currency;?>' + ui.values[ 1 ] + ' <?php if($currency_position == 'post') echo $currency;?>' );
+                    $( "#amount1" ).val( "<?php if($currency_position == 'pre') echo $currency;?>" + ui.values[ 0 ] + " <?php if($currency_position == 'post') echo $currency;?>  - <?php if($currency_position == 'pre') echo $currency;?>" + ui.values[ 1 ] + " <?php if($currency_position == 'post') echo $currency;?>" );
                     $( "#min_price" ).html(ui.values[ 0 ]);
                     $( "#max_price" ).html(  ui.values[ 1 ] );
 
                     $( "#min_price_input" ).attr('value', ui.values[ 0 ]);
                     $( "#max_price_input" ).attr('value',  ui.values[ 1 ] );
 
-                    var min_format = ui.values[ 0 ]*format_value;
-                    var max_format = ui.values[ 1 ]*format_value;
-                    $( "#min_price_display" ).html(formatCurrency(min_format));
-                    $( "#max_price_display" ).html(formatCurrency(max_format));
+                    $( "#min_price_display" ).html(formatCurrency(ui.values[ 0 ]));
+                    $( "#max_price_display" ).html(formatCurrency(ui.values[ 1 ]));
                 }
             });
 

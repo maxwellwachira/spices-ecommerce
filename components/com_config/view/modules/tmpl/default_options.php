@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_config
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -30,11 +30,21 @@ endif;
 <?php foreach ($this->form->getFieldset($name) as $field) : ?>
 
 	<li>
-		<?php // If multi-language site, make menu-type selection read-only ?>
-		<?php if (JLanguageMultilang::isEnabled() && $this->item['module'] === 'mod_menu' && $field->getAttribute('name') === 'menutype') : ?>
-			<?php $field->readonly = true; ?>
-		<?php endif; ?>
-		<?php echo $field->renderField(); ?>
+		<div class="control-group">
+			<div class="control-label">
+				<?php echo $field->label; ?>
+			</div>
+			<div class="controls">
+				<?php
+				// If multi-language site, make menu-type selection read-only
+				if (JLanguageMultilang::isEnabled() && $this->item['module'] === 'mod_menu' && $field->getAttribute('name') === 'menutype')
+				{
+					$field->__set('readonly', true);
+				}
+				echo $field->input;
+				?>
+			</div>
+		</div>
 	</li>
 
 <?php endforeach; ?>

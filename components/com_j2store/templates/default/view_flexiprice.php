@@ -16,25 +16,13 @@ $currency = J2Store::currency();
         <strong><?php echo JText::_('J2STORE_PRODUCT_PRICE_RANGE');?></strong> <strong><?php echo JText::sprintf('J2STORE_PRICE_RANGE_FROM_TO',$min_price,$max_price); ?>	</strong>
     </div>
 <?php if($this->params->get('item_show_product_base_price', 1) || $this->params->get('item_show_product_special_price', 1)): ?>
-    <div class="product-price-container">
-        <?php if($this->params->get('item_show_product_base_price', 1) && isset($this->product->pricing->base_price) && isset($this->product->pricing->price) && $this->product->pricing->base_price != $this->product->pricing->price): ?>
-            <?php $class='';?>
-            <?php if(isset($this->product->pricing->is_discount_pricing_available)) $class='strike'; ?>
-            <?php $base_price = J2Store::product()->displayPrice($this->product->pricing->base_price, $this->product, $this->params); ?>
-            <div class="base-price <?php echo $class?>">
-                <?php echo $base_price;?>
-            </div>
-        <?php elseif ($this->params->get('item_show_product_base_price', 1)): ?>
+    <div itemprop="offers" itemscope itemtype="https://schema.org/Offer" class="product-price-container">
+        <?php if($this->params->get('item_show_product_base_price', 1)): ?>
             <?php $class='';?>
             <div class="base-price <?php echo $class?>"></div>
         <?php endif; ?>
 
-        <?php if($this->params->get('item_show_product_special_price', 1) && isset($this->product->pricing->price)): ?>
-            <?php $sale_price = J2Store::product()->displayPrice($this->product->pricing->price, $this->product, $this->params); ?>
-            <div class="sale-price">
-                <?php echo $sale_price;?>
-            </div>
-        <?php elseif ($this->params->get('item_show_product_special_price', 1)):?>
+        <?php if($this->params->get('item_show_product_special_price', 1)): ?>
             <div class="sale-price"></div>
         <?php endif; ?>
 
@@ -48,13 +36,6 @@ $currency = J2Store::currency();
 
 <?php echo J2Store::plugin()->eventWithHtml('AfterRenderingProductPrice', array($this->product)); ?>
 
-<?php if($this->params->get('item_show_discount_percentage', 1) && isset($this->product->pricing->is_discount_pricing_available) && isset($this->product->pricing->base_price) && !empty($this->product->pricing->base_price)): ?>
-    <?php $discount =(1 - ($this->product->pricing->price / $this->product->pricing->base_price) ) * 100; ?>
-    <?php if($discount > 0): ?>
-        <div class="discount-percentage">
-            <?php  echo JText::sprintf('J2STORE_PRODUCT_OFFER',round($discount).'%');?>
-        </div>
-    <?php endif; ?>
-<?php elseif ($this->params->get('item_show_discount_percentage', 1)):?>
+<?php if($this->params->get('item_show_discount_percentage', 1) ): ?>
     <div class="discount-percentage"></div>
 <?php endif; ?>

@@ -31,9 +31,6 @@ defined('_JEXEC') or die;
          <?php endif;?>
          <div  class ="box-widget-body ">
             <div id="container" class ="box-widget-body " style="clear:both;">
-                <div class="row-fluid">
-                    <?php echo J2Store::plugin()->eventWithHtml('BeforeCpanelView'); ?>
-                </div>
             	<div class="row-fluid">
             		<?php echo J2Store::help()->free_topbar(); ?>
             	</div>
@@ -150,27 +147,6 @@ var sEupdates = setTimeout(function () {
 
 	});
 })(j2store.jQuery);
-<?php endif; ?>
-
-<?php if(J2Store::isPro() && !empty($download_id)): ?>
-var subEupdates = setTimeout(function () {
-	(function($){
-	$.ajax({
-		  url: "index.php?option=com_j2store&view=cpanels&task=getSubscription",
-		  dataType:'json'
-		}).done(function(json) {
-			if(json['success']){
-				$('.subscription_message .subscription').html(json['success']);
-				$('.subscription_message').show();
-				if(json['valid'] == 0) {
-					$('#dlid-validate-container').show();
-				}
-			}
-		});
-
-	})(j2store.jQuery);
-
-}, 2000);
 <?php endif; ?>
 
     function validateDlid() {

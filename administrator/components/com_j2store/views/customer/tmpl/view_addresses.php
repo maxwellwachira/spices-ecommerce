@@ -14,9 +14,8 @@ JHTML::_('behavior.modal', 'a.modal');
 					<!-- Customer's  Billing Address Details  -->
 					<address class="pull-left">
 						<strong>
-                            <?php echo $this->item->company;?> <br/>
 							<?php echo $this->item->first_name.' '.$this->item->last_name;?>
-						</strong>
+						</strong><br />
 						<?php echo $this->item->address_1;?>
 						<?php echo $this->item->city.' '.$this->item->zip;?>
 						<?php echo $this->item->zone_name;?>

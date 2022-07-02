@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
+class ComposerStaticInit205c915b9c7d3e718e7c95793ee67ffe
 {
     public static $files = array (
         '2fb9d6f23c8e8faefc193a4cde0cab4f' => __DIR__ . '/..' . '/joomla/string/src/phputf8/utf8.php',
@@ -67,6 +67,7 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
             'Joomla\\Image\\' => 13,
             'Joomla\\Filter\\' => 14,
             'Joomla\\Filesystem\\' => 18,
+            'Joomla\\Event\\Tests\\' => 19,
             'Joomla\\Event\\' => 13,
             'Joomla\\Data\\Tests\\' => 18,
             'Joomla\\Data\\' => 12,
@@ -161,6 +162,10 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
         array (
             0 => __DIR__ . '/..' . '/joomla/filesystem/src',
         ),
+        'Joomla\\Event\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/joomla/event/Tests',
+        ),
         'Joomla\\Event\\' => 
         array (
             0 => __DIR__ . '/..' . '/joomla/event/src',
@@ -209,10 +214,8 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
     );
 
     public static $classMap = array (
-        'Brumann\\Polyfill\\DisallowedClassesSubstitutor' => __DIR__ . '/..' . '/brumann/polyfill-unserialize/src/DisallowedClassesSubstitutor.php',
         'Brumann\\Polyfill\\Unserialize' => __DIR__ . '/..' . '/brumann/polyfill-unserialize/src/Unserialize.php',
         'CallbackFilterIterator' => __DIR__ . '/..' . '/joomla/compat/src/CallbackFilterIterator.php',
-        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'EasyPeasyICS' => __DIR__ . '/..' . '/phpmailer/phpmailer/extras/EasyPeasyICS.php',
         'Joomla\\Application\\AbstractApplication' => __DIR__ . '/..' . '/joomla/application/src/AbstractApplication.php',
         'Joomla\\Application\\AbstractCliApplication' => __DIR__ . '/..' . '/joomla/application/src/AbstractCliApplication.php',
@@ -229,8 +232,6 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
         'Joomla\\Application\\Web\\WebClient' => __DIR__ . '/..' . '/joomla/application/src/Web/WebClient.php',
         'Joomla\\Archive\\Archive' => __DIR__ . '/..' . '/joomla/archive/src/Archive.php',
         'Joomla\\Archive\\Bzip2' => __DIR__ . '/..' . '/joomla/archive/src/Bzip2.php',
-        'Joomla\\Archive\\Exception\\UnknownArchiveException' => __DIR__ . '/..' . '/joomla/archive/src/Exception/UnknownArchiveException.php',
-        'Joomla\\Archive\\Exception\\UnsupportedArchiveException' => __DIR__ . '/..' . '/joomla/archive/src/Exception/UnsupportedArchiveException.php',
         'Joomla\\Archive\\ExtractableInterface' => __DIR__ . '/..' . '/joomla/archive/src/ExtractableInterface.php',
         'Joomla\\Archive\\Gzip' => __DIR__ . '/..' . '/joomla/archive/src/Gzip.php',
         'Joomla\\Archive\\Tar' => __DIR__ . '/..' . '/joomla/archive/src/Tar.php',
@@ -245,8 +246,6 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
         'Joomla\\Data\\DataObject' => __DIR__ . '/..' . '/joomla/data/src/DataObject.php',
         'Joomla\\Data\\DataSet' => __DIR__ . '/..' . '/joomla/data/src/DataSet.php',
         'Joomla\\Data\\DumpableInterface' => __DIR__ . '/..' . '/joomla/data/src/DumpableInterface.php',
-        'Joomla\\Data\\Tests\\DataObjectTest' => __DIR__ . '/..' . '/joomla/data/Tests/DataObjectTest.php',
-        'Joomla\\Data\\Tests\\DataSetTest' => __DIR__ . '/..' . '/joomla/data/Tests/DataSetTest.php',
         'Joomla\\Event\\AbstractEvent' => __DIR__ . '/..' . '/joomla/event/src/AbstractEvent.php',
         'Joomla\\Event\\DelegatingDispatcher' => __DIR__ . '/..' . '/joomla/event/src/DelegatingDispatcher.php',
         'Joomla\\Event\\Dispatcher' => __DIR__ . '/..' . '/joomla/event/src/Dispatcher.php',
@@ -345,7 +344,7 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
         'Psr\\Log\\LoggerInterface' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerInterface.php',
         'Psr\\Log\\LoggerTrait' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerTrait.php',
         'Psr\\Log\\NullLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/NullLogger.php',
-        'Psr\\Log\\Test\\DummyTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/DummyTest.php',
+        'Psr\\Log\\Test\\DummyTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
         'Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
         'Psr\\Log\\Test\\TestLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/TestLogger.php',
         'ReCaptcha\\ReCaptcha' => __DIR__ . '/..' . '/google/recaptcha/src/ReCaptcha/ReCaptcha.php',
@@ -447,10 +446,10 @@ class ComposerStaticInitc14bde14f8c86840049f5c1809c453dd
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitc14bde14f8c86840049f5c1809c453dd::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitc14bde14f8c86840049f5c1809c453dd::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitc14bde14f8c86840049f5c1809c453dd::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitc14bde14f8c86840049f5c1809c453dd::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit205c915b9c7d3e718e7c95793ee67ffe::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit205c915b9c7d3e718e7c95793ee67ffe::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit205c915b9c7d3e718e7c95793ee67ffe::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit205c915b9c7d3e718e7c95793ee67ffe::$classMap;
 
         }, null, ClassLoader::class);
     }

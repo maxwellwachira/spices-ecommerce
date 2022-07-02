@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_tags
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -53,12 +53,29 @@ class TagsModelTag extends JModelAdmin
 	 */
 	protected function canDelete($record)
 	{
-		if (empty($record->id) || $record->published != -2)
+		if (!empty($record->id))
 		{
-			return false;
-		}
+			if ($record->published != -2)
+			{
+				return false;
+			}
 
-		return parent::canDelete($record);
+			return parent::canDelete($record);
+		}
+	}
+
+	/**
+	 * Method to test whether a record can have its state changed.
+	 *
+	 * @param   object  $record  A record object.
+	 *
+	 * @return  boolean  True if allowed to change the state of the record. Defaults to the permission set in the component.
+	 *
+	 * @since   3.1
+	 */
+	protected function canEditState($record)
+	{
+		return parent::canEditState($record);
 	}
 
 	/**
@@ -272,21 +289,9 @@ class TagsModelTag extends JModelAdmin
 		// Alter the title for save as copy
 		if ($input->get('task') == 'save2copy')
 		{
-			$origTable = $this->getTable();
-			$origTable->load($input->getInt('id'));
-
-			if ($data['title'] == $origTable->title)
-			{
-				list($title, $alias) = $this->generateNewTitle($data['parent_id'], $data['alias'], $data['title']);
-				$data['title'] = $title;
-				$data['alias'] = $alias;
-			}
-			elseif ($data['alias'] == $origTable->alias)
-			{
-				$data['alias'] = '';
-			}
-
-			$data['published'] = 0;
+			list($title, $alias) = $this->generateNewTitle($data['parent_id'], $data['alias'], $data['title']);
+			$data['title']       = $title;
+			$data['alias']       = $alias;
 		}
 
 		// Bind the data.
@@ -387,19 +392,19 @@ class TagsModelTag extends JModelAdmin
 	 * First we save the new order values in the lft values of the changed ids.
 	 * Then we invoke the table rebuild to implement the new ordering.
 	 *
-	 * @param   array    $idArray   An array of primary key ids.
-	 * @param   integer  $lftArray  The lft value
+	 * @param   array    $idArray    An array of primary key ids.
+	 * @param   integer  $lft_array  The lft value
 	 *
 	 * @return  boolean  False on failure or error, True otherwise
 	 *
 	 * @since   3.1
 	 */
-	public function saveorder($idArray = null, $lftArray = null)
+	public function saveorder($idArray = null, $lft_array = null)
 	{
 		// Get an instance of the table object.
 		$table = $this->getTable();
 
-		if (!$table->saveorder($idArray, $lftArray))
+		if (!$table->saveorder($idArray, $lft_array))
 		{
 			$this->setError($table->getError());
 
@@ -415,20 +420,20 @@ class TagsModelTag extends JModelAdmin
 	/**
 	 * Method to change the title & alias.
 	 *
-	 * @param   integer  $parentId  The id of the parent.
-	 * @param   string   $alias     The alias.
-	 * @param   string   $title     The title.
+	 * @param   integer  $parent_id  The id of the parent.
+	 * @param   string   $alias      The alias.
+	 * @param   string   $title      The title.
 	 *
 	 * @return  array  Contains the modified title and alias.
 	 *
 	 * @since   3.1
 	 */
-	protected function generateNewTitle($parentId, $alias, $title)
+	protected function generateNewTitle($parent_id, $alias, $title)
 	{
 		// Alter the title & alias
 		$table = $this->getTable();
 
-		while ($table->load(array('alias' => $alias, 'parent_id' => $parentId)))
+		while ($table->load(array('alias' => $alias, 'parent_id' => $parent_id)))
 		{
 			$title = ($table->title != $title) ? $title : StringHelper::increment($title);
 			$alias = StringHelper::increment($alias, 'dash');

@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_templates
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -828,7 +828,7 @@ class TemplatesModelTemplate extends JModelForm
 			$inFile       = urldecode(base64_decode($input));
 			$explodeArray = explode('/', $inFile);
 			$fileName     = end($explodeArray);
-			$outFile      = current(explode('.', $fileName));
+			$outFile      = reset(explode('.', $fileName));
 
 			$less = new JLess;
 			$less->setFormatter(new JLessFormatterJoomla);
@@ -1159,26 +1159,12 @@ class TemplatesModelTemplate extends JModelForm
 			$client   = JApplicationHelper::getClientInfo($template->client_id);
 			$relPath  = base64_decode($file);
 			$path     = JPath::clean($client->path . '/templates/' . $template->element . '/' . $relPath);
+			$JImage   = new JImage($path);
 
 			try
 			{
-				$image      = new \JImage($path);
-				$properties = $image->getImageFileProperties($path);
-
-				switch ($properties->mime)
-				{
-					case 'image/png':
-						$imageType = \IMAGETYPE_PNG;
-						break;
-					case 'image/gif':
-						$imageType = \IMAGETYPE_GIF;
-						break;
-					default:
-						$imageType = \IMAGETYPE_JPEG;
-				}
-
-				$image->crop($w, $h, $x, $y, false);
-				$image->toFile($path, $imageType);
+				$image = $JImage->crop($w, $h, $x, $y, true);
+				$image->toFile($path);
 
 				return true;
 			}
@@ -1209,25 +1195,12 @@ class TemplatesModelTemplate extends JModelForm
 			$relPath = base64_decode($file);
 			$path    = JPath::clean($client->path . '/templates/' . $template->element . '/' . $relPath);
 
+			$JImage = new JImage($path);
+
 			try
 			{
-				$image      = new \JImage($path);
-				$properties = $image->getImageFileProperties($path);
-
-				switch ($properties->mime)
-				{
-					case 'image/png':
-						$imageType = \IMAGETYPE_PNG;
-						break;
-					case 'image/gif':
-						$imageType = \IMAGETYPE_GIF;
-						break;
-					default:
-						$imageType = \IMAGETYPE_JPEG;
-				}
-
-				$image->resize($width, $height, false, \JImage::SCALE_FILL);
-				$image->toFile($path, $imageType);
+				$image = $JImage->resize($width, $height, true, 1);
+				$image->toFile($path);
 
 				return true;
 			}

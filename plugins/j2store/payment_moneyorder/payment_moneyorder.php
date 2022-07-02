@@ -172,9 +172,6 @@ class plgJ2StorePayment_moneyorder extends J2StorePaymentPlugin
 				$html .= '<strong>' . JText::_ ( 'J2STORE_MONEYORDER_INSTRUCTIONS' ) . '</strong>';
 				$html .= '<br />';
 				$html .= $moneyorder_information;
-                if($this->params->get('enable_strip_tags',0)){
-                    $html = strip_tags(preg_replace('#<br\s*/?>#i', "\n",$html));
-                }
 				$order->customer_note = $order->customer_note . $html;
 			}
 

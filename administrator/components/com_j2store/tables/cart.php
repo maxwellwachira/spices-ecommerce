@@ -12,7 +12,7 @@ class J2StoreTableCart extends F0FTable {
 		$status =  true;
 		// load cart items
 		$query = $this->_db->getQuery (true);
-		$query->select ( '*' )->from ( '#__j2store_cartitems' )->where ( 'cart_id = ' . $this->_db->q( ( int ) $oid ));
+		$query->select ( '*' )->from ( '#__j2store_cartitems' )->where ( 'cart_id = ' . ( int ) $oid );
 		$this->_db->setQuery ( $query );
 
  		try {
@@ -56,8 +56,6 @@ class J2StoreTableCart extends F0FTable {
 				$this->cart_analytics = json_encode($analytics);
 
 				$this->created_on = $date->toSql(true);
-                $ref_model = $this;
-				J2Store::plugin()->event('BeforeStoreCart',array(&$ref_model));
 			}else{
 				$this->modified_on = $date->toSql(true);
 			}

@@ -23,8 +23,7 @@
     <header name="address_1"  type="fieldsearchable" sortable="true" translate="false"  label="J2STORE_ADDRESS_LINE1"/>
     <header name="address_2"   sortable="true" translate="false"  label="J2STORE_ADDRESS_LINE2"/>
     <header name="country_name"  type="fieldsearchable"  sortable="true" translate="false"  label="J2STORE_ADDRESS_COUNTRY"/>
-    <header name="zone_name"   sortable="true" translate="false"  label="J2STORE_ZONE"/>
-    <header name="company"  type="fieldsearchable"  sortable="true" translate="false"  label="J2STORE_EMAILTEMPLATE_TAG_BILLING_COMPANY"/>
+    <header name="zone_name"   sortable="true" translate="false"  label="J2STORE_ZONE"/>   
     <header name="zip"   sortable="true" translate="false"  label="J2STORE_ADDRESS_ZIP"/>
     <header name="phone_1"   sortable="true" translate="false"  label="J2STORE_TELEPHONE"/>
     <header name="phone_2"   sortable="true" translate="false"  label="J2STORE_ADDRESS_MOBILE"/>
@@ -40,7 +39,6 @@
     <field name="address_2" type="text" />
     <field name="country_name" type="text" />
     <field name="zone_name" type="text" />
-    <field name="company" type="text" />
     <field name="zip" type="text" />
     <field name="phone_1" type="text" />
     <field name="phone_2" type="text" />

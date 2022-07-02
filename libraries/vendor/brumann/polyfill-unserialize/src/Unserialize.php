@@ -17,23 +17,42 @@ final class Unserialize
         if (PHP_VERSION_ID >= 70000) {
             return \unserialize($serialized, $options);
         }
-        if (!array_key_exists('allowed_classes', $options) || true === $options['allowed_classes']) {
-            return \unserialize($serialized);
+        if (!array_key_exists('allowed_classes', $options)) {
+            $options['allowed_classes'] = true;
         }
         $allowedClasses = $options['allowed_classes'];
+        if (true === $allowedClasses) {
+            return \unserialize($serialized);
+        }
         if (false === $allowedClasses) {
             $allowedClasses = array();
         }
         if (!is_array($allowedClasses)) {
-            $allowedClasses = array();
             trigger_error(
                 'unserialize(): allowed_classes option should be array or boolean',
                 E_USER_WARNING
             );
+            $allowedClasses = array();
         }
 
-        $worker = new DisallowedClassesSubstitutor($serialized, $allowedClasses);
+        $sanitizedSerialized = preg_replace_callback(
+            '/(^|;)O:\d+:"([^"]*)":(\d+):{/',
+            function ($match) use ($allowedClasses) {
+                list($completeMatch, $leftBorder, $className, $objectSize) = $match;
+                if (in_array($className, $allowedClasses)) {
+                    return $completeMatch;
+                } else {
+                    return sprintf(
+                        '%sO:22:"__PHP_Incomplete_Class":%d:{s:27:"__PHP_Incomplete_Class_Name";%s',
+                        $leftBorder,
+                        $objectSize + 1, // size of object + 1 for added string
+                        \serialize($className)
+                    );
+                }
+            },
+            $serialized
+        );
 
-        return \unserialize($worker->getSubstitutedSerialized());
+        return \unserialize($sanitizedSerialized);
     }
 }

@@ -10,13 +10,10 @@ defined('_JEXEC') or die;
 $this->form_id = 'j2store-addtocart-form-'.$this->product->j2store_product_id;
 ?>
 
-<?php if( J2Store::product()->canShowSku($this->params) ): ?>
-	<?php echo $this->loadTemplate('sku'); ?>
-<?php endif; ?>
 
-<?php if( J2Store::product()->canShowprice($this->params) ): ?>
+	<?php echo $this->loadTemplate('sku'); ?>
+
 	<?php echo $this->loadTemplate('price'); ?>
-<?php endif; ?>
 
 	<?php if(J2Store::product()->managing_stock($this->product->variant)): ?>
 		<?php echo $this->loadTemplate('stock'); ?>

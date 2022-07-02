@@ -2157,7 +2157,12 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 				$checkName = $name;
 			}
 
-			if (version_compare(JVERSION, '3.0', 'ge'))
+			if (!in_array($checkName, self::$tableCache))
+			{
+				// The table doesn't exist. Return false.
+				self::$tableFieldCache[$tableName] = false;
+			}
+			elseif (version_compare(JVERSION, '3.0', 'ge'))
 			{
 				$fields = $this->_db->getTableColumns($name, false);
 
@@ -2503,9 +2508,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeBind(&$from)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeBind', array(&$ref_table, &$from));
+		$result = $this->tableDispatcher->trigger('onBeforeBind', array(&$this, &$from));
 
 		if (in_array(false, $result, true))
 		{
@@ -2517,7 +2521,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeBind' . ucfirst($name), array(&$ref_table, &$from));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeBind' . ucfirst($name), array(&$this, &$from));
 
 			if (in_array(false, $result, true))
 			{
@@ -2541,9 +2545,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterLoad(&$result)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$eventResult = $this->tableDispatcher->trigger('onAfterLoad', array(&$ref_table, &$result));
+		$eventResult = $this->tableDispatcher->trigger('onAfterLoad', array(&$this, &$result));
 
 		if (in_array(false, $eventResult, true))
 		{
@@ -2556,7 +2559,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			F0FPlatform::getInstance()->runPlugins('onAfterLoad' . ucfirst($name), array(&$ref_table, &$result));
+			F0FPlatform::getInstance()->runPlugins('onAfterLoad' . ucfirst($name), array(&$this, &$result));
 		}
 	}
 
@@ -2660,11 +2663,11 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 				$existingItems = $db->loadAssocList();
 			}
 
-            $this->$slug = $newSlug;
+			$this->$slug = $newSlug;
 		}
-        $ref_table = $this;
+
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeStore', array(&$ref_table, $updateNulls));
+		$result = $this->tableDispatcher->trigger('onBeforeStore', array(&$this, $updateNulls));
 
 		if (in_array(false, $result, true))
 		{
@@ -2676,7 +2679,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		if ($this->_trigger_events)
 		{
 			$name       = F0FInflector::pluralize($this->getKeyName());
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeStore' . ucfirst($name), array(&$ref_table, $updateNulls));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeStore' . ucfirst($name), array(&$this, $updateNulls));
 
 			if (in_array(false, $result, true))
 			{
@@ -2700,7 +2703,6 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterBind(&$src)
 	{
-        $ref_table = $this;
 		// Call the behaviors
 		$options = array(
 			'component' 	=> $this->input->get('option'),
@@ -2708,7 +2710,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 			'table_prefix'	=> $this->_tablePrefix
 		);
 
-		$result = $this->tableDispatcher->trigger('onAfterBind', array(&$ref_table, &$src, $options));
+		$result = $this->tableDispatcher->trigger('onAfterBind', array(&$this, &$src, $options));
 
 		if (in_array(false, $result, true))
 		{
@@ -2720,7 +2722,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterBind' . ucfirst($name), array(&$ref_table, &$src));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterBind' . ucfirst($name), array(&$this, &$src));
 
 			if (in_array(false, $result, true))
 			{
@@ -2742,9 +2744,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterStore()
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterStore', array(&$ref_table));
+		$result = $this->tableDispatcher->trigger('onAfterStore', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2756,7 +2757,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterStore' . ucfirst($name), array(&$ref_table));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterStore' . ucfirst($name), array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -2780,9 +2781,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeMove($updateNulls)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeMove', array(&$ref_table, $updateNulls));
+		$result = $this->tableDispatcher->trigger('onBeforeMove', array(&$this, $updateNulls));
 
 		if (in_array(false, $result, true))
 		{
@@ -2794,7 +2794,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeMove' . ucfirst($name), array(&$ref_table, $updateNulls));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeMove' . ucfirst($name), array(&$this, $updateNulls));
 
 			if (in_array(false, $result, true))
 			{
@@ -2816,9 +2816,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterMove()
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterMove', array(&$ref_table));
+		$result = $this->tableDispatcher->trigger('onAfterMove', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2830,7 +2829,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterMove' . ucfirst($name), array(&$ref_table));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterMove' . ucfirst($name), array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -2854,9 +2853,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeReorder($where = '')
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeReorder', array(&$ref_table, $where));
+		$result = $this->tableDispatcher->trigger('onBeforeReorder', array(&$this, $where));
 
 		if (in_array(false, $result, true))
 		{
@@ -2868,7 +2866,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeReorder' . ucfirst($name), array(&$ref_table, $where));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeReorder' . ucfirst($name), array(&$this, $where));
 
 			if (in_array(false, $result, true))
 			{
@@ -2890,9 +2888,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterReorder()
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterReorder', array(&$ref_table));
+		$result = $this->tableDispatcher->trigger('onAfterReorder', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2904,7 +2901,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterReorder' . ucfirst($name), array(&$ref_table));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterReorder' . ucfirst($name), array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -2928,9 +2925,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeDelete($oid)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeDelete', array(&$ref_table, $oid));
+		$result = $this->tableDispatcher->trigger('onBeforeDelete', array(&$this, $oid));
 
 		if (in_array(false, $result, true))
 		{
@@ -2942,7 +2938,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeDelete' . ucfirst($name), array(&$ref_table, $oid));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeDelete' . ucfirst($name), array(&$this, $oid));
 
 			if (in_array(false, $result, true))
 			{
@@ -2966,9 +2962,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterDelete($oid)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterDelete', array(&$ref_table, $oid));
+		$result = $this->tableDispatcher->trigger('onAfterDelete', array(&$this, $oid));
 
 		if (in_array(false, $result, true))
 		{
@@ -2980,7 +2975,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterDelete' . ucfirst($name), array(&$ref_table, $oid));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterDelete' . ucfirst($name), array(&$this, $oid));
 
 			if (in_array(false, $result, true))
 			{
@@ -3005,9 +3000,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeHit($oid, $log)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeHit', array(&$ref_table, $oid, $log));
+		$result = $this->tableDispatcher->trigger('onBeforeHit', array(&$this, $oid, $log));
 
 		if (in_array(false, $result, true))
 		{
@@ -3019,7 +3013,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeHit' . ucfirst($name), array(&$ref_table, $oid, $log));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeHit' . ucfirst($name), array(&$this, $oid, $log));
 
 			if (in_array(false, $result, true))
 			{
@@ -3043,9 +3037,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterHit($oid)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterHit', array(&$ref_table, $oid));
+		$result = $this->tableDispatcher->trigger('onAfterHit', array(&$this, $oid));
 
 		if (in_array(false, $result, true))
 		{
@@ -3057,7 +3050,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterHit' . ucfirst($name), array(&$ref_table, $oid));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterHit' . ucfirst($name), array(&$this, $oid));
 
 			if (in_array(false, $result, true))
 			{
@@ -3081,9 +3074,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeCopy($oid)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeCopy', array(&$ref_table, $oid));
+		$result = $this->tableDispatcher->trigger('onBeforeCopy', array(&$this, $oid));
 
 		if (in_array(false, $result, true))
 		{
@@ -3095,7 +3087,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeCopy' . ucfirst($name), array(&$ref_table, $oid));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeCopy' . ucfirst($name), array(&$this, $oid));
 
 			if (in_array(false, $result, true))
 			{
@@ -3119,9 +3111,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterCopy($oid)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterCopy', array(&$ref_table, $oid));
+		$result = $this->tableDispatcher->trigger('onAfterCopy', array(&$this, $oid));
 
 		if (in_array(false, $result, true))
 		{
@@ -3133,7 +3124,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterCopy' . ucfirst($name), array(&$ref_table, $oid));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterCopy' . ucfirst($name), array(&$this, $oid));
 
 			if (in_array(false, $result, true))
 			{
@@ -3158,9 +3149,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforePublish(&$cid, $publish)
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforePublish', array(&$ref_table, &$cid, $publish));
+		$result = $this->tableDispatcher->trigger('onBeforePublish', array(&$this, &$cid, $publish));
 
 		if (in_array(false, $result, true))
 		{
@@ -3172,7 +3162,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforePublish' . ucfirst($name), array(&$ref_table, &$cid, $publish));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforePublish' . ucfirst($name), array(&$this, &$cid, $publish));
 
 			if (in_array(false, $result, true))
 			{
@@ -3194,9 +3184,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onAfterReset()
 	{
-        $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onAfterReset', array(&$ref_table));
+		$result = $this->tableDispatcher->trigger('onAfterReset', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3208,7 +3197,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onAfterReset' . ucfirst($name), array(&$ref_table));
+			$result     = F0FPlatform::getInstance()->runPlugins('onAfterReset' . ucfirst($name), array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -3230,9 +3219,8 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 	 */
 	protected function onBeforeReset()
 	{
-	    $ref_table = $this;
 		// Call the behaviors
-		$result = $this->tableDispatcher->trigger('onBeforeReset', array(&$ref_table));
+		$result = $this->tableDispatcher->trigger('onBeforeReset', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3244,7 +3232,7 @@ class F0FTable extends F0FUtilsObject implements JTableInterface
 		{
 			$name = F0FInflector::pluralize($this->getKeyName());
 
-			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeReset' . ucfirst($name), array(&$ref_table));
+			$result     = F0FPlatform::getInstance()->runPlugins('onBeforeReset' . ucfirst($name), array(&$this));
 
 			if (in_array(false, $result, true))
 			{

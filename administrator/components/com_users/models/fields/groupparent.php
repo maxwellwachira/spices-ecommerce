@@ -3,11 +3,11 @@
  * @package     Joomla.Administrator
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-defined('_JEXEC') or die;
+defined('JPATH_BASE') or die;
 
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Factory;
@@ -66,7 +66,7 @@ class JFormFieldGroupParent extends JFormFieldList
 	protected function getOptions()
 	{
 		$options        = UserGroupsHelper::getInstance()->getAll();
-		$currentGroupId = (int) Factory::getApplication()->input->get('id', 0, 'int');
+		$currentGroupId = $this->form->getValue('id');
 
 		// Prevent to set yourself as parent
 		if ($currentGroupId)
@@ -75,7 +75,7 @@ class JFormFieldGroupParent extends JFormFieldList
 		}
 
 		// We should not remove any groups when we are creating a new group
-		if ($currentGroupId !== 0)
+		if (!is_null($currentGroupId))
 		{
 			// Prevent parenting direct children and children of children of this item.
 			$options = $this->cleanOptionsChildrenByFather($options, $currentGroupId);

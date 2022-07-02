@@ -67,9 +67,8 @@ class J2StoreModelCarts extends F0FModel {
 
 		try
 		{
-            $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onBeforeAddCartItem', array(&$ref_model, $product, &$json ));
+			$result = $this->modelDispatcher->trigger('onBeforeAddCartItem', array(&$this, $product, &$json ));
 		}
 		catch (Exception $e)
 		{
@@ -131,10 +130,9 @@ class J2StoreModelCarts extends F0FModel {
 
 			if ($table->store ()) {
 				try {
-                    $ref_model = $this;
 					// Call the behaviors
 					$result = $this->modelDispatcher->trigger ( 'AfterAddCartItem', array (
-							&$ref_model,
+							&$this,
 							&$table
 					) );
 				} catch ( Exception $e ) {
@@ -183,12 +181,12 @@ class J2StoreModelCarts extends F0FModel {
 
 		if (strlen($filter_date_from))
 		{
-			$query->where("tbl.created_on >= ".$filter_date_from);
+			$query->where("tbl.created_on >= '".$filter_date_from."'");
 		}
 
 		if (strlen($filter_date_to))
 		{
-			$query->where("tbl.created_on <= ".$filter_date_to);
+			$query->where("tbl.created_on <= '".$filter_date_to."'");
 		}
 
 		if (strlen($filter_cart_type))
@@ -232,15 +230,9 @@ class J2StoreModelCarts extends F0FModel {
 			$query->join('LEFT OUTER', '#__users AS u ON tbl.user_id=u.id');
 		}
 		$this->_buildQueryWhere($query);
-
-		if(!in_array($filter_order_Dir,array('ASC','DESC'))){
-		    $filter_order_Dir = "ASC";
-		}
-		if(!empty($filter_order)  && in_array($filter_order,array('tbl.j2store_cart_id'))){
+		if(!empty($filter_order)){
 			$query->order($filter_order .' '. $filter_order_Dir);
-		}else{
-            $query->order('tbl.j2store_cart_id '. $filter_order_Dir);
-        }
+		}
 		return $query;
 	}
 
@@ -252,7 +244,7 @@ class J2StoreModelCarts extends F0FModel {
 		return $this->_db->loadObject();
 	}
 
-	public function getCart($cart_id=0,$need_create_cart = true) {
+	public function getCart($cart_id=0) {
 
 		$app = JFactory::getApplication();
 		$session = JFactory::getSession ();
@@ -284,8 +276,9 @@ class J2StoreModelCarts extends F0FModel {
 		$filter = '';
 		if(!empty($keynames)) $filter = "(".implode(' OR ',$keynames).")";
 
-		if(!isset($carts[$filter]) || !isset($carts[$filter]->j2store_cart_id) || empty($carts[$filter]->j2store_cart_id)) {
+		if(!isset($carts[$filter])) {
 			$cart = F0FTable::getInstance('Cart', 'J2StoreTable')->getClone();
+
 			if (!$cart->load( $keynames) )	{
 				//new cart
 				$cart->is_new = true;
@@ -297,16 +290,14 @@ class J2StoreModelCarts extends F0FModel {
 			}
 
 			$cart->cart_type = $this->getCartType();
-			if($need_create_cart){
-                $cart->store();
-            }
-
+			$cart->store();
 
 			//set the cart id to session
 			$this->setCartId($cart->j2store_cart_id);
 			//$session->set('cart_id', $cart->j2store_cart_id, 'j2store');
-            $carts[$filter] = $cart;
+			$carts[$filter] = $cart;
 		}
+
 		return $carts[$filter];
 
 	}
@@ -316,10 +307,8 @@ class J2StoreModelCarts extends F0FModel {
 		$app = JFactory::getApplication();
 		$session = JFactory::getSession ();
 		$user = JFactory::getUser ();
-        $cart = $this->getCart(0,false);
-        if(!isset($cart->j2store_cart_id) || empty($cart->j2store_cart_id)){
-            return array();
-        }
+			$cart = $this->getCart();
+
 			// now process the items
 			static $cartsets;
 			if(!is_array($cartsets)) $cartsets = array();
@@ -346,9 +335,8 @@ class J2StoreModelCarts extends F0FModel {
 					//run model behaviors
 					try
 					{
-                        $ref_model = $this;
 						// Call the behaviors
-						$this->modelDispatcher->trigger('onGetCartItems', array(&$ref_model, &$item));
+						$this->modelDispatcher->trigger('onGetCartItems', array(&$this, &$item));
 					}
 					catch (Exception $e)
 					{
@@ -464,9 +452,8 @@ class J2StoreModelCarts extends F0FModel {
 
 		try
 		{
-            $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onValidateCart', array(&$ref_model, $cartitem, $quantity));
+			$result = $this->modelDispatcher->trigger('onValidateCart', array(&$this, $cartitem, $quantity));
 		}
 		catch (Exception $e)
 		{

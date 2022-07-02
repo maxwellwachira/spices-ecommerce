@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -19,7 +19,9 @@ use Joomla\Registry\Registry;
  * Joomla! Captcha base object
  *
  * @abstract
- * @since  2.5
+ * @package     Joomla.Libraries
+ * @subpackage  Captcha
+ * @since       2.5
  */
 class Captcha extends \JObject
 {

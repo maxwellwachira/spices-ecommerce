@@ -19,11 +19,6 @@ class Reader
     private $fileName;
 
     /**
-     * Mime-type in order to use zlib, bzip2 or no compression.
-     * In case ext-fileinfo is not present only the relevant types
-     * 'application/x-gzip' and 'application/x-bzip2' are assigned
-     * to this class property.
-     *
      * @var string
      */
     private $fileType;
@@ -105,19 +100,21 @@ class Reader
                 break;
             }
 
-            $manifestPosition = strpos($line, '__HALT_COMPILER();');
+            $stubPosition = strpos($line, '<?php');
+            $manifestPosition = strpos($line, '__HALT_COMPILER()');
 
-            // first line contains start of manifest
-            if ($stubContent === null && $manifestContent === null && $manifestPosition !== false) {
-                $stubContent = substr($line, 0, $manifestPosition - 1);
-                $manifestContent = preg_replace('#^.*__HALT_COMPILER\(\);(?>[ \n]\?>(?>\r\n|\n)?)?#', '', $line);
+            // line contains both, start of (empty) stub and start of manifest
+            if ($stubContent === null && $stubPosition !== false
+                && $manifestContent === null && $manifestPosition !== false) {
+                $stubContent = substr($line, $stubPosition, $manifestPosition - $stubPosition - 1);
+                $manifestContent = preg_replace('#^.*__HALT_COMPILER\(\)[^>]*\?>(\r|\n)*#', '', $line);
                 $manifestLength = $this->resolveManifestLength($manifestContent);
             // line contains start of stub
-            } elseif ($stubContent === null) {
-                $stubContent = $line;
+            } elseif ($stubContent === null && $stubPosition !== false) {
+                $stubContent = substr($line, $stubPosition);
             // line contains start of manifest
             } elseif ($manifestContent === null && $manifestPosition !== false) {
-                $manifestContent = preg_replace('#^.*__HALT_COMPILER\(\);(?>[ \n]\?>(?>\r\n|\n)?)?#', '', $line);
+                $manifestContent = preg_replace('#^.*__HALT_COMPILER\(\)[^>]*\?>(\r|\n)*#', '', $line);
                 $manifestLength = $this->resolveManifestLength($manifestContent);
             // manifest has been started (thus is cannot be stub anymore), add content
             } elseif ($manifestContent !== null) {
@@ -144,7 +141,7 @@ class Reader
      */
     private function resolveStream()
     {
-        if ($this->fileType === 'application/x-gzip' || $this->fileType === 'application/gzip') {
+        if ($this->fileType === 'application/x-gzip') {
             return 'compress.zlib://';
         } elseif ($this->fileType === 'application/x-bzip2') {
             return 'compress.bzip2://';
@@ -157,37 +154,8 @@ class Reader
      */
     private function determineFileType()
     {
-        if (class_exists('\\finfo')) {
-            $fileInfo = new \finfo();
-            return $fileInfo->file($this->fileName, FILEINFO_MIME_TYPE);
-        }
-        return $this->determineFileTypeByHeader();
-    }
-
-    /**
-     * In case ext-fileinfo is not present only the relevant types
-     * 'application/x-gzip' and 'application/x-bzip2' are resolved.
-     *
-     * @return string
-     */
-    private function determineFileTypeByHeader()
-    {
-        $resource = fopen($this->fileName, 'r');
-        if (!is_resource($resource)) {
-            throw new ReaderException(
-                sprintf('Resource %s could not be opened', $this->fileName),
-                1557753055
-            );
-        }
-        $header = fgets($resource, 4);
-        fclose($resource);
-        $mimeType = '';
-        if (strpos($header, "\x42\x5a\x68") === 0) {
-            $mimeType = 'application/x-bzip2';
-        } elseif (strpos($header, "\x1f\x8b") === 0) {
-            $mimeType = 'application/x-gzip';
-        }
-        return $mimeType;
+        $fileInfo = new \finfo();
+        return $fileInfo->file($this->fileName, FILEINFO_MIME_TYPE);
     }
 
     /**

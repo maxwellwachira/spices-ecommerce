@@ -922,11 +922,11 @@ class F0FController extends F0FUtilsObject
 		{
 			$result = true;
 		}
-        $controller = $this;
+
 		if ($result)
 		{
 			$plugin_event  = F0FInflector::camelize('on before ' . $this->bareComponent . ' controller ' . $this->view . ' ' . $task);
-            $plugin_result = F0FPlatform::getInstance()->runPlugins($plugin_event, array(&$controller, &$controller->input));
+			$plugin_result = F0FPlatform::getInstance()->runPlugins($plugin_event, array(&$this, &$this->input));
 
 			if (in_array(false, $plugin_result, true))
 			{
@@ -942,13 +942,13 @@ class F0FController extends F0FUtilsObject
 		// Do not allow the display task to be directly called
 		$task = strtolower($task);
 
-		if (isset($controller->taskMap[$task]))
+		if (isset($this->taskMap[$task]))
 		{
-			$doTask = $controller->taskMap[$task];
+			$doTask = $this->taskMap[$task];
 		}
-		elseif (isset($controller->taskMap['__default']))
+		elseif (isset($this->taskMap['__default']))
 		{
-			$doTask = $controller->taskMap['__default'];
+			$doTask = $this->taskMap['__default'];
 		}
 		else
 		{
@@ -962,15 +962,15 @@ class F0FController extends F0FUtilsObject
 			throw new Exception('Bad Request', 400);
 		}
 
-        $controller->doTask = $doTask;
+		$this->doTask = $doTask;
 
-		$ret = $controller->$doTask();
+		$ret = $this->$doTask();
 
 		$method_name = 'onAfter' . ucfirst($task);
 
-		if (method_exists($controller, $method_name))
+		if (method_exists($this, $method_name))
 		{
-			$result = $controller->$method_name();
+			$result = $this->$method_name();
 		}
 		else
 		{
@@ -979,8 +979,8 @@ class F0FController extends F0FUtilsObject
 
 		if ($result)
 		{
-			$plugin_event = F0FInflector::camelize('on after ' . $controller->bareComponent . ' controller ' . $controller->view . ' ' . $task);
-			$plugin_result = F0FPlatform::getInstance()->runPlugins($plugin_event, array(&$controller, &$controller->input, &$ret));
+			$plugin_event = F0FInflector::camelize('on after ' . $this->bareComponent . ' controller ' . $this->view . ' ' . $task);
+			$plugin_result = F0FPlatform::getInstance()->runPlugins($plugin_event, array(&$this, &$this->input, &$ret));
 
 			if (in_array(false, $plugin_result, true))
 			{
@@ -2154,7 +2154,7 @@ class F0FController extends F0FUtilsObject
 	 *
 	 * @return  boolean  Returns true on success
 	 */
-	private function applySave()
+	final private function applySave()
 	{
 		// Load the model
 		$model = $this->getThisModel();

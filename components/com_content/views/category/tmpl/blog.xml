@@ -31,7 +31,6 @@
 				label="JTAG"
 				description="JTAG_FIELD_SELECT_DESC"
 				multiple="true"
-				mode="nested"
 			/>
 		</fieldset>
 	</fields>
@@ -157,7 +156,7 @@
 					<option value="1">JSHOW</option>
 				</field>
 
-				<field
+				<field 
 					name="show_cat_tags"
 					type="list"
 					label="COM_CONTENT_FIELD_SHOW_CAT_TAGS_LABEL"
@@ -179,7 +178,7 @@
 		</fieldset>
 
 		<fieldset name="advanced" label="JGLOBAL_BLOG_LAYOUT_OPTIONS">
-				<field
+				<field 
 					name="bloglayout"
 					type="spacer"
 					label="JGLOBAL_SUBSLIDER_BLOG_LAYOUT_LABEL"

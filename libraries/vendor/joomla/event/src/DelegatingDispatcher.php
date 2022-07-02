@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Event Package
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -11,8 +11,7 @@ namespace Joomla\Event;
 /**
  * A dispatcher delegating its methods to an other dispatcher.
  *
- * @since       1.0
- * @deprecated  2.0 Create your own delegating (decorating) dispatcher as needed.
+ * @since  1.0
  */
 final class DelegatingDispatcher implements DispatcherInterface
 {
@@ -20,6 +19,7 @@ final class DelegatingDispatcher implements DispatcherInterface
 	 * The delegated dispatcher.
 	 *
 	 * @var    DispatcherInterface
+	 *
 	 * @since  1.0
 	 */
 	private $dispatcher;

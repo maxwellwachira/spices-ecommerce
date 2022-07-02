@@ -17,7 +17,7 @@ class J2StoreControllerApps extends F0FController
 		$app = JFactory::getApplication();
 		$appTask = $app->input->getCmd('appTask', '');
 		$values = $app->input->getArray($_POST);
-        $this->uninstall_plugin();
+
 		// Check if we are in a report method view. If it is so,
 		// Try lo load the report plugin controller (if any)
 		if ( $task  == "view" && $appTask != '' )
@@ -68,45 +68,6 @@ class J2StoreControllerApps extends F0FController
 			parent::execute($task);
 		}
 	}
-
-	function uninstall_plugin(){
-        $uninstall_plugins = array(
-            'app_campaignrabbit' => 'j2store',
-            'campaignrabbit' => 'system',
-            'app_retainfulcoupon' => 'j2store'
-        );
-        $db = JFactory::getDbo();
-        foreach ($uninstall_plugins as $plugin => $folder)
-        {
-            $sql = $db->getQuery(true)
-                ->select($db->qn('extension_id'))
-                ->from($db->qn('#__extensions'))
-                ->where($db->qn('type') . ' = ' . $db->q('plugin'))
-                ->where($db->qn('element') . ' = ' . $db->q($plugin))
-                ->where($db->qn('folder') . ' = ' . $db->q($folder));
-            $db->setQuery($sql);
-
-            try
-            {
-                $id = $db->loadResult();
-            }
-            catch (Exception $exc)
-            {
-                $id = 0;
-            }
-
-            if ($id)
-            {
-                try{
-                    $installer = new JInstaller;
-                    $installer->uninstall('plugin', $id, 1);
-                }catch (Exception $e){
-
-                }
-
-            }
-        }
-    }
 
 	function view(){
 		$model = $this->getThisModel();

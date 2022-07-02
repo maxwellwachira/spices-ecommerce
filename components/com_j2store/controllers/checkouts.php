@@ -264,7 +264,6 @@ class J2StoreControllerCheckouts extends F0FController
 		$this->showShipping = $showShipping;
 
 		$view->assign( 'showShipping', $showShipping );
-        $view->assign( 'privacyconsent_enabled',JPluginHelper::isEnabled('system', 'privacyconsent'));
 		$view->setLayout( 'default_register');
 		$html = '';
 
@@ -293,7 +292,7 @@ class J2StoreControllerCheckouts extends F0FController
 		$address_model = F0FModel::getTmpInstance('Addresses', 'J2StoreModel');
 		$store_address = $store = J2Store::storeProfile();
 		$userHelper = J2Store::user();
-        $privacy_plugin_enabled = JPluginHelper::isEnabled('system', 'privacyconsent');
+
 		$json = array();
 
 		// Validate if customer is already logged out.
@@ -318,13 +317,7 @@ class J2StoreControllerCheckouts extends F0FController
 			if($userHelper->emailExists($app->input->post->getString('email') )){
 				$json['error']['email'] = JText::_('J2STORE_EMAIL_EXISTS');
 			}
-            $privacy_plugin = $app->input->post->get('privacyconsent',0);
 
-			if($privacy_plugin_enabled && !$privacy_plugin){
-                $privacy_plugin = JPluginHelper::getPlugin('system', 'privacyconsent');
-                $privacy_params = new JRegistry($privacy_plugin->params);//Joomla 1.6 Onward
-                $json['error']['privacyconsent'] = JText::_($privacy_params->get('messageOnRedirect','PLG_SYSTEM_PRIVACYCONSENT_REDIRECT_MESSAGE_DEFAULT'));
-            }
 		}
 
 		J2Store::plugin()->event('CheckoutValidateRegister', array(&$json));
@@ -351,10 +344,6 @@ class J2StoreControllerCheckouts extends F0FController
 					array('username' => $user->username, 'password' => $details['password'])
 			)
 			) {
-                if($privacy_plugin_enabled){
-                    //save privacy consent
-                    $userHelper->savePrivacyConsent();
-                }
 				//$billing_address_id = $userHelper->addCustomer($post);
 				$billing_address_id = $address_model->addAddress('billing');
 
@@ -813,9 +802,9 @@ class J2StoreControllerCheckouts extends F0FController
 				$guest['shipping']['zone_code'] = '';
 			}
 			// Default Shipping Address
-            $session->set('shipping_country_id', $country_id, 'j2store');
-            $session->set('shipping_zone_id', $zone_id, 'j2store');
-            $session->set('shipping_postcode', $postcode, 'j2store');
+			$session->set('shipping_country_id', $app->input->getInt('country_id'), 'j2store');
+			$session->set('shipping_zone_id', $app->input->getInt('zone_id'), 'j2store');
+			$session->set('shipping_postcode', $app->input->getString('zip'), 'j2store');
 
 			//now set the guest values to the session
 			$session->set('guest', $guest, 'j2store');
@@ -1319,7 +1308,7 @@ class J2StoreControllerCheckouts extends F0FController
 		if($showShipping)
 		{
 			$shipping_layout = "shipping_yes";
-			$shipping_method_form = $this->getShippingHtml(  $order );
+			$shipping_method_form = $this->getShippingHtml( $shipping_layout, $order );
 			$view->assign( 'showShipping', $showShipping );
 			$view->assign( 'shipping_method_form', $shipping_method_form );
 
@@ -1631,7 +1620,7 @@ class J2StoreControllerCheckouts extends F0FController
 		if ((float)$order->order_total == (float)'0.00')
 		{
 			$showPayment = false;
-			$orderpayment_type = JText::_('PAYMENT_FREE');
+			$orderpayment_type = 'free';
             $app->triggerEvent("onJ2StoreChangeShowPaymentOnTotalZero", array( $order, &$showPayment ) );
             if($showPayment === true){
                 $orderpayment_type = $session->get('payment_method', '', 'j2store');
@@ -1724,8 +1713,7 @@ class J2StoreControllerCheckouts extends F0FController
 		$app->close();
 	}
 
-	function getShippingHtml(&$order) {
-        $layout = 'shipping_yes';
+	function getShippingHtml($layout = 'shipping_yes', &$order) {
 		$html = '';
 		$view = $this->getThisView ();
 		if ($model = $this->getThisModel ()) {

@@ -94,10 +94,7 @@ $item_url = "index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout
 								class="cart-item-title"><?php echo JText::_('J2STORE_CART_LINE_ITEM_SKU'); ?>
 							</span> <span class="cart-item-value"><?php echo $item->orderitem_sku; ?>
 							</span>
-
-						</span> <?php endif; ?>
-                            <?php echo J2Store::plugin()->eventWithHtml('AfterDisplayLineItemTitle', array($item, $this->order, $this->params));?>
-                            <?php if(isset($this->onDisplayCartItem[$i])):?>
+						</span> <?php endif; ?> <?php if(isset($this->onDisplayCartItem[$i])):?>
 							<br /> <?php echo $this->onDisplayCartItem[$i];?> <?php endif;?>
 							<?php $i++;?>
 						</td>
@@ -222,6 +219,21 @@ var key =<?php echo $key;?>;
 					$('input[name=\'product_id\']').attr('value', ui.item.value);
 					$('#j2store-product-display a').attr('href','<?php echo $add_product_link?>'+ui.item.value);
 					$('#j2store-product-display').show();
+						/*$.ajax({
+							type : 'post',
+							url :  'index.php?option=com_j2store&view=orders&task=getproductOptions&oid=<?php echo $this->order->j2store_order_id;?>&user_id=<?php echo $this->order->user_id;?>&product_id='+ui.item.value,
+							dataType : 'json',
+							success : function(response) {
+								$('.tmp-products').remove();
+								var html ='';
+								 html +='<tr class="tmp-products">';
+								 html +='<td colspan="2">';
+								 html += response['html'];
+								 html +='</tr>';
+								$(html).insertAfter('#selector-row');
+							} 
+						});*/
+
 					return false;
 				},
 				search : function(event, ui) {

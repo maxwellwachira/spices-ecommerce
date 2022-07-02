@@ -9,7 +9,7 @@
 // No direct access
 defined('_JEXEC') or die;
 ?>
-<div class="product-<?php echo $this->product->j2store_product_id; ?> <?php echo $this->product->product_type; ?>-product">
+<div itemscope itemtype="https://schema.org/Product" class="product-<?php echo $this->product->j2store_product_id; ?> <?php echo $this->product->product_type; ?>-product">
     <div class="row">
         <div class="col-sm-6">
             <?php $images = $this->loadTemplate('images');
@@ -25,55 +25,26 @@ defined('_JEXEC') or die;
             <?php endif;?>
 
             <div class="price-sku-brand-container row">
-                <?php if( J2Store::product()->canShowprice($this->params) ): ?>
                 <div class="col-sm-6">
                     <?php echo $this->loadTemplate('flexiprice'); ?>
                 </div>
-                <?php endif; ?>
 
                 <div class="col-sm-6">
                     <?php if(isset($this->product->source->event->beforeDisplayContent)) : ?>
                         <?php echo $this->product->source->event->beforeDisplayContent; ?>
                     <?php endif;?>
-
-                    <?php if($this->params->get('item_show_product_sku', 1) &&  J2Store::product()->canShowSku($this->params) && isset($this->product->variant->sku) && !empty($this->product->variant->sku)) : ?>
-                        <div class="product-sku">
-                            <span class="sku-text"><?php echo JText::_('J2STORE_SKU')?> :</span>
-                            <span class="sku"> <?php echo $this->escape($this->product->variant->sku); ?> </span>
-                        </div>
-                    <?php elseif ($this->params->get('item_show_product_sku', 1) &&  J2Store::product()->canShowSku($this->params) ) : ?>
-                        <div class="product-sku">
-                            <span class="sku-text"><?php echo JText::_('J2STORE_SKU')?></span>
-                            <span class="sku"></span>
-                        </div>
-                    <?php endif; ?>
-
+                    <div class="product-sku">
+                        <span class="sku-text"><?php echo JText::_('J2STORE_SKU')?></span>
+                        <span itemprop="sku" class="sku"></span>
+                    </div>
+                    <?php //echo $this->loadTemplate('sku'); ?>
                     <?php echo $this->loadTemplate('brand'); ?>
-                    <?php if($this->params->get('item_show_product_stock', 1) ) : ?>
-                        <div class="product-stock-container">
-                            <?php if(isset($this->product->variant) && J2Store::product()->managing_stock($this->product->variant)):?>
-                                <?php if($this->product->variant->availability): ?>
-                                    <span class="<?php echo $this->product->variant->availability ? 'instock':'outofstock'; ?>">
-				                    <?php echo J2Store::product()->displayStock($this->product->variant, $this->params); ?>
-			                    </span>
-                                <?php else: ?>
-                                    <span class="outofstock">
-				                    <?php echo JText::_('J2STORE_OUT_OF_STOCK'); ?>
-			                    </span>
-                                <?php endif; ?>
-                            <?php else:?>
-                                <span class="instock"></span>
-                                <span class="outofstock"></span>
-                            <?php endif; ?>
-                        </div>
-
-                        <?php if(isset($this->product->variant->allow_backorder) && $this->product->variant->allow_backorder == 2 && !$this->product->variant->availability): ?>
-                            <span class="backorder-notification">
-			                <?php echo JText::_('J2STORE_BACKORDER_NOTIFICATION'); ?>
-		                </span>
-                        <?php else: ?>
-                            <span class="backorder-notification"></span>
-                        <?php endif; ?>
+                    <?php if($this->params->get('item_show_product_stock', 1)) : ?>
+                        <span class="product-stock-container">
+                            <span class="instock"></span>
+                            <span class="outofstock"></span>
+                        </span>
+                        <span class="backorder-notification"></span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -92,7 +63,7 @@ defined('_JEXEC') or die;
 
                     <?php echo $this->loadTemplate('flexivariableoptions'); ?>
                     <?php echo $this->loadTemplate('cart'); ?>
-                    <input type="hidden" name="variant_id" value="<?php echo isset($this->product->variant->j2store_variant_id) ? $this->product->variant->j2store_variant_id: ''; ?>" />
+                    <input type="hidden" name="variant_id" value="" />
                 </form>
             <?php endif; ?>
 

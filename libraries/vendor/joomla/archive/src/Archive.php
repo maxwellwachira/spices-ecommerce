@@ -2,14 +2,12 @@
 /**
  * Part of the Joomla Framework Archive Package
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace Joomla\Archive;
 
-use Joomla\Archive\Exception\UnknownArchiveException;
-use Joomla\Archive\Exception\UnsupportedArchiveException;
 use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
 
@@ -68,13 +66,13 @@ class Archive
 	 * @return  boolean  True for success
 	 *
 	 * @since   1.0
-	 * @throws  UnknownArchiveException if the archive type is not supported
+	 * @throws  \InvalidArgumentException
 	 */
 	public function extract($archivename, $extractdir)
 	{
-		$ext      = pathinfo($archivename, \PATHINFO_EXTENSION);
-		$path     = pathinfo($archivename, \PATHINFO_DIRNAME);
-		$filename = pathinfo($archivename, \PATHINFO_FILENAME);
+		$ext      = pathinfo($archivename, PATHINFO_EXTENSION);
+		$path     = pathinfo($archivename, PATHINFO_DIRNAME);
+		$filename = pathinfo($archivename, PATHINFO_FILENAME);
 
 		switch (strtolower($ext))
 		{
@@ -151,7 +149,7 @@ class Archive
 				break;
 
 			default:
-				throw new UnknownArchiveException(sprintf('Unknown archive type: %s', $ext));
+				throw new \InvalidArgumentException(sprintf('Unknown archive type: %s', $ext));
 		}
 
 		return $result;
@@ -167,7 +165,7 @@ class Archive
 	 * @return  Archive  This object for chaining.
 	 *
 	 * @since   1.0
-	 * @throws  UnsupportedArchiveException if the adapter type is not supported
+	 * @throws  \InvalidArgumentException
 	 */
 	public function setAdapter($type, $class, $override = true)
 	{
@@ -187,7 +185,7 @@ class Archive
 
 			if ($error != '')
 			{
-				throw new UnsupportedArchiveException(
+				throw new \InvalidArgumentException(
 					sprintf($error, $type, $class)
 				);
 			}
@@ -206,7 +204,7 @@ class Archive
 	 * @return  ExtractableInterface  Adapter for the requested type
 	 *
 	 * @since   1.0
-	 * @throws  UnsupportedArchiveException
+	 * @throws  \InvalidArgumentException
 	 */
 	public function getAdapter($type)
 	{
@@ -220,7 +218,7 @@ class Archive
 
 			if (!class_exists($class) || !$class::isSupported())
 			{
-				throw new UnsupportedArchiveException(
+				throw new \InvalidArgumentException(
 					sprintf(
 						'Archive adapter "%s" (class "%s") not found or supported.',
 						$type,

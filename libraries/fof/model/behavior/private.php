@@ -4,15 +4,13 @@
  * @subpackage  model
  * @copyright   Copyright (C) 2010-2016 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @note        This file has been modified by the Joomla! Project and no longer reflects the original work of its author.
  */
-
 // Protect from unauthorized access
 defined('FOF_INCLUDED') or die;
 
 /**
  * FrameworkOnFramework model behavior class to filter front-end access to items
- * created by the currently logged in user only.
+ * craeted by the currently logged in user only.
  *
  * @package  FrameworkOnFramework
  * @since    2.1
@@ -63,7 +61,7 @@ class FOFModelBehaviorPrivate extends FOFModelBehavior
 	 * item from the database. It is used to apply automatic filters.
 	 *
 	 * @param   FOFModel  &$model   The model which was called
-	 * @param   FOFTable  &$record  The record loaded from the database
+	 * @param   FOFTable  &$record  The record loaded from the databae
 	 *
 	 * @return  void
 	 */

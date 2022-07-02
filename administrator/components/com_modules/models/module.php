@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_modules
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -159,9 +159,6 @@ class ModulesModelModule extends JModelAdmin
 
 				$table->position = $position;
 
-				// Copy of the Asset ID
-				$oldAssetId = $table->asset_id;
-
 				// Alter the title if necessary
 				$data = $this->generateNewTitle(0, $table->title, $table->position);
 				$table->title = $data['0'];
@@ -204,17 +201,6 @@ class ModulesModelModule extends JModelAdmin
 					$db->setQuery($query);
 					$db->execute();
 				}
-
-				// Copy rules
-				$query->clear()
-					->update($db->quoteName('#__assets', 't'))
-					->join('INNER', $db->quoteName('#__assets', 's') .
-						' ON ' . $db->quoteName('s.id') . ' = ' . $oldAssetId
-					)
-					->set($db->quoteName('t.rules') . ' = ' . $db->quoteName('s.rules'))
-					->where($db->quoteName('t.id') . ' = ' . $table->asset_id);
-
-				$db->setQuery($query)->execute();
 			}
 			else
 			{
@@ -302,14 +288,18 @@ class ModulesModelModule extends JModelAdmin
 	 */
 	protected function canEditState($record)
 	{
+		$user = JFactory::getUser();
+
 		// Check for existing module.
 		if (!empty($record->id))
 		{
-			return JFactory::getUser()->authorise('core.edit.state', 'com_modules.module.' . (int) $record->id);
+			return $user->authorise('core.edit.state', 'com_modules.module.' . (int) $record->id);
 		}
-
 		// Default to component settings if module not known.
-		return parent::canEditState($record);
+		else
+		{
+			return parent::canEditState('com_modules');
+		}
 	}
 
 	/**
@@ -479,15 +469,15 @@ class ModulesModelModule extends JModelAdmin
 	/**
 	 * Method to change the title.
 	 *
-	 * @param   integer  $categoryId  The id of the category. Not used here.
-	 * @param   string   $title       The title.
-	 * @param   string   $position    The position.
+	 * @param   integer  $category_id  The id of the category. Not used here.
+	 * @param   string   $title        The title.
+	 * @param   string   $position     The position.
 	 *
 	 * @return  array  Contains the modified title.
 	 *
 	 * @since   2.5
 	 */
-	protected function generateNewTitle($categoryId, $title, $position)
+	protected function generateNewTitle($category_id, $title, $position)
 	{
 		// Alter the title & alias
 		$table = $this->getTable();
@@ -896,14 +886,6 @@ class ModulesModelModule extends JModelAdmin
 	{
 		JLoader::register('ContentHelper', JPATH_ADMINISTRATOR . '/components/com_content/helpers/content.php');
 
-		if (!JFactory::getUser()->authorise('core.admin', 'com_modules'))
-		{
-			if (isset($data['rules']))
-			{
-				unset($data['rules']);
-			}
-		}
-
 		return parent::validate($form, $data, $group);
 	}
 
@@ -1128,14 +1110,14 @@ class ModulesModelModule extends JModelAdmin
 	/**
 	 * Custom clean cache method for different clients
 	 *
-	 * @param   string   $group     The name of the plugin group to import (defaults to null).
-	 * @param   integer  $clientId  The client ID. [optional]
+	 * @param   string   $group      The name of the plugin group to import (defaults to null).
+	 * @param   integer  $client_id  The client ID. [optional]
 	 *
 	 * @return  void
 	 *
 	 * @since   1.6
 	 */
-	protected function cleanCache($group = null, $clientId = 0)
+	protected function cleanCache($group = null, $client_id = 0)
 	{
 		parent::cleanCache('com_modules', $this->getClient());
 	}

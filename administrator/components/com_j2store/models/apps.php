@@ -56,7 +56,7 @@ class J2StoreModelApps extends F0FModel {
 	public function getInserted($tablename){
 		$db = JFactory::getDbo();
 		$status = true;
-        $application = JFactory::getApplication();
+
 		//Force parsing of SQL file since Joomla! does that only in install mode, not in upgrades
 		$sql = 'components/com_j2store/sql/install/mysql/'.$tablename.'.sql';
 		$queries = JDatabaseDriver::splitSql(file_get_contents($sql));
@@ -64,7 +64,7 @@ class J2StoreModelApps extends F0FModel {
 		foreach ($queries as $query)
 		{
 			$query = trim($query);
-			if ($query != '' && $query[0] != '#')
+			if ($query != '' && $query{0} != '#')
 			{
 				$db->setQuery($query);
 				if (!$db->execute())

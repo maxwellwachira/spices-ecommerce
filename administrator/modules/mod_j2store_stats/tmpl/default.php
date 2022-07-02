@@ -6,7 +6,6 @@
  */
 
 defined('_JEXEC') or die;
-require_once (JPATH_ADMINISTRATOR.'/components/com_j2store/helpers/j2store.php');
 $currency = J2Store::currency();
 $order_status = $params->get('order_status',array('*'));
 ?>

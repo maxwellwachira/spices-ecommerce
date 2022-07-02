@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -134,7 +134,6 @@ class FormController extends BaseController
 		$this->registerTask('apply', 'save');
 		$this->registerTask('save2new', 'save');
 		$this->registerTask('save2copy', 'save');
-		$this->registerTask('editAssociations', 'save');
 	}
 
 	/**
@@ -732,26 +731,6 @@ class FormController extends BaseController
 				}
 			}
 
-			/**
-			 * We need the filtered value of calendar fields because the UTC normalision is
-			 * done in the filter and on output. This would apply the Timezone offset on
-			 * reload. We set the calendar values we save to the processed date.
-			 */
-			$filteredData = $form->filter($data);
-
-			foreach ($form->getFieldset() as $field)
-			{
-				if ($field->type === 'Calendar')
-				{
-					$fieldName = $field->fieldname;
-
-					if (isset($filteredData[$fieldName]))
-					{
-						$data[$fieldName] = $filteredData[$fieldName];
-					}
-				}
-			}
-
 			// Save the data in the session.
 			$app->setUserState($context . '.data', $data);
 
@@ -931,31 +910,20 @@ class FormController extends BaseController
 			false
 		);
 
-		/* @var \JForm $form */
+		// Validate the posted data.
+		// Sometimes the form needs some posted data, such as for plugins and modules.
 		$form = $model->getForm($data, false);
 
-		/**
-		 * We need the filtered value of calendar fields because the UTC normalision is
-		 * done in the filter and on output. This would apply the Timezone offset on
-		 * reload. We set the calendar values we save to the processed date.
-		 */
-		$filteredData = $form->filter($data);
-
-		foreach ($form->getFieldset() as $field)
+		if (!$form)
 		{
-			if ($field->type === 'Calendar')
-			{
-				$fieldName = $field->fieldname;
+			$app->enqueueMessage($model->getError(), 'error');
 
-				if (isset($filteredData[$fieldName]))
-				{
-					$data[$fieldName] = $filteredData[$fieldName];
-				}
-			}
+			$this->setRedirect($redirectUrl);
+			$this->redirect();
 		}
 
 		// Save the data in the session.
-		$app->setUserState($this->option . '.edit.' . $this->context . '.data', $data);
+		$app->setUserState($this->option . '.edit.' . $this->context . '.data', $form->filter($data));
 
 		$this->setRedirect($redirectUrl);
 		$this->redirect();
@@ -967,8 +935,6 @@ class FormController extends BaseController
 	 * @return  void
 	 *
 	 * @since   3.9.0
-	 *
-	 * @deprecated 5.0  It is handled by regular save method now.
 	 */
 	public function editAssociations()
 	{

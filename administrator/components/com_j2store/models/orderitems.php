@@ -130,7 +130,7 @@ class J2StoreModelOrderItems extends F0FModel {
 		if(isset($cartitem->options) && is_array($cartitem->options)) {
 
 			$orderitemattributes = array();
-            $utility = J2Store::utilities();
+
 			foreach ($cartitem->options as $option) {
 				unset($orderitemattribute);
 				$orderitemattribute = F0FTable::getAnInstance('OrderItemAttribute', 'J2StoreTable')->getClone();
@@ -142,7 +142,7 @@ class J2StoreModelOrderItems extends F0FModel {
 				//product option name. Dont confuse this with the option value name
 
 				$orderitemattribute->orderitemattribute_name = $option['name'];
-				$orderitemattribute->orderitemattribute_value = $utility->text_sanitize($option['option_value']);
+				$orderitemattribute->orderitemattribute_value = $option['option_value'];
 				//option price
 				$orderitemattribute->orderitemattribute_price = $option['price'];
 

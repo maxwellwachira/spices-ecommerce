@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Archive Package
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -204,7 +204,7 @@ class Zip implements ExtractableInterface
 	 *
 	 * @since   1.0
 	 */
-	public function checkZipData($data)
+	public function checkZipData(&$data)
 	{
 		return strpos($data, $this->fileHeader) !== false;
 	}
@@ -237,29 +237,24 @@ class Zip implements ExtractableInterface
 			throw new \RuntimeException('Get ZIP Information failed');
 		}
 
-		foreach ($this->metadata as $i => $metadata)
+		for ($i = 0, $n = \count($this->metadata); $i < $n; $i++)
 		{
-			$lastPathCharacter = substr($metadata['name'], -1, 1);
+			$lastPathCharacter = substr($this->metadata[$i]['name'], -1, 1);
 
 			if ($lastPathCharacter !== '/' && $lastPathCharacter !== '\\')
 			{
 				$buffer = $this->getFileData($i);
-				$path   = Path::clean($destination . '/' . $metadata['name']);
-
-				if (!$this->isBelow($destination, $destination . '/' . $metadata['name']))
-				{
-					throw new \RuntimeException('Unable to write outside of destination path', 100);
-				}
+				$path   = Path::clean($destination . '/' . $this->metadata[$i]['name']);
 
 				// Make sure the destination folder exists
 				if (!Folder::create(\dirname($path)))
 				{
-					throw new \RuntimeException('Unable to create destination folder');
+					throw new \RuntimeException('Unable to create destination folder ' . \dirname($path));
 				}
 
 				if (!File::write($path, $buffer))
 				{
-					throw new \RuntimeException('Unable to write file');
+					throw new \RuntimeException('Unable to write entry to file ' . $path);
 				}
 			}
 		}
@@ -275,14 +270,14 @@ class Zip implements ExtractableInterface
 	 *
 	 * @return  boolean  True on success
 	 *
-	 * @throws  \RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	protected function extractNative($archive, $destination)
 	{
-		$zip = new \ZipArchive;
+		$zip = zip_open($archive);
 
-		if ($zip->open($archive) !== true)
+		if (!\is_resource($zip))
 		{
 			throw new \RuntimeException('Unable to open archive');
 		}
@@ -290,38 +285,31 @@ class Zip implements ExtractableInterface
 		// Make sure the destination folder exists
 		if (!Folder::create($destination))
 		{
-			throw new \RuntimeException('Unable to create destination folder ' . \dirname($destination));
+			throw new \RuntimeException('Unable to create destination folder ' . \dirname($path));
 		}
 
 		// Read files in the archive
-		for ($index = 0; $index < $zip->numFiles; $index++)
+		while ($file = @zip_read($zip))
 		{
-			$file = $zip->getNameIndex($index);
-
-			if (substr($file, -1) === '/')
-			{
-				continue;
-			}
-
-			$buffer = $zip->getFromIndex($index);
-
-			if ($buffer === false)
+			if (!zip_entry_open($zip, $file, 'r'))
 			{
 				throw new \RuntimeException('Unable to read ZIP entry');
 			}
 
-			if (!$this->isBelow($destination, $destination . '/' . $file))
+			if (substr(zip_entry_name($file), \strlen(zip_entry_name($file)) - 1) != '/')
 			{
-				throw new \RuntimeException('Unable to write outside of destination path', 100);
-			}
+				$buffer = zip_entry_read($file, zip_entry_filesize($file));
 
-			if (File::write($destination . '/' . $file, $buffer) === false)
-			{
-				throw new \RuntimeException('Unable to write ZIP entry to file ' . $destination . '/' . $file);
+				if (File::write($destination . '/' . zip_entry_name($file), $buffer) === false)
+				{
+					throw new \RuntimeException('Unable to write ZIP entry to file ' . $destination . '/' . zip_entry_name($file));
+				}
+
+				zip_entry_close($file);
 			}
 		}
 
-		$zip->close();
+		@zip_close($zip);
 
 		return true;
 	}
@@ -332,13 +320,13 @@ class Zip implements ExtractableInterface
 	 * <pre>
 	 * KEY: Position in zipfile
 	 * VALUES: 'attr'  --  File attributes
-	 *         'crc'   --  CRC checksum
-	 *         'csize' --  Compressed file size
-	 *         'date'  --  File modification time
-	 *         'name'  --  Filename
-	 *         'method'--  Compression method
-	 *         'size'  --  Original file size
-	 *         'type'  --  File type
+	 * 'crc'   --  CRC checksum
+	 * 'csize' --  Compressed file size
+	 * 'date'  --  File modification time
+	 * 'name'  --  Filename
+	 * 'method'--  Compression method
+	 * 'size'  --  Original file size
+	 * 'type'  --  File type
 	 * </pre>
 	 *
 	 * @param   string  $data  The ZIP archive buffer.
@@ -348,7 +336,7 @@ class Zip implements ExtractableInterface
 	 * @since   1.0
 	 * @throws  \RuntimeException
 	 */
-	private function readZipInfo($data)
+	private function readZipInfo(&$data)
 	{
 		$entries = array();
 
@@ -445,7 +433,7 @@ class Zip implements ExtractableInterface
 	}
 
 	/**
-	 * Returns the file data for a file by offset in the ZIP archive
+	 * Returns the file data for a file by offsest in the ZIP archive
 	 *
 	 * @param   integer  $key  The position of the file in the archive.
 	 *
@@ -556,7 +544,7 @@ class Zip implements ExtractableInterface
 		$uncLen = \strlen($data);
 		$crc    = crc32($data);
 		$zdata  = gzcompress($data);
-		$zdata  = substr(substr($zdata, 0, -4), 2);
+		$zdata  = substr(substr($zdata, 0, \strlen($zdata) - 4), 2);
 		$cLen   = \strlen($zdata);
 
 		// CRC 32 information.
@@ -653,7 +641,7 @@ class Zip implements ExtractableInterface
 	 * @since   1.0
 	 * @todo	Review and finish implementation
 	 */
-	private function createZipFile(array $contents, array $ctrlDir, $path)
+	private function createZipFile(array &$contents, array &$ctrlDir, $path)
 	{
 		$data = implode('', $contents);
 		$dir  = implode('', $ctrlDir);
@@ -674,21 +662,5 @@ class Zip implements ExtractableInterface
 		"\x00\x00";
 
 		return File::write($path, $buffer);
-	}
-
-	/**
-	 * Check if a path is below a given destination path
-	 *
-	 * @param   string  $destination
-	 * @param   string  $path
-	 *
-	 * @return  boolean
-	 */
-	private function isBelow($destination, $path)
-	{
-		$absoluteRoot = Path::clean(Path::resolve($destination));
-		$absolutePath = Path::clean(Path::resolve($path));
-
-		return strpos($absolutePath, $absoluteRoot) === 0;
 	}
 }

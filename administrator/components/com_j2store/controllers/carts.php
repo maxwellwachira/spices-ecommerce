@@ -43,7 +43,7 @@ class J2StoreControllerCarts extends F0FController
 		if (isset($post_coupon) && !empty($post_coupon)) {
 			F0FModel::getTmpInstance ( 'Coupons', 'J2StoreModel' )->set_coupon($post_coupon);
 		}
-		$url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=summary&oid='.$id;
+		$url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=payment_shipping_methods&next_layout=summary&oid='.$id;
 		$json['success']=1;
 		$json['redirect']= $url;
 		echo json_encode($json);
@@ -74,7 +74,7 @@ class J2StoreControllerCarts extends F0FController
 			$discount_table->delete();			
 		}			
 		$json['success']=1;
-        $url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=summary&oid='.$id;
+		$url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=payment_shipping_methods&next_layout=summary&oid='.$id;
 		$json['redirect']= $url;
 		echo json_encode($json);
 		$app->close();
@@ -95,9 +95,9 @@ class J2StoreControllerCarts extends F0FController
 		if (isset($voucher) && !empty($voucher)) {
 			F0FModel::getTmpInstance ( 'Vouchers', 'J2StoreModel' )->set_voucher($voucher);
 		}
-
-        $id = $app->input->getInt('oid', '');
-        $url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=summary&oid='.$id;
+	
+		$order_id = $app->input->getInt('oid', '');		
+		$url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=payment_shipping_methods&next_layout=summary&oid='.$order_id;
 		$json = array();
 		$json['success']=1;
 		$json['redirect']= $url;
@@ -126,8 +126,8 @@ class J2StoreControllerCarts extends F0FController
 		));
 		if($discount_table->j2store_orderdiscount_id){
 			$discount_table->delete();
-		}
-        $url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=summary&oid='.$id;
+		}		
+		$url = 'index.php?option=com_j2store&view=orders&task=saveAdminOrder&layout=payment_shipping_methods&next_layout=summary&oid='.$id;
 		$json = array();
 		$json['redirect']= $url;
 		$json['success']=1;

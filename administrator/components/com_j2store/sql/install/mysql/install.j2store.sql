@@ -591,11 +591,8 @@ CREATE TABLE IF NOT EXISTS `#__j2store_productimages` (
 `j2store_productimage_id` int(11) NOT NULL AUTO_INCREMENT,
   `product_id` int(11) DEFAULT NULL,
   `main_image` text,
-  `main_image_alt` varchar(255) NOT NULL,
   `thumb_image` text,
-  `thumb_image_alt` varchar(255) NOT NULL,
   `additional_images` longtext,
-  `additional_images_alt` longtext,
    PRIMARY KEY (`j2store_productimage_id`),
    KEY `productimage_product_id` (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -614,7 +611,7 @@ CREATE TABLE IF NOT EXISTS `#__j2store_productquantities` (
   `on_hold` int(11) NOT NULL,
   `sold` int(11) NOT NULL,
    PRIMARY KEY (`j2store_productquantity_id`),
-   UNIQUE KEY `variantidx` (`variant_id`)
+   UNIQUE KEY `stock_variant_id` (`variant_id`)   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 -- --------------------------------------------------------

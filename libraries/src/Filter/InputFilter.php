@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -351,7 +351,24 @@ class InputFilter extends BaseInputFilter
 
 				break;
 			case 'PATH':
-				$result = parent::clean($source, 'path');
+				$pattern = '/^[A-Za-z0-9_\/-]+[A-Za-z0-9_\.-]*([\\\\\/][A-Za-z0-9_-]+[A-Za-z0-9_\.-]*)*$/';
+
+				if (is_array($source))
+				{
+					$result = array();
+
+					// Iterate through the array
+					foreach ($source as $eachString)
+					{
+						preg_match($pattern, (string) $eachString, $matches);
+						$result[] = isset($matches[0]) ? (string) $matches[0] : '';
+					}
+				}
+				else
+				{
+					preg_match($pattern, $source, $matches);
+					$result = isset($matches[0]) ? (string) $matches[0] : '';
+				}
 
 				break;
 			case 'TRIM':
@@ -610,7 +627,7 @@ class InputFilter extends BaseInputFilter
 					|| $options['shorttag_in_content'] || $options['phar_stub_in_content']
 					|| ($options['fobidden_ext_in_content'] && !empty($options['forbidden_extensions'])))
 				{
-					$fp = strlen($tempName) ? @fopen($tempName, 'r') : false;
+					$fp = @fopen($tempName, 'r');
 
 					if ($fp !== false)
 					{

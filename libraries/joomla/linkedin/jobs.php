@@ -3,7 +3,7 @@
  * @package     Joomla.Platform
  * @subpackage  Linkedin
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -221,28 +221,28 @@ class JLinkedinJobs extends JLinkedinObject
 	/**
 	 * Method to search across LinkedIn's job postings.
 	 *
-	 * @param   string   $fields       Request fields beyond the default ones.
-	 * @param   string   $keywords     Members who have all the keywords anywhere in their profile.
-	 * @param   string   $companyName  Jobs with a matching company name.
-	 * @param   string   $jobTitle     Matches jobs with the same job title.
-	 * @param   string   $countryCode  Matches members with a location in a specific country. Values are defined in by ISO 3166 standard.
-	 * 	                               Country codes must be in all lower case.
-	 * @param   integer  $postalCode   Matches members centered around a Postal Code. Must be combined with the country-code parameter.
-	 *                                 Not supported for all countries.
-	 * @param   integer  $distance     Matches members within a distance from a central point. This is measured in miles.
-	 * @param   string   $facets       Facet buckets to return, e.g. location.
-	 * @param   array    $facet        Array of facet values to search over. Contains values for company, date-posted, location, job-function,
-	 * 	                               industry, and salary, in exactly this order, null must be specified for an element if no value.
-	 * @param   integer  $start        Starting location within the result set for paginated returns.
-	 * @param   integer  $count        The number of results returned.
-	 * @param   string   $sort         Controls the search result order. There are four options: R (relationship), DA (date-posted-asc),
-	 * 	                               DD (date-posted-desc).
+	 * @param   string   $fields        Request fields beyond the default ones.
+	 * @param   string   $keywords      Members who have all the keywords anywhere in their profile.
+	 * @param   string   $company_name  Jobs with a matching company name.
+	 * @param   string   $job_title     Matches jobs with the same job title.
+	 * @param   string   $country_code  Matches members with a location in a specific country. Values are defined in by ISO 3166 standard.
+	 * 									Country codes must be in all lower case.
+	 * @param   integer  $postal_code   Matches members centered around a Postal Code. Must be combined with the country-code parameter.
+	 * 									Not supported for all countries.
+	 * @param   integer  $distance      Matches members within a distance from a central point. This is measured in miles.
+	 * @param   string   $facets        Facet buckets to return, e.g. location.
+	 * @param   array    $facet         Array of facet values to search over. Contains values for company, date-posted, location, job-function,
+	 * 									industry, and salary, in exactly this order, null must be specified for an element if no value.
+	 * @param   integer  $start         Starting location within the result set for paginated returns.
+	 * @param   integer  $count         The number of results returned.
+	 * @param   string   $sort          Controls the search result order. There are four options: R (relationship), DA (date-posted-asc),
+	 * 									DD (date-posted-desc).
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function search($fields = null, $keywords = null, $companyName = null, $jobTitle = null, $countryCode = null, $postalCode = null,
+	public function search($fields = null, $keywords = null, $company_name = null, $job_title = null, $country_code = null, $postal_code = null,
 		$distance = null, $facets = null, $facet = null, $start = 0, $count = 0, $sort = null)
 	{
 		$token = $this->oauth->getToken();
@@ -270,27 +270,27 @@ class JLinkedinJobs extends JLinkedinObject
 		}
 
 		// Check if company-name is specified.
-		if ($companyName)
+		if ($company_name)
 		{
-			$data['company-name'] = $companyName;
+			$data['company-name'] = $company_name;
 		}
 
 		// Check if job-title is specified.
-		if ($jobTitle)
+		if ($job_title)
 		{
-			$data['job-title'] = $jobTitle;
+			$data['job-title'] = $job_title;
 		}
 
 		// Check if country_code is specified.
-		if ($countryCode)
+		if ($country_code)
 		{
-			$data['country-code'] = $countryCode;
+			$data['country-code'] = $country_code;
 		}
 
 		// Check if postal_code is specified.
-		if ($postalCode)
+		if ($postal_code)
 		{
-			$data['postal-code'] = $postalCode;
+			$data['postal-code'] = $postal_code;
 		}
 
 		// Check if distance is specified.

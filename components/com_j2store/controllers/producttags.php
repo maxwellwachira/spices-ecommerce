@@ -270,7 +270,7 @@ class J2StoreControllerProducttags extends J2StoreControllerProductsBase
 		}
 
 		//allow plugins to modify the data
-		J2Store::plugin()->event('ViewProductList', array(&$items, &$view, &$params, $model));
+		J2Store::plugin()->event('ViewProductList', array(&$items, &$view, $params, $model));
 
 		$view->assign('products',$items);
 		$view->assign('state', $model->getState());
@@ -302,11 +302,7 @@ class J2StoreControllerProducttags extends J2StoreControllerProductsBase
 
 			$item->product_short_desc = $item->introtext;
 			$item->product_long_desc = $item->fulltext;
-            $need_to_run_behaviour = true;
-            J2Store::plugin()->event('ProcessProductBehaviour',array(&$need_to_run_behaviour,$item));
-            if($need_to_run_behaviour){
-                F0FModel::getTmpInstance('Products', 'J2StoreModel')->runMyBehaviorFlag(true)->getProduct($item);
-            }
+			F0FModel::getTmpInstance('Products', 'J2StoreModel')->runMyBehaviorFlag(true)->getProduct($item);
 			$item->product_name = $item->title;
 		}
 

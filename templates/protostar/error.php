@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  Templates.protostar
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -41,7 +41,7 @@ JHtml::_('bootstrap.framework');
 // Logo file or site title param
 if ($params->get('logoFile'))
 {
-	$logo = '<img src="' . htmlspecialchars(JUri::root() . $params->get('logoFile'), ENT_QUOTES, 'UTF-8') . '" alt="' . $sitename . '" />';
+	$logo = '<img src="' . JUri::root() . $params->get('logoFile') . '" alt="' . $sitename . '" />';
 }
 elseif ($params->get('sitetitle'))
 {
@@ -75,9 +75,6 @@ else
 	<?php if ($this->direction === 'rtl') : ?>
 		<link href="<?php echo JUri::root(true); ?>/media/jui/css/bootstrap-rtl.css" rel="stylesheet" />
 	<?php endif; ?>
-	<?php if (file_exists('templates/' . $this->template . '/css/user.css')) : ?>
-		<link href="<?php echo $this->baseurl; ?>/templates/<?php echo $this->template; ?>/css/user.css" rel="stylesheet" />
-	<?php endif; ?>
 	<link href="<?php echo $this->baseurl; ?>/templates/<?php echo $this->template; ?>/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
 	<?php // Template color ?>
 	<?php if ($params->get('templateColor')) : ?>
@@ -110,7 +107,7 @@ else
 	. ($this->direction === 'rtl' ? ' rtl' : '');
 ?>">
 	<!-- Body -->
-	<div class="body" id="top">
+	<div class="body">
 		<div class="container<?php echo ($params->get('fluidContainer') ? '-fluid' : ''); ?>">
 			<!-- Header -->
 			<header class="header" role="banner">
@@ -118,28 +115,22 @@ else
 					<a class="brand pull-left" href="<?php echo $this->baseurl; ?>/">
 						<?php echo $logo; ?>
 					</a>
-					<?php if ($format === 'html') : ?>
-						<div class="header-search pull-right">
-							<?php // Display position-0 modules ?>
-							<?php echo $this->loadRenderer('modules')->render('position-0', array('style' => 'none')); ?>
-						</div>
-					<?php endif; ?>
+					<div class="header-search pull-right">
+						<?php // Display position-0 modules ?>
+						<?php echo $this->getBuffer('modules', 'position-0', array('style' => 'none')); ?>
+					</div>
 				</div>
 			</header>
-			<?php if ($format === 'html') : ?>
-				<nav class="navigation" role="navigation">
-					<?php // Display position-1 modules ?>
-					<?php echo $this->loadRenderer('modules')->render('position-1', array('style' => 'none')); ?>
-				</nav>
-			<?php endif; ?>
+			<div class="navigation">
+				<?php // Display position-1 modules ?>
+				<?php echo $this->getBuffer('modules', 'position-1', array('style' => 'none')); ?>
+			</div>
 			<!-- Banner -->
-			<?php if ($format === 'html') : ?>
-				<div class="banner">
-					<?php echo $this->loadRenderer('modules')->render('banner', array('style' => 'xhtml')); ?>
-				</div>
-			<?php endif; ?>
+			<div class="banner">
+				<?php echo $this->getBuffer('modules', 'banner', array('style' => 'xhtml')); ?>
+			</div>
 			<div class="row-fluid">
-				<main id="content" role="main" class="span12">
+				<div id="content" class="span12">
 					<!-- Begin Content -->
 					<h1 class="page-header"><?php echo JText::_('JERROR_LAYOUT_PAGE_NOT_FOUND'); ?></h1>
 					<div class="well">
@@ -198,17 +189,15 @@ else
 						<?php endif; ?>
 					</div>
 					<!-- End Content -->
-				</main>
+				</div>
 			</div>
 		</div>
 	</div>
 	<!-- Footer -->
-	<footer class="footer" role="contentinfo">
+	<div class="footer">
 		<div class="container<?php echo ($params->get('fluidContainer') ? '-fluid' : ''); ?>">
 			<hr />
-			<?php if ($format === 'html') : ?>
-				<?php echo $this->loadRenderer('modules')->render('footer', array('style' => 'none')); ?>
-			<?php endif; ?>
+			<?php echo $this->getBuffer('modules', 'footer', array('style' => 'none')); ?>
 			<p class="pull-right">
 				<a href="#top" id="back-top">
 					<?php echo JText::_('TPL_PROTOSTAR_BACKTOTOP'); ?>
@@ -218,9 +207,7 @@ else
 				&copy; <?php echo date('Y'); ?> <?php echo $sitename; ?>
 			</p>
 		</div>
-	</footer>
-	<?php if ($format === 'html') : ?>
-		<?php echo $this->loadRenderer('modules')->render('debug', array('style' => 'none')); ?>
-	<?php endif; ?>
+	</div>
+	<?php echo $this->getBuffer('modules', 'debug', array('style' => 'none')); ?>
 </body>
 </html>

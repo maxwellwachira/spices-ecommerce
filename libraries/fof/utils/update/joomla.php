@@ -4,7 +4,6 @@
  * @subpackage  utils
  * @copyright   Copyright (C) 2010-2016 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @note        This file has been modified by the Joomla! Project and no longer reflects the original work of its author.
  */
 
 // Protect from unauthorized access
@@ -302,7 +301,7 @@ class FOFUtilsUpdateJoomla extends FOFUtilsUpdateExtension
 
 
 	/**
-	 * Filters a list of updates, making sure they apply to the specified CMS
+	 * Filters a list of updates, making sure they apply to the specifed CMS
 	 * release.
 	 *
 	 * @param   array  $updates  A list of update records returned by the getUpdatesFromExtension method

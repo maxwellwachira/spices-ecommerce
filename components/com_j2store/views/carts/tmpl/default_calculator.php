@@ -28,7 +28,6 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
           $countryList = J2Html::select()->clearState()
           ->type('genericlist')
           ->name('country_id')
-           ->ordering('country_name')
           ->idTag('estimate_country_id')
           ->value($this->country_id)
           ->setPlaceHolders(array(''=>JText::_('J2STORE_SELECT_OPTION')))

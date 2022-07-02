@@ -6,7 +6,6 @@
  */
 // No direct access to this file
 defined ( '_JEXEC' ) or die ();
-require_once (JPATH_ADMINISTRATOR.'/components/com_j2store/helpers/j2store.php');
 $currency = J2Store::currency();
 $order_status = $params->get('order_status',array('*'));
 ?>
@@ -48,7 +47,7 @@ $order_status = $params->get('order_status',array('*'));
 			echo $currency->format(
 				F0FModel::getTmpInstance('Orders', 'J2StoreModel')->clearState()
 									->since( $yesterday )
-									->until( $yesterday.' 23:59:59' )
+									->until( $today )
 									->orderstatus($order_status)
 									->nozero(1)
 									->moneysum(1)

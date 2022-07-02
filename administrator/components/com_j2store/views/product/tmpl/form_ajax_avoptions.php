@@ -61,7 +61,7 @@ JHtml::_('behavior.modal');
 							</div>
 							#<?php echo $this->variant->j2store_variant_id;?>--
 							<a data-toggle="collapse" data-parent="#accordion" href="#collapse<?php echo $this->variant->j2store_variant_id;?>">
-							<?php  echo $this->escape(J2Store::product()->getVariantNamesByCSV($this->variant->variant_name)); ?>
+							<?php  echo J2Store::product()->getVariantNamesByCSV($this->variant->variant_name); ?>
 								<i
 									id="icon-downarrow-<?php echo $this->variant->j2store_variant_id;?>"
 									class="icon-arrow-down"
@@ -104,9 +104,7 @@ JHtml::_('behavior.modal');
 
 								<div class="control-group">
 									<?php echo J2Html::label(JText::_('J2STORE_PRODUCT_SET_ADVANCED_PRICING'), 'sale_price',array('class'=>'control-label')); ?>
-									<?php
-                                    $base_path = rtrim(JUri::root(),'/').'/administrator';
-                                    $url = $base_path."/index.php?option=com_j2store&view=products&task=setproductprice&variant_id=".$this->variant->j2store_variant_id."&layout=productpricing&tmpl=component";?>
+									<?php $url ="index.php?option=com_j2store&view=products&task=setproductprice&variant_id=".$this->variant->j2store_variant_id."&layout=productpricing&tmpl=component";?>
 									<?php echo J2StorePopup::popup($url , JText::_( "J2STORE_PRODUCT_SET_PRICES" ), array('class'=>'btn btn-success btn-small'));?>
 								</div>
 								<div class="control-group">

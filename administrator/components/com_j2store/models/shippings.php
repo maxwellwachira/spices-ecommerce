@@ -71,9 +71,7 @@ class J2StoreModelShippings extends F0FModel {
 
 		if (!empty($rates))
 		{
-            if($order->order_type != 'subscription'){
-                return $rates;
-            }
+			return $rates;
 		}
 
 		$app = JFactory::getApplication();
@@ -112,14 +110,14 @@ class J2StoreModelShippings extends F0FModel {
 				}
 			}
 		}
-
+		J2Store::plugin()->event('AfterGetShippingRate',array($order,&$rates));
 		//order by the cheapest method
 		if(function_exists('usort') && count($rates)) {
 			usort($rates, function($a, $b) {
 				return $a['total'] - $b['total'];
 			});
 		}
-        J2Store::plugin()->event('AfterGetShippingRate',array($order,&$rates));
+	
 		return $rates;
 	}
 }

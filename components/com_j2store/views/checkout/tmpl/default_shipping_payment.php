@@ -184,10 +184,7 @@ foreach($removeFields[1] as $fieldName) {
 				<?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS_AGREE_TO'); ?>
 
 				<?php if(!empty($tos)): ?>
-                    <a data-fancybox data-src="#j2store-tos-modal" data-touch="false" href="javascript:;" >
-                        <?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?>
-                    </a>
-
+					<a href="#j2store-tos-modal" class="link" data-toggle="modal"><?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?></a>
 				<?php else: ?>
 					<?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?>
 				<?php endif; ?>
@@ -200,20 +197,11 @@ foreach($removeFields[1] as $fieldName) {
 			<?php echo JText::_('J2STORE_TERMS_AND_CONDITION_PRETEXT'); ?>
 
 			<?php if(!empty($tos)): ?>
-                <a data-fancybox data-src="#j2store-tos-modal" data-touch="false" href="javascript:;" >
-                    <?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?>
-                </a>
+				<a href="#j2store-tos-modal" class="link" data-toggle="modal"><?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?></a>
 			<?php else: ?>
 				<?php echo JText::_('J2STORE_TERMS_AND_CONDITIONS'); ?>
 			<?php endif; ?>
 		<?php endif;?>
-        <?php if(!empty($tos)): ?>
-            <div id="j2store-tos-modal"  style="display:none;">
-                <?php if(is_numeric($tos)): ?>
-                    <p><?php echo J2Store::article()->display($tos); ?></p>
-                <?php endif;?>
-            </div>
-        <?php endif;?>
 	</div>
 <?php endif; ?>
 
@@ -231,3 +219,21 @@ foreach($removeFields[1] as $fieldName) {
        value="shipping_payment_method_validate" />
 <input type="hidden" name="option" value="com_j2store" />
 <input type="hidden" name="view" value="checkout" />
+<div class="j2store-modal">
+	<div id="j2store-tos-modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="j2store-tos-modal-label" aria-hidden="true" style="display:none;">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"
+			        aria-hidden="true">&times;</button>
+		</div>
+		<div class="modal-body">
+			<?php if(is_numeric($tos)): ?>
+				<p><?php echo J2Store::article()->display($tos); ?></p>
+			<?php endif;?>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-danger" data-dismiss="modal"
+			        aria-hidden="true"><?php echo JText::_('J2STORE_CLOSE'); ?></button>
+
+		</div>
+	</div>
+</div>

@@ -68,11 +68,7 @@ $password .='<br /><input type="password" name="password" value="" class="large-
 $confirm_password= '<span class="j2store_field_required">*</span>'.JText::_('J2STORE_CHECKOUT_CONFIRM_PASSWORD').'<br />
   <input type="password" name="confirm" value="" class="large-field" />
   <br />';
-if($this->privacyconsent_enabled){
-    $privacy_plugin = JPluginHelper::getPlugin('system', 'privacyconsent');
-    $privacy_params = new JRegistry($privacy_plugin->params);//Joomla 1.6 Onward
-    $confirm_password .= '<label id="privacyconsent" for="privacyconsent"><input type="checkbox" value="1"  name="privacyconsent" />  '.JText::_($privacy_params->get('privacy_note','')).'</label><br />';
-}
+
 //now replace pass fields
 $html = str_replace('[password]',$password,$html);
 $html = str_replace('[confirm_password]',$confirm_password,$html);
@@ -152,7 +148,7 @@ $html = $html.$phtml;
 
   <?php if ($this->showShipping) { ?>
   <div class="<?php echo $J2gridRow; ?>">
-  <div class="<?php echo $J2gridCol; ?>12 shipping-make-same" style="clear: both; padding-top: 15px;">
+  <div class="<?php echo $J2gridCol; ?> shipping-make-same" style="clear: both; padding-top: 15px;">
 	  <input type="checkbox" name="shipping_address" value="1" id="shipping" checked="checked" />
 	  <label for="shipping"><?php echo JText::_('J2STORE_MAKE_SHIPPING_SAME'); ?></label>	  
   </div>

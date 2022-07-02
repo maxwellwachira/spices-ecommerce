@@ -20,11 +20,6 @@
             <fieldset name="basic" label="J2STORE_BASIC_SETTINGS"
                       addfieldpath="/administrator/components/com_j2store/models/fields">
                 <field type="customnotice" name="custom_note" label="j2store_app_currency_updater_note"/>
-                <field type="list" name="api_type" default="msn" label="j2store_app_currency_updater_source_type">
-                    <option value="msn">J2STORE_MSN_API</option>
-                    <option value="rate_api">J2STORE_RATE_API</option>
-                    <option value="currency_api">J2STORE_CURRENCYCONVERTER_API</option>
-                </field>
             </fieldset>
         </fields>
     </config>

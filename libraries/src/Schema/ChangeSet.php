@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -96,13 +96,12 @@ class ChangeSet
 		// If on mysql, add a query at the end to check for utf8mb4 conversion status
 		if ($this->db->getServerType() === 'mysql')
 		{
-			// Let the update query do nothing when being executed
+			// Let the update query be something harmless which should always succeed
 			$tmpSchemaChangeItem = ChangeItem::getInstance(
 				$db,
 				'database.php',
 				'UPDATE ' . $this->db->quoteName('#__utf8_conversion')
-				. ' SET ' . $this->db->quoteName('converted') . ' = '
-				. $this->db->quoteName('converted') . ';');
+				. ' SET ' . $this->db->quoteName('converted') . ' = 0;');
 
 			// Set to not skipped
 			$tmpSchemaChangeItem->checkStatus = 0;
@@ -110,12 +109,12 @@ class ChangeSet
 			// Set the check query
 			if ($this->db->hasUTF8mb4Support())
 			{
-				$converted = 5;
+				$converted = 2;
 				$tmpSchemaChangeItem->queryType = 'UTF8_CONVERSION_UTF8MB4';
 			}
 			else
 			{
-				$converted = 3;
+				$converted = 1;
 				$tmpSchemaChangeItem->queryType = 'UTF8_CONVERSION_UTF8';
 			}
 

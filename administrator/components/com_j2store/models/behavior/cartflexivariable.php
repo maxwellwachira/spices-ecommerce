@@ -10,14 +10,7 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
 
     public function getVariantByOptions($options, $product){
         $variant = array();
-       // $chk_variants = $product->variants;
-        $variantModel = F0FModel::getTmpInstance('Variants', 'J2StoreModel');
-        $variantModel->setState('product_type', $product->product_type);
-        //now load variants
-        $chk_variants = $variantModel
-            ->product_id($product->j2store_product_id)
-            ->is_master(0)
-            ->getList();
+        $chk_variants = $product->variants;
         foreach ($chk_variants as $chk_variant){
             $product_option_values = explode(',',$chk_variant->variant_name);
             if(is_array($product_option_values)){
@@ -25,25 +18,16 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
                 foreach ($product_option_values as $pro_option_value){
                     $product_option_value = F0FTable::getInstance ( 'Productoptionvalue', 'J2StoreTable' )->getClone ();
                     $product_option_value->load($pro_option_value);
-
-
                     $option_status = false;
                     // exact match
-                    if( array_key_exists($product_option_value->productoption_id, $options) && $options[$product_option_value->productoption_id] == $product_option_value->optionvalue_id ){
+                    if(array_key_exists($product_option_value->productoption_id, $options) && (int)$product_option_value->optionvalue_id === 0){
                         $option_status = true;
-                    }elseif(array_key_exists($product_option_value->productoption_id, $options) && (int)$product_option_value->optionvalue_id === 0 ){
-                        //any option or all option created in backend product variant
-                        $option_status = true;
-                    }
-
-
-                    /*if(array_key_exists($product_option_value->productoption_id, $options) && (int)$product_option_value->optionvalue_id === 0){
-                        $option_status = true;
-                    }elseif( array_key_exists($product_option_value->productoption_id, $options) && $options[$product_option_value->productoption_id] == $product_option_value->optionvalue_id ){
+                    }else
+                        if( array_key_exists($product_option_value->productoption_id, $options) && $options[$product_option_value->productoption_id] == $product_option_value->optionvalue_id ){
                             $option_status = true;
-                    }elseif (array_key_exists($product_option_value->productoption_id, $options) && $options[$product_option_value->productoption_id] == '*'){
+                        }elseif (array_key_exists($product_option_value->productoption_id, $options) && (int)$options[$product_option_value->productoption_id] === 0){
                             $option_status = true;
-                    }*/
+                        }
                     $status[] = $option_status;
                 }
                 if (!in_array(false, $status, false)){
@@ -52,7 +36,6 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
                 }
             }
         }
-
         return $variant;
     }
 
@@ -77,20 +60,13 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
         if (empty($options)){
             $options = array();
         }
-       // $plugin = JPluginHelper::getPlugin('j2store', 'app_flexivariable');
-       // $plugin_params = new JRegistry($plugin->params);
-       // $option_required = $plugin_params->get('option_required',0);
+
         //iterate through stored options for this product and validate
         foreach($product->product_options as $product_option) {
             if (empty($options[$product_option->j2store_productoption_id])) {
                 $errors['error']['option'][$product_option->j2store_productoption_id] = JText::sprintf('J2STORE_ADDTOCART_PRODUCT_OPTION_REQUIRED', JText::_($product_option->option_name));
             }
-
-            if(/*isset($option_required) && $option_required &&*/ $options[$product_option->j2store_productoption_id] == '*'){
-                $errors['error']['option'][$product_option->j2store_productoption_id] = JText::sprintf('J2STORE_ADDTOCART_PRODUCT_OPTION_REQUIRED', JText::_($product_option->option_name));
-            }
         }
-
 
         if(!$errors) {
 
@@ -218,7 +194,7 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
             $query->select('pov.*');
             $query->from('#__j2store_product_optionvalues AS pov');
             //$query->where('pov.j2store_product_optionvalue_id='.$option_value);
-            $query->where('pov.productoption_id='.$db->q($product_option_id));
+            $query->where('pov.productoption_id='.$product_option_id);
 
             //join the optionvalues table to get the name
             $query->select('ov.j2store_optionvalue_id, ov.optionvalue_name');
@@ -333,7 +309,7 @@ class J2StoreModelCartsBehaviorCartFlexiVariable extends F0FModelBehavior {
     public function onValidateCart(&$model, $cartitem, $quantity) {
 
         //sanity check
-        if($cartitem->product_type != 'flexivariable') return;
+        if($cartitem->product_type != 'variable') return;
 
         $productHelper = J2Store::product();
         $errors = array();

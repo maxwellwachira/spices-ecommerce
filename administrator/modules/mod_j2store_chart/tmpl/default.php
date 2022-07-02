@@ -7,19 +7,18 @@
 // No direct access to this file
 defined ( '_JEXEC' ) or die ();
 /**
- * Get the document.
- */
-require_once (JPATH_ADMINISTRATOR.'/components/com_j2store/helpers/j2store.php');
+  * Get the document.
+  */
 $document = JFactory::getDocument();
-$module_id = $module->id;
-$document->addScript('https://www.gstatic.com/charts/loader.js');
+
+$document->addScript(JUri::root().'administrator/modules/mod_j2store_chart/media/chart_api.js');
 $currency = J2Store::currency();
 //chart script.
 $script = '
-google.charts.load("current", {packages:["corechart"]});
-      google.setOnLoadCallback(drawChart_'.$module_id.');
+ google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
 
-         function drawChart_'.$module_id.'() {
+         function drawChart() {
 
         //year chart axis.
 
@@ -29,20 +28,20 @@ google.charts.load("current", {packages:["corechart"]});
 
          ';
 
-/**
- * array of items.
- */
-foreach($years as $order) {
-    //year charts properties.
-    $script .="
+       /**
+		 * array of items.
+		 */
+        foreach($years as $order) {
+			//year charts properties.
+			$script .="
 
 			['".$order['dyear']."',".$order['total']."],
 
 			";
 
-}
+		}
 
-$script .=']);
+    $script .=']);
 
 
     //month chart axis.
@@ -52,22 +51,22 @@ $script .=']);
     ["'.JText::_("J2STORE_CHART_MONTH").'","'.JText::_("J2STORE_CHART_TOTAL_AMOUNT").'"],
     ';
 
-/**
- * array of itemsmonth.
- */
-foreach($months as $item) {
+    /**
+     * array of itemsmonth.
+     */
+    foreach($months as $item) {
 
-    //$months = array('','January','Feb','March','April','May','June','July','Auguest','Sep','Oct','Nov','Dec');
+    	//$months = array('','January','Feb','March','April','May','June','July','Auguest','Sep','Oct','Nov','Dec');
 
-    //month charts properties.
-    $script .='
+    	//month charts properties.
+    	$script .='
 
     	["'.$item['dmonth'].'",'.$item['total'].'],
 
     	';
 
-}
-$script .=']);
+    }
+    $script .=']);
 
     //day chart axis.
 
@@ -75,14 +74,14 @@ $script .=']);
     ["'.JText::_("J2STORE_CHART_MONTH").'","'.JText::_("J2STORE_CHART_TOTAL_AMOUNT").'"],
     ';
 
-/**
- * array of items.
- */
-if(!empty($days)){
+    /**
+     * array of items.
+     */
+	if(!empty($days)){
 
-    foreach($days as $itemday){
-        //day charts properties.
-        $script .='
+		foreach($days as $itemday){
+   		//day charts properties.
+    	$script .='
     	["'.$itemday['dday'].'",'.$itemday['total'].'],
 
     	';
@@ -90,14 +89,14 @@ if(!empty($days)){
     }
 }
 
-//  echo JText::_("J2STORE_CHART_TOTAL_AMOUNT");
+  //  echo JText::_("J2STORE_CHART_TOTAL_AMOUNT");
 
-$year_title = JText::_('MOD_J2STORE_CHART_YEARLY_SALES_REPORT');
-$monthly_title = JText::_('MOD_J2STORE_CHART_MONTHLY_SALES_REPORT');
-$daily_title = JText::_('MOD_J2STORE_CHART_DAILY_SALES_REPORT');
-if($chart_type=='daily'){
+	$year_title = JText::_('MOD_J2STORE_CHART_YEARLY_SALES_REPORT');
+	$monthly_title = JText::_('MOD_J2STORE_CHART_MONTHLY_SALES_REPORT');
+	$daily_title = JText::_('MOD_J2STORE_CHART_DAILY_SALES_REPORT');
+	if($chart_type=='daily'){
 
-    $script .=']);
+		$script .=']);
 		//day chart options.
 		var dayoptions = {
 		title:"'.$daily_title.'",
@@ -120,14 +119,14 @@ if($chart_type=='daily'){
 
 		//day line chart.
 
-		var daycharts = new google.visualization.LineChart(document.getElementById("daily_report_'.$module_id.'"));
+		var daycharts = new google.visualization.LineChart(document.getElementById("daily_report"));
 		daycharts.draw(daychart, dayoptions);
 
 		}
 		';
-}elseif($chart_type=='monthly'){
+	}elseif($chart_type=='monthly'){
 
-    $script .=']);
+		$script .=']);
 		//month chart options.
 		var monthoptions = {
 
@@ -148,13 +147,13 @@ if($chart_type=='daily'){
 		};
 
 		//month line chart.
-		var monthcharts = new google.visualization.LineChart(document.getElementById("monthly_report_'.$module_id.'"));
+		var monthcharts = new google.visualization.LineChart(document.getElementById("monthly_report"));
 		monthcharts.draw(monthchart,monthoptions);
 		}
 		';
-}elseif($chart_type=='yearly'){
+	}elseif($chart_type=='yearly'){
 
-    $script .=']);
+		$script .=']);
 		//year chart options.
 
 		var yearoptions = {
@@ -184,20 +183,20 @@ if($chart_type=='daily'){
 
 		//year line chart.
 
-		var yearcharts = new google.visualization.LineChart(document.getElementById("yearly_report_'.$module_id.'"));
+		var yearcharts = new google.visualization.LineChart(document.getElementById("yearly_report"));
 		yearcharts.draw(yearchart, yearoptions);
 
 		}
 		';
 
 
-}
+	}
 //script declaration.
 $document->addScriptDeclaration($script);
 
 ?>
 <?php if(!empty($days)):?>
-    <div id="daily_report_<?php echo $module_id;?>" class="mod-j2store-daily-sale-chart"></div>
+<div id="daily_report" class="mod-j2store-daily-sale-chart"></div>
 <?php endif;?>
 <!--
 <?php if($chart_type && ( empty($days) || empty($months) || empty($years))):?>
@@ -209,11 +208,11 @@ $document->addScriptDeclaration($script);
 -->
 
 <?php if(!empty($months)):?>
-    <div id="monthly_report_<?php echo $module_id;?>" class="mod-j2store-monthly-sale-chart"></div>
+	<div id="monthly_report" class="mod-j2store-monthly-sale-chart"></div>
 <?php endif;?>
 
 <?php if(!empty($years)):?>
-    <div id="yearly_report_<?php echo $module_id;?>" class="mod-j2store-yearly-sale-shart"></div>
+	<div id="yearly_report" class="mod-j2store-yearly-sale-shart"></div>
 <?php endif;?>
 
 

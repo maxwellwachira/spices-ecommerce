@@ -191,7 +191,7 @@ $con_span = 0;
 						<th><?php echo JText::_( "J2STORE_PAO_WEIGHT_PREFIX" ); ?>
 						</th>
 						<th><?php echo JText::_( "J2STORE_PAO_WEIGHT" ); ?></th>
-						<?php if( in_array ( $this->product->product_type, array('simple','advancedvariable', 'booking'))): ?>
+						<?php if( in_array ( $this->product->product_type, array('simple','advancedvariable'))): ?>
 						<th><?php echo JText::_( "J2STORE_DEFAULT" ); ?></th>
 						<?php endif; ?>
 
@@ -276,7 +276,7 @@ $con_span = 0;
 							<td>
 								<?php echo J2Html::text( $this->prefix.'['.$poptionvalue->j2store_product_optionvalue_id.'][product_optionvalue_weight]' ,$poptionvalue->product_optionvalue_weight,array('id'=>'product_optionvalue_weight' ,'class'=>'input-small'));?>
 							</td>
-						<?php if( in_array ( $this->product->product_type, array('simple','advancedvariable', 'booking'))): ?>
+						<?php if( in_array ( $this->product->product_type, array('simple','advancedvariable'))): ?>
 						<td>
 								<?php  echo JHtml::_('jgrid.isdefault',$poptionvalue->product_optionvalue_default,$key,"",$canChange,'cb');?>
 							</td>

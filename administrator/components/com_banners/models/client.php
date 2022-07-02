@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_banners
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -35,17 +35,22 @@ class BannersModelClient extends JModelAdmin
 	 */
 	protected function canDelete($record)
 	{
-		if (empty($record->id) || $record->state != -2)
+		if (!empty($record->id))
 		{
-			return false;
-		}
+			if ($record->state != -2)
+			{
+				return false;
+			}
 
-		if (!empty($record->catid))
-		{
-			return JFactory::getUser()->authorise('core.delete', 'com_banners.category.' . (int) $record->catid);
-		}
+			$user = JFactory::getUser();
 
-		return parent::canDelete($record);
+			if (!empty($record->catid))
+			{
+				return $user->authorise('core.delete', 'com_banners.category.' . (int) $record->catid);
+			}
+
+			return $user->authorise('core.delete', 'com_banners');
+		}
 	}
 
 	/**

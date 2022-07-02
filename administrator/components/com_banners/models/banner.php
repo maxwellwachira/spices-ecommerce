@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_banners
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -106,17 +106,20 @@ class BannersModelBanner extends JModelAdmin
 	 */
 	protected function canDelete($record)
 	{
-		if (empty($record->id) || $record->state != -2)
+		if (!empty($record->id))
 		{
-			return false;
-		}
+			if ($record->state != -2)
+			{
+				return false;
+			}
 
-		if (!empty($record->catid))
-		{
-			return JFactory::getUser()->authorise('core.delete', 'com_banners.category.' . (int) $record->catid);
-		}
+			if (!empty($record->catid))
+			{
+				return JFactory::getUser()->authorise('core.delete', 'com_banners.category.' . (int) $record->catid);
+			}
 
-		return parent::canDelete($record);
+			return parent::canDelete($record);
+		}
 	}
 
 	/**
@@ -380,9 +383,6 @@ class BannersModelBanner extends JModelAdmin
 		if ($this->canCreateCategory())
 		{
 			$form->setFieldAttribute('catid', 'allowAdd', 'true');
-
-			// Add a prefix for categories created on the fly.
-			$form->setFieldAttribute('catid', 'customPrefix', '#new#');
 		}
 
 		parent::preprocessForm($form, $data, $group);
@@ -403,22 +403,20 @@ class BannersModelBanner extends JModelAdmin
 
 		JLoader::register('CategoriesHelper', JPATH_ADMINISTRATOR . '/components/com_categories/helpers/categories.php');
 
-		// Create new category, if needed.
-		$createCategory = true;
+		// Cast catid to integer for comparison
+		$catid = (int) $data['catid'];
 
-		// If category ID is provided, check if it's valid.
-		if (is_numeric($data['catid']) && $data['catid'])
+		// Check if New Category exists
+		if ($catid > 0)
 		{
-			$createCategory = !CategoriesHelper::validateCategoryId($data['catid'], 'com_banners');
+			$catid = CategoriesHelper::validateCategoryId($data['catid'], 'com_banners');
 		}
 
 		// Save New Category
-		if ($createCategory && $this->canCreateCategory())
+		if ($catid == 0 && $this->canCreateCategory())
 		{
 			$table              = array();
-
-			// Remove #new# prefix, if exists.
-			$table['title'] = strpos($data['catid'], '#new#') === 0 ? substr($data['catid'], 5) : $data['catid'];
+			$table['title']     = $data['catid'];
 			$table['parent_id'] = 1;
 			$table['extension'] = 'com_banners';
 			$table['language']  = $data['language'];
@@ -465,32 +463,5 @@ class BannersModelBanner extends JModelAdmin
 	private function canCreateCategory()
 	{
 		return JFactory::getUser()->authorise('core.create', 'com_banners');
-	}
-
-	/**
-	 * Method to validate the form data.
-	 *
-	 * @param   JForm   $form   The form to validate against.
-	 * @param   array   $data   The data to validate.
-	 * @param   string  $group  The name of the field group to validate.
-	 *
-	 * @return  array|boolean  Array of filtered data if valid, false otherwise.
-	 *
-	 * @see     JFormRule
-	 * @see     JFilterInput
-	 * @since   3.9.25
-	 */
-	public function validate($form, $data, $group = null)
-	{
-		// Don't allow to change the users if not allowed to access com_users.
-		if (!JFactory::getUser()->authorise('core.manage', 'com_users'))
-		{
-			if (isset($data['created_by']))
-			{
-				unset($data['created_by']);
-			}
-		}
-
-		return parent::validate($form, $data, $group);
 	}
 }

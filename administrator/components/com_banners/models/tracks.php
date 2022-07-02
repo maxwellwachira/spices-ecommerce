@@ -3,14 +3,13 @@
  * @package     Joomla.Administrator
  * @subpackage  com_banners
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
 use Joomla\Archive\Archive;
-use Joomla\String\StringHelper;
 
 JLoader::register('BannersHelper', JPATH_ADMINISTRATOR . '/components/com_banners/helpers/banners.php');
 
@@ -168,7 +167,7 @@ class BannersModelTracks extends JModelList
 
 		if (!empty($search))
 		{
-			$search = $db->quote('%' . StringHelper::strtolower($search) . '%');
+			$search = $db->quote('%' . strtolower($search) . '%');
 			$query->where('(LOWER(b.name) LIKE ' . $search . ' OR LOWER(cl.name) LIKE ' . $search . ')');
 		}
 
@@ -402,9 +401,9 @@ class BannersModelTracks extends JModelList
 	}
 
 	/**
-	 * Get the client name
+	 * Get the category name
 	 *
-	 * @return  string  The client name.
+	 * @return  string  The category name.
 	 *
 	 * @since   1.6
 	 */

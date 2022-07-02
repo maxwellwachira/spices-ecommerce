@@ -3,7 +3,7 @@
  * @package     Joomla.Plugin
  * @subpackage  Content.Contact
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -93,17 +93,17 @@ class PlgContentContact extends JPlugin
 	/**
 	 * Retrieve Contact
 	 *
-	 * @param   int  $userId  Id of the user who created the article
+	 * @param   int  $created_by  Id of the user who created the contact
 	 *
 	 * @return  mixed|null|integer
 	 */
-	protected function getContactData($userId)
+	protected function getContactData($created_by)
 	{
 		static $contacts = array();
 
-		if (isset($contacts[$userId]))
+		if (isset($contacts[$created_by]))
 		{
-			return $contacts[$userId];
+			return $contacts[$created_by];
 		}
 
 		$query = $this->db->getQuery(true);
@@ -111,7 +111,7 @@ class PlgContentContact extends JPlugin
 		$query->select('MAX(contact.id) AS contactid, contact.alias, contact.catid, contact.webpage, contact.email_to');
 		$query->from($this->db->quoteName('#__contact_details', 'contact'));
 		$query->where('contact.published = 1');
-		$query->where('contact.user_id = ' . (int) $userId);
+		$query->where('contact.user_id = ' . (int) $created_by);
 
 		if (JLanguageMultilang::isEnabled() === true)
 		{
@@ -122,8 +122,8 @@ class PlgContentContact extends JPlugin
 
 		$this->db->setQuery($query);
 
-		$contacts[$userId] = $this->db->loadObject();
+		$contacts[$created_by] = $this->db->loadObject();
 
-		return $contacts[$userId];
+		return $contacts[$created_by];
 	}
 }

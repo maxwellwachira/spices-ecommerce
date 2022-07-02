@@ -3,13 +3,12 @@
  * @package     Joomla.Site
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-use Joomla\CMS\User\UserHelper;
 use Joomla\Registry\Registry;
 
 /**
@@ -161,7 +160,7 @@ class UsersModelProfile extends JModelForm
 	 * The base form is loaded from XML and then an event is fired
 	 * for users plugins to extend the form with extra fields.
 	 *
-	 * @param   array    $data      An optional array of data for the form to interrogate.
+	 * @param   array    $data      An optional array of data for the form to interogate.
 	 * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
 	 *
 	 * @return  JForm  A JForm object on success, false on failure
@@ -392,12 +391,6 @@ class UsersModelProfile extends JModelForm
 			return false;
 		}
 
-		// Destroy all active sessions for the user after changing the password
-		if ($data['password'])
-		{
-			UserHelper::destroyUserSessions($user->id, true);
-		}
-
 		return $user->id;
 	}
 
@@ -405,41 +398,41 @@ class UsersModelProfile extends JModelForm
 	 * Gets the configuration forms for all two-factor authentication methods
 	 * in an array.
 	 *
-	 * @param   integer  $userId  The user ID to load the forms for (optional)
+	 * @param   integer  $user_id  The user ID to load the forms for (optional)
 	 *
 	 * @return  array
 	 *
 	 * @since   3.2
 	 */
-	public function getTwofactorform($userId = null)
+	public function getTwofactorform($user_id = null)
 	{
-		$userId = (!empty($userId)) ? $userId : (int) $this->getState('user.id');
+		$user_id = (!empty($user_id)) ? $user_id : (int) $this->getState('user.id');
 
 		$model = new UsersModelUser;
 
-		$otpConfig = $model->getOtpConfig($userId);
+		$otpConfig = $model->getOtpConfig($user_id);
 
 		FOFPlatform::getInstance()->importPlugin('twofactorauth');
 
-		return FOFPlatform::getInstance()->runPlugins('onUserTwofactorShowConfiguration', array($otpConfig, $userId));
+		return FOFPlatform::getInstance()->runPlugins('onUserTwofactorShowConfiguration', array($otpConfig, $user_id));
 	}
 
 	/**
 	 * Returns the one time password (OTP) – a.k.a. two factor authentication –
 	 * configuration for a particular user.
 	 *
-	 * @param   integer  $userId  The numeric ID of the user
+	 * @param   integer  $user_id  The numeric ID of the user
 	 *
 	 * @return  stdClass  An object holding the OTP configuration for this user
 	 *
 	 * @since   3.2
 	 */
-	public function getOtpConfig($userId = null)
+	public function getOtpConfig($user_id = null)
 	{
-		$userId = (!empty($userId)) ? $userId : (int) $this->getState('user.id');
+		$user_id = (!empty($user_id)) ? $user_id : (int) $this->getState('user.id');
 
 		$model = new UsersModelUser;
 
-		return $model->getOtpConfig($userId);
+		return $model->getOtpConfig($user_id);
 	}
 }

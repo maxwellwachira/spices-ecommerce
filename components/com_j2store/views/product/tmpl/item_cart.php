@@ -32,7 +32,7 @@ $show = J2Store::product ()->validateVariableProduct($this->product);
 	
 		<?php echo J2Store::product()->displayQuantity('com_j2store.product.item', $this->product, $this->params, array( 'class'=>'input-mini form-control ' ) ); ?>
 
-			<input type="hidden" id="j2store_product_id_<?php echo $this->product->j2store_product_id;?>" name="product_id" value="<?php echo $this->product->j2store_product_id; ?>" />
+			<input type="hidden" id="j2store_product_id" name="product_id" value="<?php echo $this->product->j2store_product_id; ?>" />
 
 				<input
 					data-cart-action-always="<?php echo JText::_('J2STORE_ADDING_TO_CART'); ?>"

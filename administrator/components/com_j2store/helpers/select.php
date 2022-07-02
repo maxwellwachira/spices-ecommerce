@@ -342,7 +342,7 @@ class J2StoreHelperSelect {
 			{
 				if (is_numeric($config['filter.published']))
 				{
-					$query->where('a.published = ' . $db->q((int) $config['filter.published']));
+					$query->where('a.published = ' . (int) $config['filter.published']);
 				}
 				elseif (is_array($config['filter.published']))
 				{

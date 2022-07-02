@@ -19,14 +19,13 @@ $ajax_base_url = JRoute::_('index.php');
 $app = JFactory::getApplication();
 $active_menu = $app->getMenu()->getActive();
 
-$page_heading = (isset($active_menu->params) && is_object($active_menu->params)) ? $active_menu->params: new JRegistry();
+$page_heading = isset($active_menu->params) && !empty($active_menu->params) ? $active_menu->params: new JRegistry();
 if(!$page_heading instanceof JRegistry){
     $page_heading = new JRegistry ();
 }
-$page_heading_enabled = $page_heading->get('show_page_heading',0);
-$page_heading_text = $page_heading->get('page_heading','');
+$page_heading_text = $page_heading->get('show_page_heading','');
 ?>
-<?php if($page_heading_enabled):?>
+<?php if($page_heading_text):?>
     <div class="page-header">
         <h1> <?php echo $this->escape($page_heading_text); ?> </h1>
     </div>

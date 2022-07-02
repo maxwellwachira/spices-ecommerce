@@ -37,8 +37,6 @@ class J2StoreStrapper {
 		//load name spacer
 		$document->addScript(JURI::root(true).'/media/j2store/js/j2store.namespace.js');
 		$ui_location = $params->get ( 'load_jquery_ui', 3 );
-        $load_fancybox = $params->get ( 'load_fancybox', 1 );
-
 		switch ($ui_location) {
 
 			case '0' :
@@ -74,10 +72,6 @@ class J2StoreStrapper {
 			self::loadTimepickerScript($document);
 			$document->addScript(JURI::root(true).'/media/j2store/js/j2store.js');
             $document->addScript(JURI::root(true).'/media/j2store/js/bootstrap-modal-conflit.js');
-            if($load_fancybox){
-                $document->addScript(JURI::root(true).'/media/j2store/js/jquery.fancybox.min.js');
-                $document->addScriptDeclaration('jQuery(document).off("click.fb-start", "[data-trigger]");');
-            }
 		}
 		J2Store::plugin ()->event ( 'AfterAddJS' );
 	}
@@ -145,10 +139,6 @@ class J2StoreStrapper {
 			} else {
 				$document->addStyleSheet ( JURI::root ( true ) . '/media/j2store/css/j2store.css' );
 			}
-            $load_fancybox = $j2storeparams->get ( 'load_fancybox', 1 );
-			if($load_fancybox){
-                $document->addStyleSheet ( JURI::root ( true ) . '/media/j2store/css/jquery.fancybox.min.css' );
-            }
 		}
 		J2Store::plugin ()->event ( 'AfterAddCSS' );
 	}
@@ -224,7 +214,7 @@ class J2StoreStrapper {
 
 		(function($) {
 			$(document).ready(function(){
-				/*date, time, datetime*/
+				//date, time, datetime
 
 				if( $('.$element_date').length ){
 					$('.$element_date').datepicker({dateFormat: '$date_format'});

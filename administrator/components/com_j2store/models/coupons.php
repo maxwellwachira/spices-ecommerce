@@ -85,13 +85,10 @@ class J2StoreModelCoupons extends F0FModel {
 		if(!isset($history[$coupon_id][$user_id])) {
 			$db = JFactory::getDbo();
 			$query = $db->getQuery ( true );
-			$query->select ( 'COUNT(*) AS total' )->from ( '#__j2store_orderdiscounts' )
-                ->join('LEFT','#__j2store_orders on #__j2store_orderdiscounts.order_id = #__j2store_orders.order_id')
-                -> where('#__j2store_orders.order_state_id!=5 ')
-                ->where ( '#__j2store_orderdiscounts.discount_entity_id=' . $db->q ( $coupon_id) );
-			$query->where('#__j2store_orderdiscounts.discount_type = '.$db->q('coupon'));
+			$query->select ( 'COUNT(*) AS total' )->from ( '#__j2store_orderdiscounts' )->where ( 'discount_entity_id=' . $db->q ( $coupon_id) );
+			$query->where('discount_type = '.$db->q('coupon'));
 			if(!empty($user_id)) {
-				$query->where('#__j2store_orderdiscounts.user_id = '.$db->q($user_id));
+				$query->where('user_id = '.$db->q($user_id));
 			}
 			$db->setQuery ( $query );
 			$history[$coupon_id][$user_id] = $db->loadResult ();
@@ -102,15 +99,10 @@ class J2StoreModelCoupons extends F0FModel {
 
 	public function is_valid($order) {
 		try {
-            $coupon_status = false;
-            J2Store::plugin()->event('BeforeCouponIsValid', array($this, $order,&$coupon_status));
-            if ($coupon_status) {
-                return true;
-            }
 			$this->validate_enabled();
 			$this->validate_exists();
 			$this->validate_usage_limit();
-			$this->validate_user_logged();
+			$this->validate_user_logged();			
 			$this->validate_users();
 			$this->validate_user_group();
 			$this->validate_user_usage_limit();
@@ -324,9 +316,10 @@ class J2StoreModelCoupons extends F0FModel {
 		$db = JFactory::getDbo();
 		$nullDate = $db->getNullDate();
 		$tz = JFactory::getConfig()->get('offset');
-		$now = JFactory::getDate('now', $tz)->toSql(true);
-		$valid_from = JFactory::getDate($this->coupon->valid_from, $tz)->toSql(true);
-		$valid_to = JFactory::getDate($this->coupon->valid_to, $tz)->toSql(true);
+		$now = JFactory::getDate('now', $tz)->format('Y-m-d', true);
+		$valid_from = JFactory::getDate($this->coupon->valid_from, $tz)->format('Y-m-d', true);
+		$valid_to = JFactory::getDate($this->coupon->valid_to, $tz)->format('Y-m-d', true);
+
 		if(
 		($this->coupon->valid_from == $nullDate || $valid_from <= $now) &&
 		 ($this->coupon->valid_to == $nullDate || $valid_to >= $now)
@@ -648,7 +641,7 @@ class J2StoreModelCoupons extends F0FModel {
 
 	public function get_coupon(){
 		$cart_model = F0FModel::getTmpInstance('Carts', 'J2StoreModel');
-        $cart_table = $cart_model->getCart();
+		$cart_table = $cart_model->getCart();
 		if(isset( $cart_table->cart_coupon ) && !empty( $cart_table->cart_coupon ) ){
 			$session = JFactory::getSession ();
 			$session->set('coupon', $cart_table->cart_coupon, 'j2store');
@@ -663,7 +656,7 @@ class J2StoreModelCoupons extends F0FModel {
 
 	public function has_coupon(){
 		$cart_model = F0FModel::getTmpInstance('Carts', 'J2StoreModel');
-        $cart_table = $cart_model->getCart();
+		$cart_table = $cart_model->getCart();
 		$session = JFactory::getSession ();
 		if(isset( $cart_table->cart_coupon ) && !empty( $cart_table->cart_coupon ) ){
 			$session->set('coupon', $cart_table->cart_coupon, 'j2store');
@@ -685,7 +678,7 @@ class J2StoreModelCoupons extends F0FModel {
 	public function remove_coupon() {
 		JFactory::getSession()->clear('coupon', 'j2store');
 		$cart_model = F0FModel::getTmpInstance('Carts', 'J2StoreModel');
-        $cart_table = $cart_model->getCart();
+		$cart_table = $cart_model->getCart();
 
 		if(isset( $cart_table->j2store_cart_id ) && !empty( $cart_table->j2store_cart_id )){
 			$cart_table->cart_coupon = '';

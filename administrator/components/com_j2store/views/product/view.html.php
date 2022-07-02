@@ -104,25 +104,12 @@ class J2StoreViewProduct extends F0FViewHtml
             ->value($this->item->main_tag)
             ->setPlaceHolders($tag_options)
             ->getHtml();
-        $productfilter_model = F0FModel::getTmpInstance('ProductFilters', 'J2StoreModel');
-        $productfilter_model->setState('limit',10);
-        $this->filter_limit = 10;
 		if($this->item->j2store_product_id > 0) {
-            $productfilter_model->setState('product_id',$this->item->j2store_product_id);
-            $productfilter_list = $productfilter_model->getList();
-            $product_filters = array();
-            foreach($productfilter_list as $row) {
-                if(!isset($product_filters[$row->group_id])){
-                    $product_filters[$row->group_id] = array();
-                }
-                $product_filters[$row->group_id]['group_name'] = $row->group_name;
-                $product_filters[$row->group_id]['filters'][] = $row;
-            }
-			$this->product_filters = $product_filters;//F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
+			$this->product_filters = F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
 		}else {
 			$this->product_filters = array();
 		}
-        $this->item->productfilter_pagination = $productfilter_model->getPagination();
+
         $this->product_option_list =  $this->getProductOptionList($this->item->product_type);
 		return true;
 	}

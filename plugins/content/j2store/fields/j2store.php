@@ -21,35 +21,34 @@ class JFormFieldJ2Store extends JFormField
 
 	protected function getInput()
 	 {
-	     try{
-             $app = JFactory::getApplication();
-             $id = $app->input->getInt('id');
+	 	$app = JFactory::getApplication();
+	 	$id = $app->input->getInt('id');
 
-             if($app->isSite()){
-                 $id = $app->input->getInt('a_id');
-             }
+	 	if($app->isSite()){
+	 		$id = $app->input->getInt('a_id');
+	 	}
 
-             $productTable = F0FTable::getAnInstance('Product' ,'J2StoreTable');
-             $productTable->load(array('product_source'=>'com_content', 'product_source_id' =>$id));
+	 	$productTable = F0FTable::getAnInstance('Product' ,'J2StoreTable');
+		$productTable->load(array('product_source'=>'com_content', 'product_source_id' =>$id));
 
-             $product_id = (isset($productTable->j2store_product_id)) ? $productTable->j2store_product_id : '';
+		$product_id = (isset($productTable->j2store_product_id)) ? $productTable->j2store_product_id : '';
 
-             $inputvars = array(
-                 'task' =>'edit',
-                 'render_toolbar'        => '0',
-                 'product_source_id'=>$id,
-                 'id' =>$product_id,
-                 'product_source'=>'com_content',
-                 'product_source_view'=>'article',
-                 'form_prefix'=>'jform[attribs][j2store]'
-             );
-             $input = new F0FInput($inputvars);
+	 	$inputvars = array(
+	 			'task' =>'edit',
+	 			'render_toolbar'        => '0',
+	 			'product_source_id'=>$id,
+	 			'id' =>$product_id,
+	 			'product_source'=>'com_content',
+	 			'product_source_view'=>'article',
+	 			'form_prefix'=>'jform[attribs][j2store]'
+	 	);
+	 	$input = new F0FInput($inputvars);
 
-             @ob_start();
-             F0FDispatcher::getTmpInstance('com_j2store', 'product', array('layout'=>'form', 'tmpl'=>'component', 'input' => $input))->dispatch();
-             $html = ob_get_contents();
-             ob_end_clean();
-             $html .= "<script>
+	 	@ob_start();
+		F0FDispatcher::getTmpInstance('com_j2store', 'product', array('layout'=>'form', 'tmpl'=>'component', 'input' => $input))->dispatch();
+		$html = ob_get_contents();
+		ob_end_clean();
+		$html .= "<script>
 		(function($){
 			$(document).ready(function(){
 				function saveActiveTab(href) {
@@ -81,15 +80,13 @@ class JFormFieldJ2Store extends JFormField
 		
 		</script>
 		";
+		return $html;
 
-         }catch (Exception $e){
-	         $html = '';
-         }
-         return $html;
 	}
 
 	protected function getLabel()
 	{
+
 		return '';
 	}
 	public function getControlGroup()

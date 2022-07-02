@@ -12,8 +12,8 @@ $ajax_loader = JUri::root (true).'/media/j2store/images/loader.gif';
 
 <form action="<?php echo JRoute::_( "index.php?option=com_j2store&view=checkout" ); ?>" method="post" name="cash_form" id="cash_form" enctype="multipart/form-data">
 
-    <div class="note note-<?php echo $vars->orderpayment_type; ?>">
-
+    <div class="note">
+         <?php echo JText::_($vars->onbeforepayment_text); ?>
          <?php 
          	$image = $this->params->get('display_image', '');         	 
          ?>
@@ -22,11 +22,9 @@ $ajax_loader = JUri::root (true).'/media/j2store/images/loader.gif';
 				<img class="payment-plugin-image payment_cash" src="<?php echo JUri::root().JPath::clean($image); ?>" />
 			</span>
 		<?php endif; ?>
-        <p class="j2store-payment-display-name">
+        <p>
              <strong><?php echo JText::_($vars->display_name);?></strong>
         </p>
-        <p class="j2store-on-before-payment-text"><?php echo JText::_($vars->onbeforepayment_text); ?></p>
-
     </div>
 
 	<input type="button" onclick="doSendRequest()" id="cash-submit-button" class="j2store_cart_button button btn btn-primary" value="<?php echo JText::_($vars->button_text); ?>" />

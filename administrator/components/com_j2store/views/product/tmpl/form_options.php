@@ -7,7 +7,6 @@
 // No direct access
 defined('_JEXEC') or die;
 $key = 0;
-$base_path = rtrim(JUri::root(),'/').'/administrator';
 ?>
 
 <div class="j2store-product-options">
@@ -34,13 +33,13 @@ $base_path = rtrim(JUri::root(),'/').'/administrator';
 					<?php foreach($this->item->product_options as  $poption ):?>
 					<tr id="pao_current_option_<?php echo $poption->j2store_productoption_id;?>">
 						<td>
-							<?php echo $this->escape($poption->option_name);?>
+							<?php echo $poption->option_name;?>
 							<?php echo J2Html::hidden($this->form_prefix.'[item_options]['.$poption->j2store_productoption_id .'][j2store_productoption_id]', $poption->j2store_productoption_id);?>
 							<?php echo J2Html::hidden($this->form_prefix.'[item_options]['.$poption->j2store_productoption_id .'][option_id]', $poption->option_id);?>
-							<small>(<?php  echo $this->escape($poption->option_unique_name);?>)</small>
+							<small>(<?php  echo $poption->option_unique_name;?>)</small>
 							<small><?php JText::_('J2STORE_OPTION_TYPE');?><?php echo JText::_('J2STORE_'.JString::strtoupper($poption->type))?></small>
 							<?php if(isset($poption->type) && ($poption->type =='select' || $poption->type =='radio' || $poption->type =='checkbox')):?>
-							<?php echo J2StorePopup::popup($base_path."/index.php?option=com_j2store&view=products&task=setproductoptionvalues&product_id=".$this->item->j2store_product_id."&productoption_id=".$poption->j2store_productoption_id."&layout=productoptionvalues&tmpl=component", JText::_( "J2STORE_OPTION_SET_VALUES" ), array());?>
+							<?php echo J2StorePopup::popup("index.php?option=com_j2store&view=products&task=setproductoptionvalues&product_id=".$this->item->j2store_product_id."&productoption_id=".$poption->j2store_productoption_id."&layout=productoptionvalues&tmpl=component", JText::_( "J2STORE_OPTION_SET_VALUES" ), array());?>
 							<?php endif;?>
 						</td>
 						<td>
@@ -68,7 +67,7 @@ $base_path = rtrim(JUri::root(),'/').'/administrator';
 							</label>
                             <select name="option_select_id" id="option_select_id">
                                 <?php foreach ($this->product_option_list as $option_list):?>
-                                    <option value="<?php echo $option_list->j2store_option_id?>"><?php echo $this->escape($option_list->option_name) .' ('.$this->escape($option_list->option_unique_name).')';?></option>
+                                    <option value="<?php echo $option_list->j2store_option_id?>"><?php echo $option_list->option_name .' ('.$option_list->option_unique_name.')';?></option>
                                 <?php endforeach; ?>
                             </select>
                             <a onclick="addOption()" class="btn btn-success"> <?php echo JText::_('J2STORE_ADD_OPTIONS')?></a>
@@ -78,7 +77,7 @@ $base_path = rtrim(JUri::root(),'/').'/administrator';
 					<tfoot>
 						<tr>
 							<td colspan="4">
-								<?php echo J2StorePopup::popup($base_path."/index.php?option=com_j2store&view=products&task=setpaimport&product_type=".$this->item->product_type."&product_id=".$this->item->j2store_product_id."&layout=paimport&tmpl=component", JText::_('J2STORE_IMPORT_PRODUCT_OPTIONS'), array('class'=>'btn btn-success','width'=>800 , 'height'=>500));?>
+								<?php echo J2StorePopup::popup("index.php?option=com_j2store&view=products&task=setpaimport&product_type=".$this->item->product_type."&product_id=".$this->item->j2store_product_id."&layout=paimport&tmpl=component", JText::_('J2STORE_IMPORT_PRODUCT_OPTIONS'), array('class'=>'btn btn-success','width'=>800 , 'height'=>500));?>
 							</td>
 						</tr>
 					</tfoot>

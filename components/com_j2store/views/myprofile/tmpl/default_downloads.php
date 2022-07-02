@@ -58,7 +58,7 @@ $downloads = $model->getList();
 				<?php if($download->access_expires == JFactory::getDbo()->getNullDate()): ?>
 					<?php echo JText::_('J2STORE_NEVER_EXPIRES'); ?>
 				<?php else: ?>
-                    <?php echo JHtml::date($download->access_expires, J2Store::config()->get('date_format', JText::_('DATE_FORMAT_LC1')), false);?>
+				<?php echo JHTML::_('date', $download->access_expires, $this->params->get('date_format', JText::_('DATE_FORMAT_LC1'))); ?>
 				<?php endif;?>
 				
 				</td>
@@ -69,5 +69,4 @@ $downloads = $model->getList();
 		<?php endforeach;?>
 	</table>
 	<?php endif; ?>
-    <?php echo J2Store::plugin()->eventWithHtml('AfterOrderDownload',array($order));?>
 <?php endforeach;?>

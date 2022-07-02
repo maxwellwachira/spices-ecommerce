@@ -1,0 +1,119 @@
+.page-header {
+  padding-bottom: 15px;
+  margin: 0 0 32px;
+  border-bottom: 1px solid #bbbbbb;
+}
+.page-title,
+.page-header h1 {
+  line-height: 1;
+  margin: 0;
+}
+.page-subheader {
+  margin: 0 0 32px;
+}
+.page-subheader:before,
+.page-subheader:after {
+  display: table;
+  content: " ";
+}
+.page-subheader:after {
+  clear: both;
+}
+.page-subtitle,
+.page-subheader h2 {
+  line-height: 1;
+  margin: 0;
+}
+.page-header + .page-subheader {
+  margin-top: -32px;
+}
+.article-title,
+.article-header h1 {
+  margin: 0 0 6px 0;
+}
+.article-title a,
+.article-header h1 a {
+  color: #333333;
+}
+.article-title a:hover,
+.article-header h1 a:hover {
+  color: #222222;
+}
+.item-title {
+  font-weight: bold;
+}
+.jumbotron h1,
+.jumbotron h2,
+.jumbotron h3 {
+  margin-top: 0;
+}
+.jumbotron p:last-child {
+  margin-bottom: 0;
+}
+.container .jumbotron {
+  border-radius: 50%;
+}
+.masthead {
+  padding: 48px 0;
+  text-align: center;
+}
+.masthead p:last-child {
+  margin-bottom: 0;
+}
+.masthead h1 {
+  color: #222222;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  padding: 18px 48px;
+  display: inline-block;
+  margin: 24px 0;
+}
+@media screen and (min-width: 1151px) {
+  .masthead {
+    padding: 72px 0;
+  }
+  .masthead h1 {
+    font-size: 32px;
+  }
+  .masthead p {
+    font-size: 32px;
+  }
+  .masthead .btn-lg {
+    margin-top: 32px;
+    padding: 18px 42px;
+    font-size: 24px;
+  }
+}
+.label:empty {
+  display: none;
+}
+.badge:empty {
+  display: none;
+}
+.btn .badge {
+  position: relative;
+  top: -1px;
+}
+.page-header .label,
+.page-header .badge {
+  vertical-align: middle;
+}
+.alert h4 {
+  color: inherit;
+}
+.media:first-child {
+  margin-top: 0;
+}
+.media-object {
+  display: block;
+}
+.media-heading {
+  margin: 0 0 5px;
+}
+.media > .pull-left {
+  margin-right: 10px;
+}
+.media > .pull-right {
+  margin-left: 10px;
+}

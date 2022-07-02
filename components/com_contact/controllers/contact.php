@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_contact
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -46,6 +46,7 @@ class ContactControllerContact extends JControllerForm
 
 		$app    = JFactory::getApplication();
 		$model  = $this->getModel('contact');
+		$params = JComponentHelper::getParams('com_contact');
 		$stub   = $this->input->getString('id');
 		$id     = (int) $stub;
 
@@ -77,13 +78,13 @@ class ContactControllerContact extends JControllerForm
 		// Check if the contact form is enabled
 		if (!$contact->params->get('show_email_form'))
 		{
-			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub . '&catid=' . $contact->catid, false));
+			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub, false));
 
 			return false;
 		}
 
 		// Check for a valid session cookie
-		if ($contact->params->get('validate_session', 0))
+		if ($params->get('validate_session', 0))
 		{
 			if (JFactory::getSession()->getState() !== 'active')
 			{
@@ -93,7 +94,7 @@ class ContactControllerContact extends JControllerForm
 				$app->setUserState('com_contact.contact.data', $data);
 
 				// Redirect back to the contact form.
-				$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub . '&catid=' . $contact->catid, false));
+				$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub, false));
 
 				return false;
 			}
@@ -131,7 +132,7 @@ class ContactControllerContact extends JControllerForm
 
 			$app->setUserState('com_contact.contact.data', $data);
 
-			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub . '&catid=' . $contact->catid, false));
+			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub, false));
 
 			return false;
 		}
@@ -153,9 +154,9 @@ class ContactControllerContact extends JControllerForm
 		// Send the email
 		$sent = false;
 
-		if (!$contact->params->get('custom_reply'))
+		if (!$params->get('custom_reply'))
 		{
-			$sent = $this->_sendEmail($data, $contact, $contact->params->get('show_email_copy', 0));
+			$sent = $this->_sendEmail($data, $contact, $params->get('show_email_copy', 0));
 		}
 
 		// Set the success message if it was a success
@@ -178,7 +179,7 @@ class ContactControllerContact extends JControllerForm
 		}
 		else
 		{
-			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub . '&catid=' . $contact->catid, false), $msg);
+			$this->setRedirect(JRoute::_('index.php?option=com_contact&view=contact&id=' . $stub, false), $msg);
 		}
 
 		return true;
@@ -187,15 +188,15 @@ class ContactControllerContact extends JControllerForm
 	/**
 	 * Method to get a model object, loading it if required.
 	 *
-	 * @param   array     $data               The data to send in the email.
-	 * @param   stdClass  $contact            The user information to send the email to
-	 * @param   boolean   $emailCopyToSender  True to send a copy of the email to the user.
+	 * @param   array     $data                  The data to send in the email.
+	 * @param   stdClass  $contact               The user information to send the email to
+	 * @param   boolean   $copy_email_activated  True to send a copy of the email to the user.
 	 *
 	 * @return  boolean  True on success sending the email, false on failure.
 	 *
 	 * @since   1.6.4
 	 */
-	private function _sendEmail($data, $contact, $emailCopyToSender)
+	private function _sendEmail($data, $contact, $copy_email_activated)
 	{
 		$app = JFactory::getApplication();
 
@@ -248,7 +249,7 @@ class ContactControllerContact extends JControllerForm
 		// If we are supposed to copy the sender, do so.
 
 		// Check whether email copy function activated
-		if ($emailCopyToSender == true && !empty($data['contact_email_copy']))
+		if ($copy_email_activated == true && !empty($data['contact_email_copy']))
 		{
 			$copytext    = JText::sprintf('COM_CONTACT_COPYTEXT_OF', $contact->name, $sitename);
 			$copytext    .= "\r\n\r\n" . $body;

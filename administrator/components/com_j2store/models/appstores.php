@@ -46,7 +46,7 @@ class J2StoreModelAppStores extends F0FModel {
         $file_path = JPATH_ADMINISTRATOR.'/components/com_j2store/backup/plugin.json';
         if(!JFile::exists($file_path) || $update_date){
             //get from server and store in local copy
-            $json_data = $this->get_external_stream('https://cdn.j2store.net/plugins.json');
+            $json_data = $this->get_external_stream('http://cdn.j2store.net/plugins.json');
             if(!empty($json_data)){
                 if(JFile::exists($file_path)){
                     JFile::delete($file_path);

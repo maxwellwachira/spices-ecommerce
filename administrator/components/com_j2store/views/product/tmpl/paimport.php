@@ -99,14 +99,14 @@ nav, header, div.subhead {
 					 <?php if(count($attributes)) : ?>
 				 		<ol>
 					 	<?php foreach($attributes as $attribute) : ?>
-					 		<li><?php echo $this->escape($attribute['option_name']); ?></li>
+					 		<li><?php echo $attribute['option_name']; ?></li>
 					 		<?php if(isset($attribute['optionvalue']) && !empty($attribute['optionvalue']) && count($attribute['optionvalue'])) : ?>
 					 				<strong> <?php echo JText::_('J2STORE_PAI_IMPORT_VALUES_FOR_THIS_OPTION'); ?></strong>
 					 				<ol>
 					 				<?php foreach ($attribute['optionvalue'] as $a_option) :
 					 				?>
 									<li>
-										<span><?php echo $this->escape($a_option['optionvalue_name']); ?> </span>
+										<span><?php echo $a_option['optionvalue_name']; ?> </span>
 										<span>
 										<?php echo $a_option['product_optionvalue_prefix']; ?>&nbsp;<?php echo $this->currency->format($a_option['product_optionvalue_price']); ?>
 										</span>

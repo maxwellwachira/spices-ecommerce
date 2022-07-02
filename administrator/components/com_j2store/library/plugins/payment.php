@@ -233,7 +233,7 @@ class J2StorePaymentPlugin extends J2StorePluginBase
 				$query = $db->getQuery(true);
 				$query->select('gz.*,gzr.*')->from('#__j2store_geozones AS gz')
 				->innerJoin('#__j2store_geozonerules AS gzr ON gzr.geozone_id = gz.j2store_geozone_id')
-				->where('gz.j2store_geozone_id='.$db->q($geozone_id ))
+				->where('gz.j2store_geozone_id='.$geozone_id )
 				->where('gzr.country_id='.$db->q($address['country_id']).' AND (gzr.zone_id=0 OR gzr.zone_id='.$db->q($address['zone_id']).')');
 				$db->setQuery($query);
 				$grows = $db->loadObjectList();

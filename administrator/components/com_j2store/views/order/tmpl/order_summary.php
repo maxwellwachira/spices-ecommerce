@@ -93,7 +93,6 @@ $currency = J2Store::currency();
 							</span>
 
 						<?php endif; ?>
-                        <?php echo J2Store::plugin()->eventWithHtml('AfterDisplayLineItemTitle', array($item, $this->order, $this->params));?>
 					</td>
 					<td><?php echo $item->orderitem_quantity; ?></td>
 					<td class="cart-line-subtotal">

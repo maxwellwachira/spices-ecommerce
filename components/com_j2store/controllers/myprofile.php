@@ -102,8 +102,7 @@ class J2StoreControllerMyProfile extends F0FController
 			$view->assign('fieldClass',J2Store::getSelectableBase());
 			$view->assign('guest', false);
 			if($this->getTask()!='editAddress'){
-                $layout = $app->input->get('layout','default');
-				$view->setLayout($layout);
+				$view->setLayout('default');
 			}
 			// if its guest
 		} elseif ($guest_token && $guest_order_email) {
@@ -118,8 +117,7 @@ class J2StoreControllerMyProfile extends F0FController
             $view->assign('order_pagination', $pagination);
 			$view->assign('guest', true);
 			if($this->getTask()!='editAddress'){
-                $layout = $app->input->get('layout','default');
-				$view->setLayout($layout);
+				$view->setLayout('default');
 			}
 		}
 
@@ -207,15 +205,8 @@ class J2StoreControllerMyProfile extends F0FController
 		$values['email'] = $user->email;
 		$model = $this->getModel('myprofile');
 		$selectableBase = J2Store::getSelectableBase();
-        if(!in_array($values['type'],array('billing','shipping'))){
-            $values['type'] = 'billing';
-        }
 		$json = $selectableBase->validate($values, $values['type'], 'address');
-        if($values['user_id'] != $user->id){
-            $json['error']['message'] = JText::_('J2STORE_MYPROFILE_INVALID_USER_ID');
-            $json['error']['msgType']='error';
-        }
-        J2Store::plugin()->event('BeforeMyProfileAddressSave',array(&$json));
+
 		if(empty($json['error'])){
 			$table = F0FTable::getAnInstance('Address','J2StoreTable');
 			$table->load ($values['address_id']);
@@ -438,12 +429,7 @@ class J2StoreControllerMyProfile extends F0FController
 
 			$model->setState('filter_order',"zone_name");
 			$model->setState('filter_order_Dir',"ASC");
-            try {
-                $zones = $model->getList();
-            } catch (Exception $e) {
-                $zones = array();
-            }
-
+			$zones = $model->getList();
 
 			foreach($zones as &$zone) {
 				$zone->zone_name = JText::_($zone->zone_name);

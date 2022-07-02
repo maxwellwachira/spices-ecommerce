@@ -30,7 +30,7 @@ defined('_JEXEC') or die;
 
 			<div class="tab-content">
 				<?php if($this->params->get('item_show_sdesc') || $this->params->get('item_show_ldesc') ):?>
-				<div class="tab-pane fade in active" id="description">
+				<div itemprop="description" class="tab-pane fade in active" id="description">
 					<?php echo $this->loadTemplate('sdesc'); ?>
 					<?php echo $this->loadTemplate('ldesc'); ?>
 				</div>

@@ -93,7 +93,7 @@ class J2Invoice {
 			->select('*')
 			->from('#__j2store_invoicetemplates')
 			->where($db->qn('enabled').'='.$db->q(1))
-			->where(' CASE WHEN orderstatus_id = '.$db->q($order->order_state_id) .' THEN orderstatus_id = '.$db->q($order->order_state_id) .'
+			->where(' CASE WHEN orderstatus_id = '.$order->order_state_id .' THEN orderstatus_id = '.$order->order_state_id .'
 							ELSE orderstatus_id ="*" OR orderstatus_id =""
 						END
 					');

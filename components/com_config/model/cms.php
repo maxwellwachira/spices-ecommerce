@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_config
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -205,21 +205,21 @@ abstract class ConfigModelCms extends JModelDatabase
 	/**
 	 * Clean the cache
 	 *
-	 * @param   string   $group     The cache group
-	 * @param   integer  $clientId  The ID of the client
+	 * @param   string   $group      The cache group
+	 * @param   integer  $client_id  The ID of the client
 	 *
 	 * @return  void
 	 *
 	 * @since   3.2
 	 */
-	protected function cleanCache($group = null, $clientId = 0)
+	protected function cleanCache($group = null, $client_id = 0)
 	{
 		$conf = JFactory::getConfig();
 		$dispatcher = JEventDispatcher::getInstance();
 
 		$options = array(
 			'defaultgroup' => $group ?: (isset($this->option) ? $this->option : JFactory::getApplication()->input->get('option')),
-			'cachebase' => $clientId ? JPATH_ADMINISTRATOR . '/cache' : $conf->get('cache_path', JPATH_SITE . '/cache'));
+			'cachebase' => $client_id ? JPATH_ADMINISTRATOR . '/cache' : $conf->get('cache_path', JPATH_SITE . '/cache'));
 
 		$cache = JCache::getInstance('callback', $options);
 		$cache->clean();
@@ -256,12 +256,17 @@ abstract class ConfigModelCms extends JModelDatabase
 	 */
 	protected function canDelete($record)
 	{
-		if (empty($record->id) || $record->published != -2)
+		if (!empty($record->id))
 		{
-			return false;
-		}
+			if ($record->published != -2)
+			{
+				return false;
+			}
 
-		return JFactory::getUser()->authorise('core.delete', $this->option);
+			$user = JFactory::getUser();
+
+			return $user->authorise('core.delete', $this->option);
+		}
 	}
 
 	/**
@@ -275,6 +280,8 @@ abstract class ConfigModelCms extends JModelDatabase
 	 */
 	protected function canEditState($record)
 	{
-		return JFactory::getUser()->authorise('core.edit.state', $this->option);
+		$user = JFactory::getUser();
+
+		return $user->authorise('core.edit.state', $this->option);
 	}
 }

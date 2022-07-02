@@ -1,0 +1,121 @@
+@import url(../fonts/stylesheet.css);
+
+a {
+  color: #97c48d;
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+html {
+	font-size: 62.5%;
+}
+
+body{
+	background:#fff; 
+	font:normal 15px/25px "Raleway", Helvetica, Arial, sans-serif; 
+	color:#777;
+	margin: 0;
+	padding: 0;
+	text-rendering: optimizelegibility;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 {
+	font-weight: normal;
+}
+
+div.error {
+  margin: 0 auto 0;
+  padding: 0;
+  position: relative;
+  text-align: left;
+  max-width: 900px;
+}
+
+div.error h1 {
+	letter-spacing: -2px;
+	font-size: 56px;
+}
+
+div#errorboxoutline {
+	position: absolute;
+	bottom: 0;
+	right: 210px;
+}
+
+div.error #errorboxbody {
+	text-align: right;
+}
+
+div.error #errorboxbody h3 {
+	color: #aaa;
+}
+
+div.error .rectangle {
+	width: 150px;
+	height: 35%;
+	margin-left: 30px;
+	padding: 25% 10px 0;
+	background-color: #97c48d;
+	color: #fff;
+	text-align: center;
+	float: right;
+}
+
+div.error .rectangle p {
+	margin: 25px -10px 0;
+	padding: 20px 15px;
+	background-color: #85b67a;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+div.error-nav {
+	color: #222;
+}
+
+div.error-nav ul {
+	margin-top: 0;
+	padding-left: 0;
+}
+
+div.error-nav ul li:last-child {
+  margin-right: 0;
+}
+
+div.error-nav ul li {
+  list-style: none;
+  display: inline;
+  margin: 0 8px;
+  font-size: 13px;
+}
+
+.clr {
+	clear: both;
+}
+
+@media (max-width: 768px) {
+	div.error .rectangle {
+		height: auto;
+		padding: 30px 10px 0;
+		float: none;
+		margin: 0 auto; 
+	}
+
+	
+	body #errorboxoutline  {
+		position: relative;
+		margin: 0 auto;	
+		padding-top: 25px;
+		text-align: center;
+		right: 0;
+	}
+	div.error #errorboxbody {
+		text-align: center;
+	}
+}
+

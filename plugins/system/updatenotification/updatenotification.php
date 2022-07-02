@@ -3,7 +3,7 @@
  * @package     Joomla.Plugin
  * @subpackage  System.updatenotification
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -92,7 +92,7 @@ class PlgSystemUpdatenotification extends JPlugin
 		}
 		catch (Exception $exc)
 		{
-			// If we failed to execute
+			// If we failed to execite
 			$db->unlockTables();
 			$result = false;
 		}
@@ -366,7 +366,7 @@ class PlgSystemUpdatenotification extends JPlugin
 
 			if (!empty($emails))
 			{
-				$query->where('LOWER(' . $db->qn('email') . ') IN(' . implode(',', array_map('strtolower', $emails)) . ')');
+				$query->where($db->qn('email') . 'IN(' . implode(',', $emails) . ')');
 			}
 
 			$db->setQuery($query);

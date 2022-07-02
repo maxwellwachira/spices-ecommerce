@@ -40,12 +40,7 @@ $status = false;
 	$onWhat='onchange'; if($oneExtraField->field_type=='radio') $onWhat='onclick';
 	//echo $this->fieldsClass->display($oneExtraField,@$this->address->$fieldName,$fieldName,false);
 	if(property_exists($this->address, $fieldName)) {
-        $placeholder =  (isset($oneExtraField->field_options['placeholder']) ? $oneExtraField->field_options['placeholder'] : "");
-        $field_options = '';
-        if($placeholder){
-            $field_options .= ' placeholder="'.$placeholder.'" ';
-        }
-		$html = str_replace('['.$fieldName.']',$this->fieldsClass->getFormatedDisplay($oneExtraField,$this->address->$fieldName, $fieldName,false, $field_options, $test = false, $allFields, $allValues = null).'<br />',$html);
+		$html = str_replace('['.$fieldName.']',$this->fieldsClass->getFormatedDisplay($oneExtraField,$this->address->$fieldName, $fieldName,false, $options = '', $test = false, $allFields, $allValues = null).'<br />',$html);
 	}
 	?>
 <?php endforeach; ?>

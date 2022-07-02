@@ -2,14 +2,14 @@
 /**
  * Part of the Joomla Framework Event Package
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace Joomla\Event;
 
-use Closure;
 use InvalidArgumentException;
+use Closure;
 
 /**
  * Implementation of a DispatcherInterface supporting
@@ -34,7 +34,7 @@ class Dispatcher implements DispatcherInterface
 	 *
 	 * @var    string
 	 * @since  1.0
-	 * @deprecated  1.1.0
+	 * @deprecated
 	 */
 	protected $listenerFilter;
 
@@ -73,7 +73,7 @@ class Dispatcher implements DispatcherInterface
 	 * @return  Dispatcher  This method is chainable.
 	 *
 	 * @since       1.0
-	 * @deprecated  1.1.0  Incorporate a method in your listener object such as `getEvents` to feed into the `setListener` method.
+	 * @deprecated  Incorporate a method in your listener object such as `getEvents` to feed into the `setListener` method.
 	 */
 	public function setListenerFilter($regex)
 	{
@@ -186,7 +186,7 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function clearEvents()
 	{
-		$events       = $this->events;
+		$events = $this->events;
 		$this->events = array();
 
 		return $events;
@@ -201,7 +201,7 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function countEvents()
 	{
-		return \count($this->events);
+		return count($this->events);
 	}
 
 	/**
@@ -221,7 +221,7 @@ class Dispatcher implements DispatcherInterface
 	 */
 	public function addListener($listener, array $events = array())
 	{
-		if (!\is_object($listener))
+		if (!is_object($listener))
 		{
 			throw new InvalidArgumentException('The given listener is not an object.');
 		}
@@ -231,7 +231,8 @@ class Dispatcher implements DispatcherInterface
 		{
 			if (empty($events))
 			{
-				throw new InvalidArgumentException('No event name(s) and priority specified for the Closure listener.');
+				throw new InvalidArgumentException('No event name(s) and priority
+				specified for the Closure listener.');
 			}
 
 			foreach ($events as $name => $priority)
@@ -299,6 +300,8 @@ class Dispatcher implements DispatcherInterface
 		{
 			return $this->listeners[$event]->getPriority($listener);
 		}
+
+		return null;
 	}
 
 	/**
@@ -389,6 +392,7 @@ class Dispatcher implements DispatcherInterface
 				$this->listeners[$event]->remove($listener);
 			}
 		}
+
 		else
 		{
 			foreach ($this->listeners as $queue)
@@ -424,6 +428,7 @@ class Dispatcher implements DispatcherInterface
 				unset($this->listeners[$event]);
 			}
 		}
+
 		else
 		{
 			$this->listeners = array();
@@ -448,7 +453,7 @@ class Dispatcher implements DispatcherInterface
 			$event = $event->getName();
 		}
 
-		return isset($this->listeners[$event]) ? \count($this->listeners[$event]) : 0;
+		return isset($this->listeners[$event]) ? count($this->listeners[$event]) : 0;
 	}
 
 	/**
@@ -468,6 +473,7 @@ class Dispatcher implements DispatcherInterface
 			{
 				$event = $this->events[$event];
 			}
+
 			else
 			{
 				$event = new Event($event);
@@ -485,11 +491,12 @@ class Dispatcher implements DispatcherInterface
 
 				if ($listener instanceof Closure)
 				{
-					\call_user_func($listener, $event);
+					call_user_func($listener, $event);
 				}
+
 				else
 				{
-					\call_user_func(array($listener, $event->getName()), $event);
+					call_user_func(array($listener, $event->getName()), $event);
 				}
 			}
 		}

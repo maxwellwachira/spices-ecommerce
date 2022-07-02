@@ -1,5 +1,5 @@
 /**
- * @copyright	Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -26,12 +26,7 @@
 			this.updatepaths = $( 'input.update-folder' );
 
 			this.frame = window.frames.folderframe;
-
-			var self = this;
-
-			$(this.frame).one('load', function (e) {
-				self.frameurl = self.frame.location.href;
-			});
+			this.frameurl = this.frame.location.href;
 		},
 
 		/**
@@ -64,7 +59,7 @@
 
 			var folder = this.getFolder() || '',
 				query = [],
-				a = getUriObject( $( '#uploadForm' ).prop( 'action' ) ),
+				a = getUriObject( $( '#uploadForm' ).attr( 'action' ) ),
 				q = getQueryObject( a.query ),
 				k, v;
 
@@ -72,7 +67,7 @@
 				el.value = folder;
 			} );
 
-			this.folderpath.value = scope.basepath + (folder ? '/' + folder : '');
+			this.folderpath.value = basepath + (folder ? '/' + folder : '');
 
 			q.folder = folder;
 
@@ -80,14 +75,14 @@
 				if (!q.hasOwnProperty( k )) { continue; }
 
 				v = q[ k ];
-				query.push(encodeURIComponent(k) + (v === null ? '' : '=' + encodeURIComponent(v)));
+				query.push( k + (v === null ? '' : '=' + v) );
 			}
 
 			a.query = query.join( '&' );
 			a.fragment = null;
 
-			$( '#uploadForm' ).prop( 'action', buildUri(a) );
-			$( '#' + scope.viewstyle ).addClass( 'active' );
+			$( '#uploadForm' ).attr( 'action', buildUri(a) );
+			$( '#' + viewstyle ).addClass( 'active' );
 		},
 
 		/**
@@ -97,12 +92,9 @@
 		 */
 		setViewType: function( type ) {
 			$( '#' + type ).addClass( 'active' );
-			$( '#' + scope.viewstyle ).removeClass( 'active' );
-			scope.viewstyle = type;
+			$( '#' + viewstyle ).removeClass( 'active' );
+			viewstyle = type;
 			var folder = this.getFolder();
-
-			folder = encodeURIComponent(folder);
-			type = encodeURIComponent(type);
 
 			this.setFrameUrl( 'index.php?option=com_media&view=mediaList&tmpl=component&folder=' + folder + '&layout=' + type );
 		},
@@ -189,12 +181,10 @@
 		MediaManager.initialize();
 
 		document.updateUploader = function() {
-			$(MediaManager.frame).one('load', function() {
-				MediaManager.onloadframe();
-			});
+			MediaManager.onloadframe();
 		};
 
-		document.updateUploader();
+		MediaManager.onloadframe();
 	});
 
 }( jQuery, window ));

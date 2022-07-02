@@ -1,0 +1,255 @@
+.navbar {
+  border: none;
+}
+.container > .navbar-header {
+  margin-left: 0;
+  margin-right: 0;
+}
+.navbar-collapse {
+  padding: 0 0 20px;
+}
+.navbar-toggle {
+  padding: 0;
+  line-height: 45px;
+  position: absolute;
+  top: -50px;
+  right: 0;
+  color: #222222;
+  font-size: 16px;
+  font-family: "poppinsmedium", Helvetica, Arial, sans-serif;
+}
+.navbar-toggle:hover,
+.navbar-toggle:active,
+.navbar-toggle:focus {
+  background-color: transparent;
+  filter: alpha(opacity=70);
+  opacity: 0.7;
+  color: #222222;
+}
+.navbar-toggle .fa-bars {
+  margin-right: 10px;
+}
+@media (min-width: 1151px) {
+  .navbar-toggle {
+    display: none;
+  }
+}
+.navbar-nav > li > a {
+  font-family: "poppinsmedium", Helvetica, Arial, sans-serif;
+  padding: 4px 22px;
+  font-size: 13px;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+  border-radius: 30px;
+  margin: 0 1px;
+  letter-spacing: .5px;
+}
+@media (max-width: 1151px) {
+  .navbar-nav > li > a {
+    padding: 18px 5px;
+    font-size: 16px;
+  }
+  .navbar-nav > li > a .mega-caption {
+    display: none;
+  }
+}
+.navbar-nav > li > a:hover {
+  color: #fa8569;
+  border-radius: 30px;
+}
+.navbar-nav > li.open a:hover {
+  border-color: transparent;
+}
+.navbar-nav .active > a {
+  color: #222222;
+  border: 2px solid #e0e0e0;
+  border-radius: 30px;
+}
+@media (max-width: 1151px) {
+  .navbar-nav .active > a {
+    border: none;
+  }
+}
+.navbar-nav > li > .dropdown-menu {
+  margin-top: 32px;
+  margin-left: -8px;
+}
+.navbar-default {
+  background-color: transparent;
+}
+.navbar-default .container {
+  position: relative;
+}
+.navbar-default .navbar-brand {
+  color: #333333;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #1a1a1a;
+  background-color: transparent;
+}
+.navbar-default .navbar-text {
+  color: #222222;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  border-color: transparent;
+}
+.navbar-default .navbar-nav > .disabled > a,
+.navbar-default .navbar-nav > .disabled > a:hover,
+.navbar-default .navbar-nav > .disabled > a:focus {
+  color: #cccccc;
+  background-color: transparent;
+}
+.navbar-default .navbar-toggle {
+  border-color: transparent;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: transparent;
+  color: #222222;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #222222;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: transparent;
+}
+.navbar-default .navbar-nav > .dropdown > a:hover .caret,
+.navbar-default .navbar-nav > .dropdown > a:focus .caret {
+  border-top-color: #fa8569;
+  border-bottom-color: #fa8569;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  background-color: transparent;
+  color: #fa8569;
+  border-color: transparent;
+}
+.navbar-default .navbar-nav > .open > a .caret,
+.navbar-default .navbar-nav > .open > a:hover .caret,
+.navbar-default .navbar-nav > .open > a:focus .caret {
+  border-top-color: #222222;
+  border-bottom-color: #222222;
+}
+.navbar-default .navbar-nav > .dropdown > a .caret {
+  border-top-color: #333333;
+  border-bottom-color: #333333;
+  -webkit-transition: all 0.4s ease;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+@media (max-width: 1151px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #bbbbbb;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #fa8569;
+    background-color: transparent;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #222222;
+    background-color: transparent;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
+    color: #cccccc;
+    background-color: transparent;
+  }
+}
+.navbar-default .navbar-link {
+  color: #333333;
+}
+.navbar-default .navbar-link:hover {
+  color: #fa8569;
+}
+.t3-mainnav {
+  padding-top: 24px;
+  position: relative;
+  -webkit-transition: padding-top 0.4s ease, opacity 0.4s ease;
+  -o-transition: padding-top 0.4s ease, opacity 0.4s ease;
+  transition: padding-top 0.4s ease, opacity 0.4s ease;
+}
+@media (max-width: 1151px) {
+  .t3-mainnav {
+    padding-top: 0;
+  }
+}
+.t3-mainnav .t3-navbar {
+  padding-right: 140px;
+  float: right;
+}
+@media (max-width: 1151px) {
+  .t3-mainnav .t3-navbar {
+    float: none;
+    margin-right: auto;
+    padding-right: 0;
+    border-bottom-width: 5px;
+  }
+}
+.t3-mainnav .dropdown-menu {
+  border: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+@media (max-width: 1151px) {
+  .t3-mainnav .dropdown-menu {
+    background: none;
+    font-family: "poppinslight", Helvetica, Arial, sans-serif;
+    margin-left: 0;
+    padding: 0;
+  }
+}
+.t3-mainnav .dropdown-menu .mega-col-nav {
+  padding-left: 0;
+  padding-right: 0;
+}
+.t3-mainnav .dropdown-menu .mega-dropdown-inner {
+  background-color: #222222;
+  -webkit-box-shadow: 0 5px 6px rgba(51, 51, 51, 0.2);
+  box-shadow: 0 5px 6px rgba(51, 51, 51, 0.2);
+}
+.t3-mainnav .dropdown-menu .mega-dropdown-inner .mega-group .mega-dropdown-inner {
+  border: none;
+}
+.t3-mainnav .level1 .dropdown-menu {
+  padding: 0;
+  background: none;
+}
+@media (min-width: 1151px) {
+  .t3-mainnav .t3-navbar-collapse {
+    display: none !important;
+  }
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav {
+  margin: 0 0 6px 0;
+  background-color: #222222;
+  padding: 15px 20px;
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav li > a .fa {
+  margin-right: 5px;
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav > li > a {
+  border-top: 1px solid #2f2f2f;
+  color: #bbbbbb;
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav > li:first-child > a {
+  border-top: 0;
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav .dropdown-menu > .active > a {
+  background-color: transparent;
+}
+.t3-mainnav .t3-navbar-collapse .navbar-nav .dropdown > a .caret {
+  position: absolute;
+  top: 40%;
+  right: 20px;
+}
