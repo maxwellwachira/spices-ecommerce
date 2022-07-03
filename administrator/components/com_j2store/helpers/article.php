@@ -81,29 +81,12 @@ class J2Article {
 		{
 			$db = JFactory::getDbo();
 			$query = $db->getQuery(true);
-			$query->select('*')->from('#__content')->where('id='.$db->q($id));
+			$query->select('*')->from('#__content')->where('id='.$id);
 			$db->setQuery($query);
 			$sets[$id] = $db->loadObject();
 		}
 		return $sets[$id];
 	}
-
-	public function getArticleLink($id = 0){
-	    $link = '';
-	    if(empty($id)){
-	        return $link;
-        }
-        $article = $this->getArticle($id);
-        $com_path = JPATH_SITE.'/components/com_content/';
-        if (!class_exists('ContentHelperRoute')) {
-            require_once $com_path.'helpers/route.php';
-        }
-        if (!class_exists('ContentRouter')) {
-            include $com_path.'router.php';
-        }
-        $link = JRoute::_(ContentHelperRoute::getArticleRoute($article->id, $article->catid, $article->language));
-        return $link;
-    }
 
 	public function loadFalangAliasById($id,$lang_id){
 		if (empty($id) || empty($lang_id)){
@@ -289,7 +272,7 @@ class J2Article {
                         $query = $db->getQuery(true)
                             ->select($db->qn('state'))
                             ->from($db->qn('#__content'))
-                            ->where($db->qn('id') . ' = ' . $db->q((int) ($assocId)))
+                            ->where($db->qn('id') . ' = ' . (int) ($assocId))
                             ->where('access IN (' . $groups . ')');
                         $db->setQuery($query);
 

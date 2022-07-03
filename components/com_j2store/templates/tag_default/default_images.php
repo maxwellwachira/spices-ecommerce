@@ -21,16 +21,13 @@ $main_image="";
 			<?php if($this->params->get('list_image_link_to_product', 1)): ?>
 				<a href="<?php echo $this->product->product_link; ?>">
 			<?php endif;?>	
-			<img alt="<?php echo (!empty($this->product->thumb_image_alt)) ? $this->escape($this->product->thumb_image_alt) : $this->escape($this->product->product_name); ?>" title="<?php echo $this->escape($this->product->product_name) ;?>"
-                 class="j2store-img-responsive j2store-product-thumb-image-<?php echo $this->product->j2store_product_id; ?>"
-                 src="<?php echo $image_path.$this->product->thumb_image;?>"
-                 width="<?php echo (int)$this->params->get('list_image_thumbnail_width', '200'); ?>"/>
+			<img itemprop="image" alt="<?php echo $this->product->product_name ;?>" title="<?php echo $this->product->product_name ;?>" class="j2store-img-responsive j2store-product-thumb-image-<?php echo $this->product->j2store_product_id; ?>"  src="<?php echo $image_path.$this->product->thumb_image;?>" />
 			
 			<?php if($this->params->get('list_image_link_to_product', 1)): ?>
 				</a>
 			<?php endif;?>
 		<?php elseif(!empty($this->product->thumb_image)):?>
-			<?php echo J2Store::product()->displayImage($this->product,array('type'=>'Thumb','params' => $this->params,'alt'=>$this->escape($this->product->thumb_image_alt))); ?>
+			<?php echo J2Store::product()->displayImage($this->product,array('type'=>'Thumb','params' => $this->params)); ?>
 		<?php endif; ?>
 	</div>
 	 <?php endif; ?>
@@ -48,7 +45,8 @@ $main_image="";
 				<a href="<?php echo $this->product->product_link; ?>">
 			<?php endif;?>	
 			
-		  	 <img alt="<?php echo (!empty($this->product->main_image_alt)) ? $this->escape($this->product->main_image_alt) : $this->escape($this->product->product_name); ?>" title="<?php echo $this->escape($this->product->product_name) ;?>"
+		  	 <img itemprop="image"
+		  	 	alt="<?php echo $this->product->product_name ;?>" title="<?php echo $this->product->product_name ;?>"
 		  	 	class="j2store-img-responsive j2store-product-main-image-<?php echo $this->product->j2store_product_id; ?>"
 		  	 	src="<?php echo $image_path.$main_image;?>"
 		  	 	width="<?php echo (int) $this->params->get('list_image_thumbnail_width', '200'); ?>"
@@ -58,8 +56,9 @@ $main_image="";
 				</a>
 			<?php endif;?>
 		   <?php elseif(!empty($this->product->main_image)):?>
-				<?php echo J2Store::product()->displayImage($this->product,array('type'=>'Main','params' => $this->params,'alt'=>$this->escape($this->product->main_image_alt))); ?>
+				<?php echo J2Store::product()->displayImage($this->product,array('type'=>'Main','params' => $this->params)); ?>
 		   <?php endif; ?>
+
 	</div>
 	 <?php endif; ?>
 </div>

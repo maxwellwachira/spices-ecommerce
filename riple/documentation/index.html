@@ -1,0 +1,806 @@
+<!doctype html>
+<!--[if IE 6 ]><html lang="en-us" class="ie6"> <![endif]-->
+<!--[if IE 7 ]><html lang="en-us" class="ie7"> <![endif]-->
+<!--[if IE 8 ]><html lang="en-us" class="ie8"> <![endif]-->
+<!--[if (gt IE 7)|!(IE)]><!-->
+<html lang="en-us"><!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+
+	<title>Ripple Joomla Template - Documentation 1.1</title>
+
+	<meta name="description" content="Thank you for purchasing TemplatePlazza theme. If you have any questions that are beyond the scope of this help file, please feel free to post it on out forum here. Thanks so much!
+
+This documentation was made only with the Documenter (except the images)">
+	<meta name="author" content="Raden Panji Maskeenan Cokrodiningrat">
+	<meta name="copyright" content="templateplazza.com">
+	<meta name="generator" content="Documenter v1.6 http://rxa.li/documenter">
+	<meta name="date" content="2012-02-18T00:00:00+01:00">
+
+	<link rel="stylesheet" href="css/documenter_style.css" media="all">
+	<link rel="stylesheet" href="css/custom.css" media="screen">
+	<link rel="stylesheet" href="assets/fonts/stylesheet.css" media="screen">
+
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+	<script src="js/jquery.1.6.4.js"></script>
+
+	<script src="js/jquery.scrollTo-1.4.2-min.js"></script>
+	<script src="js/jquery.easing.js"></script>
+
+	<link rel="stylesheet" href="css/shDocumenter.css" media="screen">
+	<script src="js/shCore.js"></script>
+	<script src="js/shBrushAS3.js"></script>
+	<script src="js/shBrushCss.js"></script>
+	<script src="js/shBrushXml.js"></script>
+	<script src="js/shBrushJScript.js"></script>
+	<script src="js/shBrushPhp.js"></script>
+	<script src="js/shBrushPlain.js"></script>
+	<script>SyntaxHighlighter.defaults['toolbar'] = false;SyntaxHighlighter.all();</script>
+
+	<script>document.createElement('section');var duration=450,easing='easeOutExpo';</script>
+	<script src="js/script.js"></script>
+
+	<style>
+		html{background-color:#f2f2f2;color:#777777;}
+		::-moz-selection{background:#b1dbf9;color:#297ab4;}
+		::selection{background:#b1dbf9;color:#297ab4;}
+		#documenter_sidebar #documenter_logo{background-image:url(assets/images/image_12.png);}
+		a{color:#3c9ce2;}
+		.btn {
+			border-radius:3px;
+		}
+		.btn-primary {
+			  background-image: -moz-linear-gradient(top, #CBE86B, #889C48);
+			  background-image: -ms-linear-gradient(top, #CBE86B, #889C48);
+			  background-image: -webkit-gradient(linear, 0 0, 0 CBE86B%, from(#FFFFFF), to(#889C48));
+			  background-image: -webkit-linear-gradient(top, #CBE86B, #889C48);
+			  background-image: -o-linear-gradient(top, #CBE86B, #889C48);
+			  background-image: linear-gradient(top, #CBE86B, #889C48);
+			  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#CBE86B', endColorstr='#889C48', GradientType=0);
+			  border-color: #889C48 #889C48 #bfbfbf;
+			  color:#FFFFFF;
+		}
+		.btn-primary:hover,
+		.btn-primary:active,
+		.btn-primary.active,
+		.btn-primary.disabled,
+		.btn-primary[disabled] {
+		  border-color: #CBE86B #CBE86B #bfbfbf;
+		  background-color: #889C48;
+		}
+		hr{border-top:1px solid #e8e8e8;border-bottom:1px solid transparent;}
+		#documenter_sidebar, #documenter_sidebar ul a{background-color:#FFFFFF;color:#1C140D;}
+		#documenter_sidebar ul a{-webkit-text-shadow:1px 1px 0px #FFF6ED;-moz-text-shadow:1px 1px 0px #FFF6ED;text-shadow:1px 1px 0px #FFF6ED;}
+		#documenter_sidebar ul{border-top:1px solid #D1C9C2;}
+		#documenter_sidebar ul a{border-top:1px solid #FFF6ED;border-bottom:1px solid #D1C9C2;color:#1C140D;}
+		#documenter_sidebar ul a:hover{background:#CBE86B;color:#1C140D;border-top:1px solid #CBE86B;}
+		#documenter_sidebar ul a.current{background:#CBE86B;color:#1C140D;border-top:1px solid #CBE86B;}
+		#documenter_copyright{display:block !important;visibility:visible !important;}
+	</style>
+
+</head>
+<body>
+	<div id="documenter_sidebar">
+		<a href="#documenter_cover" id="documenter_logo"></a>
+		<ol id="documenter_nav">
+			<li><a class="current" href="#documenter_cover">Start</a></li>
+			<li><a class="even" href="#general_installation">General Info & Installation</a></li>
+			<li><a href="#logo">Logo Setting</a></li>
+			<li><a class="even" href="#tpl_setting">Template Setting</a></li>
+			<li><a href="#megamenu">Megamenu Configuration</a></li>
+			<li><a class="even" href="#folder_structure">Folder Structure</a></li>
+			<li><a href="#modules">Modules <br/>(Types, suffix and Position)</a></li>
+			<li><a class="even" href="#extensions">3rd Party Extensions</a></li>
+			<li><a href="#extras">Extras</a></li>
+			<li><a class="even" href="#changelog">ChangeLog</a></li>
+		</ol>
+		<div id="documenter_copyright">Copyright maskeenan 2012<br>
+		made with the <a href="http://rxa.li/documenter">Documenter v1.6</a>
+		</div>
+	</div>
+	<div id="documenter_content">
+	<section id="documenter_cover"><h1>Ripple Joomla Template<span>Documentation 1.1</span></h1><hr><ul><li>Created: January 4, 2016</li><li>latest Update: January 4, 2016</li><li>By: Templateplazza</li><li><a href=""></a></li><li>Forum Support <a href="https://www.templateplazza.com/forum" target="_blank">Click here</a></li></ul><p>Thank you for purchasing my theme. If you have any questions that are beyond the scope of this help file, please feel free to post it on out forum <strong><a href="https://www.templateplazza.com/forum">HERE</a></strong>. Thanks so much!
+
+This documentation was made only with <a href="http://rxa.li/documenter">the Documenter</a> (except the images)</p>
+</section>
+
+
+<section id="general_installation">
+	<h2>1. General Info and Installation</h2>
+	<h3>1.1 Download From Package Templateplazza</h3><hr class="notop">
+<p>After purchasing, please download the package from Templateplazza. All you need to do, please login to your Templateplazza and then click Download. Here you will find all the items that you have purchased. In the next step click the Download > Main File(s) button and save package on your computer.
+In the package you can find things like documentation, license, psd files, zipped quickstart and tempplates file. Please unpack the whole package after downloading it from Templateplazza.</p>
+ <br/>
+
+	<h3>1.2 Quickstart Installation</h3><hr class="notop">
+	<p><strong>Quickstart = Joomla + Ripple Template + Demo Content</strong>. After installation you'll see complete site like a <a href="https://demo.templateplazza.com/ripple/">Demo Site</a>. So, if you're running for new website, I do urge to install using the quickstart file. But, If you've already had a joomla website with your own content, you could install only <a href="#template_installation">the Template</a> to keep your own data</p>
+   <p class="warning">You may please also see and check the <strong> <a href="http://www.joomla.org/technical-requirements.html" target="_blank">technical requirement for joomla 3.0</a></strong> </p>
+			<p>With those requirements met, and resources in place, you are ready to install Ripple. Installing Quickstart package is quite easy, please follow these steps to begin installation</p>
+			<ol>
+			  <li>You will have 2 options:
+				<ul>
+				  <li>Firstly need to move <strong>ripple_quickstart.zip</strong> package to the server. This could be accomplished by simply moving the downloaded package to your server, then unpacking it using cPanel or other File Manager Tools.</li>
+				  <li>If the option above unavailable, you could please unpack the <strong>ripple_quickstart.zip</strong> files on your local computer, then move those ripple installation files over to your server  using FTP client software such as filezilla. Either way, the ripple installation files needs to be unpacked in the root of your site.</li>
+				</ul>
+            <p class="info"><strong>Caution</strong> - if you unpack the files on your local computer, then uploading them to your server, be sure to move only the files contained INSIDE the ripple quickstart package. If you transfer the ripple folder as well, your site will be accessed at http://yoursite.com/Joomla instead of http://yoursite.com.</p>
+			  </li>
+				<li>With the files transferred to your server, access the ripple installation through your web browser by typing the address of your site, for example http://www.yoursite.com.</li><br/>
+				<p><img src="assets/images/complete-install-1.jpg" alt="Complete Install" /></p>
+            <p>This step above is to run a series of system and server checks to ensure that ripple quickstart will be able to install, and function correctly. The left section of items should all be green and 'Yes'. If any are not (they'll be red and say "No") then you should take an action to correct them. The right section of items are not required, but are recommended to ensure that Joomla can operate smoothly. </p><br/>
+				<p><img src="assets/images/complete-install-2.jpg" alt="Complete Install" /></p>
+            <p>You are now configuring the database connection for your site. Here you will need to enter the Database type, Hostname, User name, Database name and the Database prefix for the MySQL database you have set up. If your settings are not correct, you might be unable to connect to the database. An additional option is to change the Table prefix. (Note: Joomla 2.5.x and above are now offers a random default prefix) This may be helpful for security purposes. </p><br/>
+				<p><img src="assets/images/complete-install-3.jpg" alt="Complete Install" /></p><br/>
+  				<p><img src="assets/images/complete-install-4.jpg" alt="Complete Install" /></p>
+            <p>On left section of this site configuration, you must add your Site Name, Admin User Name, Admin Password, and Admin e-mail address. And on right section, FTP Configuration is unnecessary for most sites and its need is usually identified if you find you cannot upload media or images or install Extensions. The details can be added at a later time directly within the Global Configuration in the Joomla Administration pages. </p><br/>
+				<p><img src="assets/images/complete-install-5.jpg" alt="Complete Install" /></p>
+            <p>Now you are on the final step. ripple is now installed! You must now remove the installation directory, this needs to be removed for security reasons. Click the Remove Installation Directory button. </p><br/>
+				<p><img src="assets/images/complete-install-6.jpg" alt="Complete Install" /></p>
+			  <li> Now you could please Login into your administrator panel using "<strong>admin</strong>" as username and using a your password. </li>
+	</ol>
+ <br/>
+<h3>1.3 Template Installation (via Admin Panel)</h3><hr class="notop">
+<img class="align-right" src="assets/images/install-templates-1.png" alt="Install templates" />
+<p>Installation ripple template as a separate install is easy and quick. Before the installation you need to download latest version of  <a href="http://www.joomlart.com/forums/downloads.php?do=cat&id=473">T3 System Plugin</a></p>
+<p>Afterwards log into the back-end of your site (www.your-site.com/administrator/) Click on: Extensions -> Extension Manager You see the page "Extension Manager" From here you can install your Templates, Plugins, Modules, Components and Languages. You have three options:</p>
+<ul>
+    <li>Upload Package File - (select a package from your PC, upload and install it)</li>
+    <li>Install from Directory - (enter the path where the package is located on your webserver)</li>
+    <li>Install from URL - (enter the URL to the package)</li>
+</ul>
+
+<p>All option require the webserver to have write access to the webspace. Here, please choose the first method: Upload Package File Select the package from your PC and click the button "Upload File & Install"</p>
+<img src="assets/images/install-templates-2.png" alt="Install templates" />
+
+
+
+<h5>Verify installation</h5>
+
+<p>Go from Install to Manage, set the type filter to 'template'. The installed template should appear in the list. If it does, the template is properly installed. Now you can assign one of styles to a menuitem or set the style as default.
+For administrator templates make sure you have two windows of the template manager. Activate the new template in one of them and reset it in the other one if something went wrong.</p>
+
+</section>
+
+<section id="logo">
+	<h2>2. Logo Setting</h2><hr class="notop">
+   <img src="assets/images/logo-setting.png" alt="Logo" />
+	<p>You can use either image or text logo type. </p>
+   <ul>
+   	<li>If you select to use image logo, browse to the image that is displayed as logo. </li>
+      <li>If you select text logo, enter the text that is displayed as logo, slogan is optional, it will automatically replace the current logo. <p class="info">Note that this settings can be configured in the ThemeMagic as well.</p> </li>
+	</ul>
+   <p>Another way to change logo is uploading your logo to images directory of ripple Template (path: <strong>../templates/ripple/images/</strong>) And change width and height of your logo image in the file: <strong>variables.less</strong> in: templates/ripple/less.</p>
+<pre>
+
+    // T3 LOGO
+    // --------------------------------------------------
+    @T3logoWidth: 184px;
+    @T3logoHeight: 63px;
+
+    @T3LogoImage: "../images/logo.png";
+
+</pre>
+</section>
+
+<section id="tpl_setting">
+	<h2>3. Template Setting</h2>
+
+	<h3>3.1. General Setting</h3><hr class="notop">
+   <p>The global settings are applied for all styles, themes and layout, no matter the settings are changed in any styles.</p>
+   <img src="assets/images/global-settings.png" alt="ThemeMagic" />
+   <ul>
+   	<li><strong>Development Mode</strong> : <br/>
+      This is an important option. You should clearly define the differences between enabling and disabling the option.
+      	<ul>
+         	<li><strong>Enable Development Mode</strong> : <br/>
+            <img src="assets/images/enable-development.png" alt="Enable Development" /><br/>
+         	  When you are developing your site, you should enable this option. Once it's turned on, your site directly runs on original files - LESS files. You can use firebug to track. After you finish your development, you should compile LESS to CSS. This option will compile LESS files to CSS files. All your changes in LESS files will be compiled to corresponding CSS files.
+In this mode, it is easy for you to develop your site with LESS but it will decrease your site speed so when you finish developing, turn the option off.</li>
+            <li><strong>Disable Development Mode</strong> : <br/>
+           When you are not developing your site, you should disable the option. This will increase your site speed. In this mode, your site runs on CSS, not LESS. The CSS files are compiled from LESS files. Incase Development mode is off, you are allowed to enable or disable option: Optimize CSS</li>
+           	<li><strong>Disable "Optimize CSS"</strong> : <br/>
+            When Optimize CSS is disabled, your site normally loads CSS files (the CSS files are compiled from LESS files). </li>
+            <li><strong>Enable "Optimize CSS"</strong> : When Optimize CSS is enabled, T3 will join and compress most possible CSS files into one or several files for site performance. The optimized css files are located in the folder defined in <strong>T3 Assets Folder</strong> option. </li>
+         </ul>
+      </li>
+      <li><strong>Enable Responsive</strong> : T3 allows you to turn on or off the feature RESPONSIVE with one click. When the option is disabled, your site is a non-responsive site. When responsive is disabled, all responsive files are not loaded (actually, they are not called, your site ignores the files).</li>
+      <li><strong>Enable ThemeMagic</strong> ; ThemeMagic is the visual customization. It includes multiple parameters which allow you to customize as you wish. The changes in the front-end are displayed on the right panel.
+			<ul>
+    			<li>Step 1: Enable the option "Enable ThemeMagic"</li>
+    			<li>Step 2: Click on the ThemeMagic to go to the ThemeMagic configuration panel. <br/>
+            <img src="assets/images/theme-magic.png" alt="ThemeMagic" /></li>
+				<p class="warning">Note: This option should be enabled only when you customize your theme using ThemeMagic, after you finish your customization, you should turn it off. </p>
+            <img src="assets/images/thememagic-panel.png" alt="ThemeMagic" />
+         </ul>
+      </li>
+   </ul>
+
+	<h3>3.2. Compile LESS to CSS</h3>
+   <p>The Compile LESS to CSS option is to compile the LESS that that we use to develop the webiste to CSS files that our website runs on (when development mode is off). The LESS files will be compiled to corresponding CSS files. And it will override all current CSS files. </p>
+   <img src="assets/images/global-lesscss.jpg" alt="Less to css" />
+
+   <h3>3.3. Theme Settings </h3>
+   <p>The Theme settings allows you to configure the Theme, Logo. The settings can be also configured in the ThemeMagic setting panel. Select a theme that you want the current style applies. Each style goes with one theme.</p>
+   <img src="assets/images/select-theme.png" alt="ThemeMagic" />
+
+</section>
+
+
+<!-- NEW SECTION -->
+<section id="megamenu">
+	<h2>4.Megamenu Configuration</h2>
+
+	<h3>4.1. Select Menu For Current Style</h3><hr class="notop">
+   <p>the navigation settings are not global settings, that means in each style, it can have difference navigation. In each style, you can display different menus as main menu.</p>
+   <img src="assets/images/enable-megamenu.jpg" alt="Megamenu" />
+
+   <h3>4.2. Enable Megamenu</h3><hr class="notop">
+   <p>To enable Megamenu, please open Navigation tab. Enable Megamenu> option then open Megamenu configuration panel.</p>
+   <img src="assets/images/megamenu-open.jpg" alt="Megamenu" />
+
+	<h3>4.3. Submenu Setting</h3><hr class="notop">
+	<p>This setting allows you to configure the width of the sub-megamenu, add column, and add class that style for it.</p>
+	<img src="assets/images/submenu-config-megamenu.jpg" alt="Megamenu" />
+
+	<h3>4.4. Column Setting</h3><hr class="notop">
+	<p>In this level of configuration, you can: Add column, remove column, set width of column, assign module to column.</p>
+	<img src="assets/images/column-megamenu.jpg" alt="Megamenu" />
+
+	<h3>4.5. Menu Item to Configure</h3><hr class="notop">
+	<p>In this level of configuration, you can: Add column, remove column, set width of column, assign module to column.</p>
+	<img src="assets/images/item-megamenu.jpg" alt="Megamenu" />
+
+	<h3>4.6. Add icon for menu item</h3><hr class="notop">
+	<p>You can add class to define icon that you want to add to menu item, or you can use classes of Bootstrap and Font aweasome.</p>
+	<ul>
+		<li><a href="http://twitter.github.com/bootstrap/base-css.html#icons" target="_blank">Bootstrap 3 icon list</a></li>
+		<li><a href="http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_blank">Font Aweasome 4 icon list</a></li>
+	</ul>
+	<img src="assets/images/item-megamenu.jpg" alt="Megamenu" />
+
+	<h3>4.7. Resize submenu and column width</h3><hr class="notop">
+	<p>This features allows you to change size of submenu. Select the submenu then change its size in pixel.</p>
+	<img src="assets/images/resize-sub-megamenu1.jpg" alt="Megamenu" />
+	<p>After changing the submenu's size, you could change size of a column, select the column and set the Width (total is 12).</p>
+	<img src="assets/images/resize-sub-megamenu2.jpg" alt="Megamenu" />
+
+</section>
+
+
+<!-- NEW SECTION -->
+<section id="folder_structure">
+<h2>Files and Folder Structure</h2>
+<p>T3 integrates Bootstrap, developed with LESS. So when you develop your site, you use the LESS files to customize. After finishing development, disabled the developement mode and then compile less to css. But, Before pressing compile less to css menu, I usually delete some css files inside of css folder and only keep extensions.css, template-ie.css and error.css</p>
+<p class="warning">The most important folder is: less. The folder contains all LESS files that are used to develop your site, the LESS files can be compiled to CSS files. </p>
+
+<pre>
+
+ templates/ripple/
+    ├──less/ 						/* all LESS files are located here
+    │ ├── themes/ 					/* all theme folders and files are located here
+    │ ├── bootstrap.less
+    │ ├── bootstrap-responsive.less
+    │ ├── component.less
+    │ ├── core.less
+    │ ├── form.less
+    │ ├── k2.less
+    │ ├── layout.less
+    │ ├── megamenu.less
+    │ ├── megamenu-responsive.less
+    │ ├── modules.less
+    │ ├── navigation.less
+    │ ├── navigation-core.less
+    │ ├── navigation-responsive.less
+    │ ├── style.less
+    │ ├── style-responsive.less
+    │ ├── template.less
+    │ ├── template-responsive.less
+    │ ├── typo.less
+    │ ├── typo-responsive.less
+    │ ├── variable.less
+    │ ├── vars.less
+    ├── css/ 						/* all compiled files are located here
+    │ ├── themes/ 					/* all theme folders and files are located here
+    │ ├── bootstrap.css
+    │ ├── bootstrap-responsive.css
+    │ ├── custom.css
+    │ ├── home.css
+    │ ├── template.css
+    │ ├── extensions.css				/* don't delete this file
+    │ ├── template-ie.css				/* Don't delete this file
+    │ ├── error.css					/* Don't delete this file
+    │ ├── animation.css					/* Don't delete this file
+    │ ├── ...
+    ├── fonts/
+    ├── js/
+    │ ├── jquery.easing.1.3.js
+    │ ├── script.js
+    │ ├── ...
+    ├── tpls/ 						/* all layout files and block files
+    │ ├── block/ 					/* all block files here
+    │ │ ├── content-default.php
+    │ │ ├── content-homepage.php
+    │ │ ├── content-no-sidebar.php
+    │ │ ├── head.php
+    │ │ ├── header.php
+    │ │ ├── footer.php
+    │ │ ├── mainnav.php
+    │ │ ├── navhelper.php
+    │ │ ├── slider.php
+    │ │ ├── ...
+    │ ├── default.php
+    │ ├── homepage.php
+    │ ├── no-sidebar.php
+    ├── images/
+    ├── languages/
+    │ ├── en-GB.tpl_ripple.ini
+    │ ├── en-GB.tpl_ripple.sys.ini
+    ├── templateDetail.xml 				/* the file is to add new group, parameters as global, parameters for position configuration, override ThemeMagic variables ...
+    ├── templateInfo.php/
+    ├── index.php/
+    └── index.html
+</pre>
+</section>
+
+<section id="modules">
+	<h2>Modules (Types, suffix and Position)</h2>
+
+   <h3>Available Modules positions</h3>
+   <hr class="notop">
+   <p>To know all module positions are used in this templates, you go to your site and call your site like this <strong>http://yourlivesite.com/?tp=1</strong> then you'll have all information about module position that is used in this template. </p>
+
+	<h3> Modules </h3>
+	<hr class="notop">
+  	<ol>
+		<li><strong>Help  Sitemap  FAQ</strong>
+			<ul>
+				<li>Module Type : Menu </li>
+				<li>Module Position : topmenu</li>
+			</ul>
+		</li>
+		<li><strong>Search Module</strong>
+			<ul>
+				<li>Module Type : Search Modules </li>
+				<li>Module Position : head-search</li>
+			</ul>
+		</li>
+		<li><strong>Cart Module</strong>
+			<ul>
+				<li>Module Type : VirtueMart Shopping Cart  </li>
+				<li>Module Position : cart</li>
+			</ul>
+		</li>
+		<li><strong>Homepage Slider</strong>
+			<ul>
+				<li>Module Type : Unite Revolusioner Slider </li>
+				<li>Module Position : slider</li>
+			</ul>
+		</li>
+		<li><strong>Best Seller</strong>
+			<ul>
+				<li>Module Type : VirtueMart Products  </li>
+				<li>Module Position : blog</li>
+			</ul>
+		</li>
+
+    	<li><strong>Banner 1</strong>
+       	<ul>
+           	<li>Module Type : Custom HTML</li>
+            <li>Module Position : banner-1</li>
+            <li>HTML code :  <pre class="brush: plain"><div class="banner-item"><a title="shop now" href="#"><img src="images/sampledata/thumbnail1.jpg" alt="" border="0" /></a>
+<div class="banner-title bigger">
+<h2>Casual Bag</h2>
+<p>Crafted Collection</p>
+<a class="btn btn-primary" href="#">Shop Now</a></div>
+</div></pre></li>
+         </ul>
+      </li>
+      <li><strong>Current Issue</strong>
+       	<ul>
+         	<li>Module Type : News Show Pro GK5</li>
+          <li>Module Position : left</li>
+          <li>Module Suffix: " colored backfaced no-padding"</li>
+          <li>Module Mode: Standard mode</li>
+          <li>External Files : Use default CSS = OFF</li>
+        </ul>
+      </li>
+      <li><strong>Subscribe to Our Newsletter</strong>
+       	<ul>
+         	<li>Module Type : AcyMailing Module</li>
+          <li>Module Position : left</li>
+          <li>Display Effect: Normal (no-effect)</li>
+          <li>Display Mode: Tableless</li>
+          <li>External Files : Use default CSS = OFF</li>
+        </ul>
+      </li>
+      <li><strong>Quote of the day</strong>
+        	<ul>
+         	<li>Module Type : Custom HTML</li>
+          <li>Module Position : left</li>
+         </ul>
+      </li>
+      <li><strong>Most Read</strong>
+        	<ul>
+           	<li>Module Type : News Show Pro GK5 </li>
+            <li>Module Position : left</li>
+            <li>Module Suffix : " listed-news"</li>
+            <li>Notes : External files > use default css > set to <strong>No</strong></li>
+            <li>Tutorial Source : <a href="https://www.gavick.com/documentation/joomla-extensions/extensions-for-joomla-1-6/news-show-pro-gk4-2/" target="_blank">https://www.gavick.com/documentation/joomla-extensions/extensions-for-joomla-1-6/news-show-pro-gk4-2/</a></li>
+         </ul>
+      </li>
+      <li><strong>Just Posted</strong>
+        	<ul>
+           	<li>Module Type : Tabs GK5</li>
+            <li>Module Position : content-top1</li>
+            <li>Tabs : load modules position = tab1, tab2, tab3, tab4, tab5</li>
+            <li>Advanced Setting : Use CSS =  Forced Disabled</li>
+            <li>Notes : this modules is a module to display some modules from various position. You just need call them from the tabs section of this tabs GK5.
+         </ul>
+      </li>
+      <li><strong>Politic, Sport, Life Style, Techno, Travelista</strong>
+       	<ul>
+            <li>Module Type : News Show Pro GK5</li>
+            <li>Module Position : tab1, tab2, tab3, tab4, tab5</li>
+            <li>Module Suffix : "home-news responsive"</li>
+            <li>Notes : External files > use default css > set to <strong>No</strong></li>
+      	</ul>
+      </li>
+      <li><strong>Video Snapshot</strong>
+			<ul>
+           	<li>Module Type :  News Show Pro GK5</li>
+            <li>Module Position : video</li>
+            <li>Basic Setting > Module Mode : Video Gallery</li>
+         </ul>
+      </li>
+      <li><strong>All Most Trending</strong>
+        	<ul>
+           	<li>Module Type :  News Show Pro GK5 </li>
+            <li>Module Position : content</li>
+            <li>Module Suffix : "listed-news"</li>
+         </ul>
+      </li>
+			<li><strong>Contributor</strong>
+        	<ul>
+      	  	<li>Module Type : Custom HTML </li>
+            <li>Module Position : sidebar-inner</li>
+            <li>Module suffix : " no-padding"</li>
+         </ul>
+			</li>
+      <li><strong>Banner</strong>
+        	<ul>
+            <li>Module Type : Custom HTML</li>
+            <li>Module Position : sidebar-inner</li>
+            <li>Module suffix : " no-padding"</li>
+         </ul>
+      </li>
+      <li><strong>Latest Comment</strong>
+        	<ul>
+            <li>Module Type : K2 Modules</li>
+            <li>Module Functionality : Latest Comment</li>
+            <li>Module Position : sidebar-outer</li>
+         </ul>
+      </li>
+      <li><strong>Find Us on Facebook</strong>
+        	<ul>
+            <li>Module Type : Acymailing </li>
+            <li>Module data source : Facebook</li>
+            <li>Module Position : sidebar-outer</li>
+         </ul>
+      </li>
+      <li><strong>K2 Tags</strong>
+        	<ul>
+            <li>Module Functionality : Tag cloud</li>
+            <li>Module Position : sidebar-outer</li>
+         </ul>
+      </li>
+      <li><strong>Color Option</strong>
+       	<ul>
+           	<li>Module Type : Menu </li>
+            <li>Module Position : bottom1</li>
+         </ul>
+      </li>
+      <li><strong>Our Partner</strong>
+       	<ul>
+           	<li>Module Type : menu </li>
+            <li>Module Position : bottom2</li>
+         </ul>
+      </li>
+      <li><strong>About Joomla</strong>
+       	<ul>
+           	<li>Module Type : menu </li>
+            <li>Module Position : bottom3</li>
+         </ul>
+      </li>
+      <li><strong>About Us</strong>
+       	<ul>
+           	<li>Module Type : custom html</li>
+            <li>Module Position : bottom4</li>
+         </ul>
+      </li>
+      <li><strong>Who's Online</strong>
+       	<ul>
+           	<li>Module Type : who's online </li>
+            <li>Module Position : bottom4</li>
+         </ul>
+      </li>
+          <li><strong>Get in touch</strong>
+       	<ul>
+           	<li>Module Type : custom html </li>
+            <li>Module Position : bottom5</li>
+         </ul>
+      </li>
+      <li><strong>Google Map (On Contact Page)</strong>
+        	<ul>
+           	<li>Module Type : JGMap - Google Map </li>
+            <li>Module Position : gmaps</li>
+         </ul>
+      </li>
+      <li><strong>Portfolio</strong>
+        	<ul>
+          	<li>Module Type : Tabs GK5 </li>
+            <li>Module Position : mastcol</li>
+            <li>Notes : You need to create and set NSP GK5 modules, and place them on position, tab1, tab2, tab3, and so on, and on tabs GK5 you need to load them</li>
+         </ul>
+      </li>
+    </ol>
+
+</section>
+
+
+<section id="extensions">
+	<h2>7. Third Party Extensions</h2>
+	<hr class="notop">
+	<p>The extensions like K2, Acymailing ... they are included in Quickstart package so if you install quickstart package, all the 3rd party extensions are already installed and configure as you see in our Demo. We add short documentation about those installed extensions you might need to read</p>
+
+
+	<ul class="list">
+		<li><a href="#k2">7.1&nbsp;  K2 Component</a></li>
+		<li><a href="#nspgk5">7.2&nbsp;  News Show Pro GK5</a></li>
+		<li><a href="#btgmaps">7.3&nbsp;  J2Store </a></li>
+
+	</ul>
+	<br/><br/>
+
+	<div id="k2" class="subsection">
+		<h3>7.2 K2 Component</h3>
+		<br/>
+		<h4>7.2.1 About K2 Items</h4>
+		<hr class="notop">
+		<ul>
+			<li><strong>Create New K2 Item</strong><br/> Click on the "New" button, located towards the upper right corner and marked by an orange and white "plus" sign. </li>
+			<li><strong>Edit Existing K2 Item </strong> <br/> Select the item you would like to edit from the item listing.
+			</li>
+			<li> <strong>Titles and Descriptions</strong><br/>You can modify the title and/or description via the title text field and the description text field.</li>
+			<li><strong>Uploading Images</strong>
+				<ul>
+					<li>You can upload an image via the image tab located next to the content/description tab.</li>
+					<li>Just simply select “Choose File” and find the file on your computer.</li>
+					<li> If you would like to delete your image, check the box located at the bottom, and click the orange save button.</li>
+				</ul>
+    		</li>
+		</ul>
+		<br/>
+
+		<h4>7.2.2 About K2 Categories</h4>
+		<hr class="notop">
+		<ul>
+			<li><strong>Create New K2 Category </strong><br/> Click on the “New” button, located towards the upper right corner and marked by an orange and white “plus” sign.</li>
+			<li><strong>Edit Existing K2 Category</strong> <br/> Select the category you would like to edit from the category listing.
+			</li>
+			<li><strong>Titles and Descriptions in K2 Categories </strong><br/>You can modify the title and/or description via the title text field and the description text field. Titles and descriptions may or may not be used depending on how your site is configured.</li>
+			<li><strong>Uploading Images</strong>
+				<ul>
+					<li>You can upload an image via the image tab located next to the content/description tab.</li>
+					<li>Just simply select “Choose File” and find the file on your computer.</li>
+					<li>If you would like to delete your image, check the box located at the bottom, and click the save button.</li>
+				</ul>
+    		</li>
+		</ul>
+		<br/>
+
+		<h4>7.2.3 Enable front-end editing for K2 items</h4>
+		<hr class="notop">
+		<p>how to allow front-end editing with K2 items. In this manual we will show you how to configure this option, but first you should be aware that K2 has its own ACL system which by default doesn’t allow even super administrators to edit K2 items from the front-end, so you’ll have to do a few steps to make sure it is activated properly.</p>
+		<ul>
+			<li>From the top menu (in back-end) choose Components -> K2 ->User Groups. Now you have to add a new group, for example “Super Adminer”. Inside the group’s settings you must assign (set) permissions which will allow this group’s users to access Front-end item editing etc… If you are creating the group for Administrators only then you can set all the options to ‘Yes’. Remember to assign group permissions to all K2 Categories if you want to edit all K2 items from the front-end, or just choose selected items if you want to limit the group’s category access. Now save this new group that you created.<br/>
+			<img src="assets/images/k2.jpg" alt="K2 Component" />	</li>
+			<li>Now you have to assign your users who need front-end editing access to this K2 Group. From the left menu choose Users and click on the user account name you wish to give access to, then choose the recently-created group which has all permissions. You don’t have to add an avatar image or description if you don’t intend to use it, but you can if this information will be shown in the K2 items. Once done, click the Save & Close button.</li>
+			<li>Now all you have to do is add a login link or publish a login module on your website. After logging-in you should see an extra “edit this item” option on all or selected K2 items under the title (in article view).</li>
+		</ul>
+		<p>Now your cooperator or your client don’t need access to the back-end to post K2 items (article) to K2 from the frontend or edit available k2 items.</p>
+		<br/>
+
+		<h4>7.2.4 Comments System on K2</h4>
+		<hr class="notop">
+		<p>K2 has integrated (built-in) comment system is easy to use and requires little configuration. Comments feature can be enabled or disables, also can be protected by reCaptcha system.</p>
+		<p>If you want to change particular parameters within the commenting system, such a comments publications options or enable reCaptcha you have to use “Parameters” button which can be find in top-right corner. First, K2 allows comments to be published automatically by default. I would recommend you to disable that – if you don’t want to get hundreds of spam comments every day. Or you can use Enable reCaptcha: – this is an anti-spam feature. You’ll need to sign up for reCaptcha to use this.<br/>
+		<img src="assets/images/k2-2.jpg" alt="K2 Component" /></p>
+		<h5>Enable/disable comments in selected category</h5>
+		<ul>
+			<li>Open K2 Dashboard and select Categories tab.</li>
+			<li>Open for edit your master category.</li>
+			<li>Scroll down on your right (Parameters) and select Item view options.</li>
+			<li>Scroll down to the option shown as follows:	</li>
+		</ul>
+		<p class="info">To allow Comments to check Show. <br/>
+To disallow Comments to check Hide.</p>
+	</div>
+
+		<br/><br/>
+	<div id="nspgk5" class="subsection">
+		<h3>7.3 News Show Pro GK5</h3>
+		<br/>
+		<p>News Show Pro GK5 has huge amount of options and possibilities of formatting causes NSP GK5 is a complex tool in making attractive page. Module is appropriate while preparing simple structures with an individual article, the same as, complex arrangements including few articles and a list of links. That’s why we use this extension regularly in our Joomla! templates.</p>
+
+		<br/>
+		<h4>7.3.1 Basic Settings </h4>
+		<hr class="notop">
+		<img class="align-left" src="assets/images/nspgk5-1.jpg" alt="NSP GK5" />
+		<p>One of the most useful new features of Basic Settings is the option to save and load module configuration. This makes it possible to save the NSP configuration and, if needed, to load and restore settings. Configuration files are saved in a config catalog for the module. If saving with an already-existing file name, a number will be appended to the filename to make it unique. You can also delete configuration file, if you don’t need it anymore.</p>
+
+		<p>The “Module ID” option allows you to specify your own static module ID. If this option will be blank then the automatic module ID will be created.</p>
+
+		<p>A predefined module style: Standard mode, News Blocks, News Gallery, Portfolio, Video Gallery, Video List, Product Gallery, Title Overlay or Highlights – may be selected using the “Module mode” option.</p>
+
+		<br class="clr" />
+		<br/>
+		<h4>7.3.2 NSP GK5 Content Source Setting </h4>
+		<hr class="notop">
+		<img class="align-left" src="assets/images/nspgk5-2.jpg" alt="NSP GK5" />
+		<p>Parameters connected with the choice of type of data source used for generating module content and its filtering. Data source can be:</p>
+		<ul>
+			<li>Joomla! Content (categories or articles).</li>
+			<li>K2 Content (K2 items, K2 categories, K2 Tags or K2 Authors).</li>
+			<li>Virtuemart (products or categories)</li>
+			<li>HikaShop (products, categories)</li>
+			<li>Easy Blog (articles, categories, tags or authors)</li>
+			<li>JSON file</li>
+			<li>XML file</li>
+		</ul>
+
+		<p>In the case of categories, you can choose categories from multiple choice list (use CRTL key) whereas when you want to present articles chosen.</p>
+
+		<p>The “News order” options are for specifying the way of sorting articles from few possibilities: date, title, ID item order, randomize or hits amount.</p>
+
+		<p>The “First news number” is used to show articles from a range specified, this option gives possibility to show, e.g. articles starting from fifth article (if value = 5).</p>
+
+		<p>The “Show article created after” allows you to show articles created after specified period of time. That’s why it’s possible to specify the oldest article/items to be presented.</p>
+
+		<p>The “Show article created in last X days” – is used to show articles from a specific date range (last 7 days, last 30 days or more days).</p>
+
+		<p>The “Show featured items” – allows you to enable showing featured articles/items or to show only them.</p>
+
+		<p>The “Show unauthorized items” – allows you to disable showing unauthorized items.</p>
+
+		<p>The “Time offset” option is useful only when you have a problem with time zone between your location and your hosting location (i.e. when new articles are showing with few hours delay).</p>
+
+		<br class="clr" />
+		<br/>
+		<h4>7.3.3 Article layout settings</h4>
+		<hr class="notop">
+		<p>This section gives you access to few accordion tabs with setting for article layout.</p>
+		<ul>
+			<li><strong>Article pagination</strong>: amount of pages with articles intro, amount of columns & rows and style of pagination</li>
+			<li><strong>Header</strong>: specify position, floating, link and width limits.</li>
+			<li><strong>Image</strong>: allows to set position, floating and make linkable.</li>
+			<li><strong>Text</strong>: allows to set position, floating, link, text width limits and option to clean HTML code).</li>
+			<li><strong>Information block</strong>: allows to set position, floating, link, info format based on STRINGS, date and avatar settings. Each article can display two information blocks. For each, we can specify displayed data format.</li>
+		</ul>
+		<img src="assets/images/nspgk5-3.jpg" alt="NSP GK5" />
+		<p>Inside Info format field you can use the following sequences:</p>
+		<ul>
+			<li>%AUTHOR – displays author name (we choose exact name source in “Author name” option) and avatar from Gravatar.com service (if “Show author avatar” option is on; we specify avatar size in “Avatar size” option) and author link in info block for EasyBlog.</li>
+			<li>%CATEGORY – displays category name (we can switch on a link to a category in „Category link” option)</li>
+			<li>%DATE – displays article’s creation or modification date (according to “Used date” option), date format is specified in “Date format” option</li>
+			<li>%HITS – displays article amount of visits</li>
+			<li>%COMMENTS – displays the amount of comments for specific item</li>
+		</ul>
+		<p>The “Article layout” – group of options, there are options connected with elements padding and order of all elements like Text, Image, Info block and also Read more options. It is also possible to switch off each element</p>
+
+		<br/>
+		<h4>7.3.4 Thumbnail settings</h4>
+		<hr class="notop">
+		<img src="assets/images/nspgk5-4.jpg" alt="NSP GK5" />
+		<ul>
+			<li><strong>Responsive images</strong> allows you to use all features of the responsive web design layouts, it automatically adapt your  module images for mobile devices. When this option is enabled then image always scales up to the 100% width</li>
+			<li><strong>Wrap content</strong> enable this option if you want to achieve news layout where the image is at left side and the rest of content is at the right side, then the Image must be set in the article layout as first and should be floated to left</li>
+			<li><strong>Memory limit</strong> option is useful  if you exceed your memory limit during module work or you set the memory limit in the other place to different value</li>
+			<li><strong>Use cURL download for external images</strong>option is helpful if you have external images or images with absolute paths on the articles and you want to create the thumbnails from these images then you can enable this option. Please remember that you should have permissions to download these images. It will be saved on the cache directory in the downloaded/ catalog. Please remember that first load can take longer time. We don’t recommend to use this option for modules with frequently changing articles, because it can slow the page loading speed due additional data requests</li>
+			<li><strong>Create thumbnails</strong> option will use PHP GD library to generate thumbnails from article images.</li>
+			<li><strong>Image auto-scale</strong> option will automatically center image and zoom to the specific size. It works only when image stretch and keep aspect ratio options are disabled. If this option is off (disabled) then you will see Image crop settings</li>
+			<li><strong>Keep aspect ratio</strong> option is useful  when you want to keep aspect ratio of created thumbnails. Then thumbnail width and height options mean maximal possible dimensions.</li>
+			<li><strong>Thumbnail dimensions</strong> option allow you to sets the dimension (width and height) on which the maximum pixel size limitation should apply to for the thumbnail. For the dimensions of your thumbnails you have to find a good compromise: thumbnails with smaller dimensions result in smaller files sizes and therefore the thumbnail page loads very fast. The drawback of small dimensions are obvious: if you pick numbers that are too small, your visitors cannot figure out what will be shown and therefore would not care to click on the thumbnail to read whole article.  Set width and height for the thumbnail to the same value – to create square thumbnails.</li>
+			<li><strong>Image margin</strong> option allows you to sets the margin property for all directions in one declaration (Top, Right, Bottom, Left). Negative values are also allowed. The margin property is supported in all major browsers.</li>
+			<li><strong>Links thumbnail dimensions</strong> option allow you to sets the width and height for created thumbnails from articles images from Links section.</li>
+			<li><strong>Links image margin</strong>allows you define margin for images as a CSS value (i.e: 6px 5px 0px 0px)</li>
+			<li><strong>Thumbnail background</strong> allows you to set background color (in HEX value) under image, this might be important when created thumbnail would be smaller than defined above its size.</li>
+			<li><strong>Thumbnail stretch</strong>if enabled the thumbnail function stretches the thumbnail’s dimensions, both width and height, to fill the square or rectangle shape defined in the ‘Thumbnail dimensions’ setting</li>
+			<li><strong>Thumbnail quality</strong> allow you to choose thumbnail quality for generated images,  it’s lossy compression method. Lossy means “with losses” to image quality. The more compression level you apply, the more information from photo you’ll lose. Large featureless areas (skies, desert, etc.) compress much better (smaller file) than images containing much tiny detail all over.</li>
+			<li><strong>Images filters</strong> filters are a powerful option that you can use to get interesting visual effects (blurring, grayscale, brightness or contrast etc.), they allow you to visually process an image on the website inside module without needing to go through PhotoShop or Gimp.  You can apply an arbitrary number of filters one after the other to achieve all sorts of effects.  But at the same time they might have an little impact on the performance of your site. So using them properly will have minimal impact on the speed of your site.</li>
+		</ul>
+
+
+
+	</div>
+</section>
+
+<!-- New SECTION -->
+<section id="extras">
+	<h2>Extra Information</h2>
+	<h3>T3 Framework Documentation</h3><hr class="notop">
+<p>Look documentation of <a href="http://t3-framework.org/documentation.html">T3 framework</a>.</p>
+<p>Videos of T3 framework 2.0:</p>
+<ol>
+<li><a href="http://www.youtube.com/watch?v=pGrdGQz1DhI&list=PL4BjMzuBkvR9BLKw6MfLl1m4Q6D7HN0br&index=5" target="_blank">T3 Framework - Overview</a></li>
+<li><a href="http://www.youtube.com/watch?feature=player_embedded&v=Ae8lDTDMC5c" target="_blank">T3 Framework - ThemeMagic</a></li>
+<li><a href="http://www.youtube.com/watch?v=7XT5NAVbQ0o&list=PL4BjMzuBkvR9BLKw6MfLl1m4Q6D7HN0br&index=4" target="_blank">T3 Framework - Layout</a></li>
+<li><a href="http://www.youtube.com/watch?v=cqfRrWV-IPY&list=PL4BjMzuBkvR9BLKw6MfLl1m4Q6D7HN0br&index=1" target="_blank">T3 Framework - Megamenu</a></li>
+<li><a href="http://www.youtube.com/watch?v=zoiqgS7N21o&list=PL4BjMzuBkvR9BLKw6MfLl1m4Q6D7HN0br&index=2" target="_blank">T3 Framework - Responsive Layout</a></li>
+</ol>
+
+
+   <h3>Typography</h3><hr class="notop">
+<p>
+	This templates owns HTML elements styled and enhanced with extensible classes. To use those elements you could use your joomla editor and click on html icon to launch the HTML Source Editor, and please refers to this page <a href="https://demo.templateplazza.com/ripple" title="Typography" target="_blank">https://demo.templateplazza.com/ripple</a> typography to use those elements styled </p>
+
+<p class="info">To use Icon Text you need to know the <a href=" http://fortawesome.github.io/Font-Awesome/cheatsheet/" target="_blank">cheatsheet</a></p>
+
+
+	<h3>Source and Credits</h3><hr class="notop">
+    <p><strong>Joomla Extentions</strong></p>
+		<ol>
+			<li><a href="http://t3.joomlart.com/" target="_blank">T3 Framework</a></li>
+            <li><a href="http://getk2.org/" target="_blank">K2 Component</a></li>
+            <li><a href="https://www.gavick.com/best-free-joomla-tab-module.html" target="_blank">Tabs GK5</a></li>
+            <li><a href="https://www.gavick.com/news-show-pro-gk5.html" target="_blank">News Show Pro GK5</a></li>
+			<li><a href="http://www.akeebabackup.com/download.html" target="_blank">Akeeba Backup</a></li>
+            <li><a href="http://www.acyba.com/" target="_blank">AcyMailing Starter Component</a></li>
+            <li><a href="http://extensions.joomla.org/extensions/social-web/social-display/twitter-display/24753" target="_blank">SP Tweets</a></li>
+            <li><a href="http://www.joomlack.fr/en/joomla-extensions/playlist-ck" target="_blank">Playlist CK</a></li>
+            </ol>
+    <p><strong>Image Source</strong></p>
+		<ol>
+			<li><a href="http://picjumbo.com" target="_blank">PicJumbo</a></li>
+            <li><a href="http://www.flickr.com/photos/needoptic/sets/?&page=2" target="_blank">Aurimas Adomavicius</a></li>
+    </ol>
+
+</section>
+
+
+<!-- New SECTION -->
+<section id="changelog">
+	<h2>Changelog</h2>
+
+   <!--<p><strong>Version 1.17.4 (30 September 2014)</strong></p>
+    <pre class="brush: plain">
+    Update the extensions the latest version
+    Update both quickstart to the latest version Joomla 3.3.4 and 2.5.25
+    Fix modal issue (minor update on core.less and navbar.less)
+    Fix update dates issue (Minor updates on updates.php)
+    </pre>
+
+    <p><strong>Version 1.17.3 (10 June 2014)</strong></p>
+    <pre class="brush: plain">
+    Update the extensions the latest version
+    Fix Tabs GK5 issue
+    Minor updates on extensions.css
+    Minor update on footer.php
+    </pre>
+
+    <p><strong>Version 1.17.2 (23 May 2014)</strong></p>
+    <pre class="brush: plain">
+    Add features : Sticky main menu
+    Fix portrait view on ipad
+    Minor updates on style.less, navbar.less, and script.js
+    </pre>
+
+    <p><strong>Version 1.17.1 (13 May 2014)</strong></p>
+    <pre class="brush: plain">
+    Initial Release
+    </pre>-->
+
+</section>
+
+	</div>
+</body>
+</html>

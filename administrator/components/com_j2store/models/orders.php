@@ -131,7 +131,7 @@ class J2StoreModelOrders extends F0FModel {
 		return true;
 	}
 
-	function loadItemsTemplate($order,$receiver_type = '*') {
+	function loadItemsTemplate($order) {
 
 		static $sets;
 		if ( !is_array( $sets ) )
@@ -153,7 +153,6 @@ class J2StoreModelOrders extends F0FModel {
 
 			$view->set( 'order', $order);
 			$view->set( 'params', J2Store::config());
-            $view->set( 'email_receiver', $receiver_type);
 			$view->setDefaultViewPath(JPATH_SITE.'/components/com_j2store/views/myprofile/tmpl');
 			$view->setTemplateOverridePath(JPATH_SITE.'/templates/'.$view->getTemplate().'/html/com_j2store/myprofile');
 			//if templates are assigned to menu, then we got to fetch it.
@@ -205,19 +204,11 @@ class J2StoreModelOrders extends F0FModel {
 			{
 				$limitstart = $this->getState('limitstart');
 				$limit = $this->getState('limit');
-                try {
-                    $this->_orders = $this->_getList((string) $query, $limitstart, $limit, $group);
-                } catch (Exception $e) {
-
-                }
+				$this->_orders = $this->_getList((string) $query, $limitstart, $limit, $group);
 			}
 			else
 			{
-                try {
-                    $this->_orders = $this->_getList((string) $query, 0, 0, $group);
-                } catch (Exception $e) {
-
-                }
+				$this->_orders = $this->_getList((string) $query, 0, 0, $group);
 			}
 		}
 
@@ -305,12 +296,8 @@ class J2StoreModelOrders extends F0FModel {
 
 	protected function _buildQueryOrderBy(&$query){
 		$db =$this->_db;
-		if(!empty($this->state->filter_order) && in_array($this->state->filter_order,array('invoice','order_id','created_on','order_total','orderpayment_type'))) {
-            if(!in_array(strtolower($this->state->filter_order_Dir),array('asc','desc'))){
-                $this->state->filter_order_Dir = 'desc';
-            }
-            $query->order($db->qn($this->state->filter_order).' '.$this->state->filter_order_Dir);
-			//$query->order($this->state->filter_order.' '.$this->state->filter_order_Dir);
+		if(!empty($this->state->filter_order)) {
+			$query->order($this->state->filter_order.' '.$this->state->filter_order_Dir);
 		}
 		$query->order('#__j2store_orders.created_on DESC');
 	}
@@ -336,8 +323,6 @@ class J2StoreModelOrders extends F0FModel {
 				'frominvoice'		=> $this->getState('frominvoice',null,'int'),
 				'toinvoice'		=> $this->getState('toinvoice',null,'int'),
 				'orderstatus'		=> $this->getState('orderstatus',array()),
-                'token'		=> $this->getState('token',''),
-                'user_email'		=> $this->getState('user_email',''),
 		);
 	}
 
@@ -357,8 +342,6 @@ class J2StoreModelOrders extends F0FModel {
 				$db->qn('#__j2store_orders').'.'.$db->qn('order_type').'='.$db->q('normal')
 			);
 		}
-
-
 
 		if(isset($state->orderstatus) && !empty($state->orderstatus) && is_array($state->orderstatus)) {
 			if(!in_array('*' ,$state->orderstatus)){
@@ -402,16 +385,6 @@ class J2StoreModelOrders extends F0FModel {
 					$db->qn('#__j2store_orders').'.'.$db->qn('user_id').'='.$db->q($state->user_id)
 			);
 		}
-		if($state->token){
-            $query->where(
-                $db->qn('#__j2store_orders').'.'.$db->qn('token').'='.$db->q($state->token)
-            );
-        }
-		if($state->user_email){
-            $query->where(
-                $db->qn('#__j2store_orders').'.'.$db->qn('user_email').'='.$db->q($state->user_email)
-            );
-        }
         $tz = JFactory::getConfig()->get('offset');
 		//since
 		$since = trim($state->since);
@@ -422,7 +395,14 @@ class J2StoreModelOrders extends F0FModel {
 			if(!preg_match($regex, $since)) {
 				$since = '2001-01-01';
 			}
-            $since = $this->convert_time_to_utc($since);
+            $from_date = JFactory::getDate($since);
+			$since = $from_date->toUnix();
+			if($since == 0) {
+				$since = '';
+			} else {
+				$since = $from_date->toSql();
+			}
+
 			// Filter from-to dates
 			$query->where(
 					$db->qn('#__j2store_orders').'.'.$db->qn('created_on').' >= '.
@@ -439,7 +419,15 @@ class J2StoreModelOrders extends F0FModel {
 			if(!preg_match($regex, $until)) {
 				$until = '2037-01-01';
 			}
-            $until = $this->convert_time_to_utc($until);
+            $extra_date = JFactory::getDate($until);
+            $until = $extra_date->format('Y-m-d').' 23:59:59';
+            $to_date = JFactory::getDate($until);
+			$until = $to_date->toUnix();
+			if($until == 0) {
+				$until = '';
+			} else {
+				$until = $to_date->toSql();
+			}
 			$query->where(
 					$db->qn('#__j2store_orders').'.'.$db->qn('created_on').' <= '.
 					$db->q($until)
@@ -510,16 +498,6 @@ class J2StoreModelOrders extends F0FModel {
 			$query->where($db->qn('#__j2store_orderdiscounts').'.'.$db->qn('discount_type').' = '.$db->q('coupon'));
 		}
 	}
-
-    function convert_time_to_utc($datetime, $format = 'Y-m-d H:i:s', $modify = '')
-    {
-        $tz = JFactory::getConfig()->get('offset');
-        $from_date = JFactory::getDate($datetime,$tz);
-        $from_date->format($format);
-        $timezone = new DateTimeZone('UTC');
-        $from_date->setTimezone($timezone);
-        return $from_date->format($format);
-    }
 
 	public function export($data=array(), $auto=false) {
 		$app = JFactory::getApplication();
@@ -676,7 +654,7 @@ class J2StoreModelOrders extends F0FModel {
 
 
 		$row = F0FTable::getAnInstance('Orderinfo','J2StoreTable');
-		if(isset($custom_fields) && $custom_fields) {
+		if(isset($custom_fields) && count($custom_fields)) {
 			foreach($custom_fields as $namekey=>$field) {
 				if(!property_exists($row, $type.'_'.strtolower($namekey)) && !property_exists($row, 'user_'.$namekey) && $namekey !='country_id' && $namekey != 'zone_id' && $namekey != 'option' && $namekey !='task' && $namekey != 'view' && $namekey !='email' ) {
 					if(is_object($field)) {
@@ -787,9 +765,8 @@ class J2StoreModelOrders extends F0FModel {
 		$date = date( "Y-m-d H:i:s", strtotime( '-' . abs( intval( $held_duration )) . ' MINUTES', $now) );
 
 		$db = JFactory::getDbo();
-        $query = $db->getQuery(true)->select('order_id')->from('#__j2store_orders')->where('modified_on <'.$db->q($date))
-            ->where('order_type ='.$db->q('normal'))
-            ->where('order_state_id IN (4,5)');
+		$query = $db->getQuery(true)->select('order_id')->from('#__j2store_orders')->where('modified_on <'.$db->q($date))
+							->where('order_state_id IN (4,5)');
 		$db->setQuery($query);
 		$unpaid_orders = $db->loadObjectList();
 		if ( $unpaid_orders ) {
@@ -805,7 +782,6 @@ class J2StoreModelOrders extends F0FModel {
 						$old_status = $order->order_state_id;
 
 						$order->update_status(6);
-						$order->notify_customer(true);
 
 						//if status is new, then stock may not got reduced.
 						if($old_status == 4) {

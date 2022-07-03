@@ -1,29 +1,33 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
-require_once(JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
+require_once (JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
 
 class K2ElementK2Category extends K2Element
 {
-    public function fetchElement($name, $value, &$node, $control_name)
+
+    function fetchElement($name, $value, &$node, $control_name)
     {
-        $db = JFactory::getDbo();
+        $db = JFactory::getDBO();
         $query = 'SELECT m.* FROM #__k2_categories m WHERE trash = 0 ORDER BY parent, ordering';
         $db->setQuery($query);
         $mitems = $db->loadObjectList();
         $children = array();
-        if ($mitems) {
-            foreach ($mitems as $v) {
-                if (K2_JVERSION != '15') {
+        if ($mitems)
+        {
+            foreach ($mitems as $v)
+            {
+                if (K2_JVERSION != '15')
+                {
                     $v->title = $v->name;
                     $v->parent_id = $v->parent;
                 }
@@ -38,13 +42,13 @@ class K2ElementK2Category extends K2Element
         $mitems = array();
         $option = JRequest::getCmd('option');
         $prefix = ($option == 'com_joomfish') ? 'refField_' : '';
-        if ($name == 'categories' || $name == 'jform[params][categories]') {
-            if (version_compare(JVERSION, '3.5', 'ge')) {
-                JHtml::_('behavior.framework');
-            }
+        if ($name == 'categories' || $name == 'jform[params][categories]')
+        {
+          if(version_compare(JVERSION, '3.5', 'ge')) {
+            JHtml::_('behavior.framework');
+          }
             $doc = JFactory::getDocument();
             $js = "
-            /* Mootools Snippet */
 			window.addEvent('domready', function(){
 				setTask();
 			});
@@ -124,9 +128,9 @@ class K2ElementK2Category extends K2Element
 			}
 			";
 
-            if (K2_JVERSION != '15') {
+            if (K2_JVERSION != '15')
+            {
                 $js = "
-                /* Mootools Snippet */
 				function disableParams(){
 					$('jform_params_num_leading_items').setProperty('disabled','disabled');
 					$('jform_params_num_leading_columns').setProperty('disabled','disabled');
@@ -213,33 +217,42 @@ class K2ElementK2Category extends K2Element
             $doc->addScriptDeclaration($js);
         }
 
-        foreach ($list as $item) {
+        foreach ($list as $item)
+        {
             $item->treename = JString::str_ireplace('&#160;', '- ', $item->treename);
             @$mitems[] = JHTML::_('select.option', $item->id, $item->treename);
         }
 
-        if (K2_JVERSION != '15') {
+        if (K2_JVERSION != '15')
+        {
             $fieldName = $name.'[]';
-        } else {
+        }
+        else
+        {
             $fieldName = $control_name.'['.$name.'][]';
         }
 
-        if ($name == 'categories' || $name == 'jform[params][categories]') {
+        if ($name == 'categories' || $name == 'jform[params][categories]')
+        {
             $onChange = 'onchange="setTask();"';
-        } else {
+        }
+        else
+        {
             $onChange = '';
         }
 
         return JHTML::_('select.genericlist', $mitems, $fieldName, $onChange.' class="inputbox" multiple="multiple" size="15"', 'value', 'text', $value);
+
     }
+
 }
 
 class JFormFieldK2Category extends K2ElementK2Category
 {
-    public $type = 'k2category';
+    var $type = 'k2category';
 }
 
 class JElementK2Category extends K2ElementK2Category
 {
-    public $_name = 'k2category';
+    var $_name = 'k2category';
 }

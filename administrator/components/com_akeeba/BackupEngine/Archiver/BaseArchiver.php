@@ -1,19 +1,22 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
 
-defined('AKEEBAENGINE') || die();
-
+// Protection against direct access
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
 use Akeeba\Engine\Factory;
+use Psr\Log\LogLevel;
+
+defined('AKEEBAENGINE') or die();
 
 if (!defined('AKEEBA_CHUNK'))
 {
@@ -46,7 +49,7 @@ if (!function_exists('aksubstr'))
 abstract class BaseArchiver extends BaseFileManagement
 {
 	/** @var   array  The last part which has been finalized and waits to be post-processed */
-	public $finishedPart = [];
+	public $finishedPart = array();
 
 	/** @var resource File pointer to the archive being currently written to */
 	protected $fp = null;
@@ -68,9 +71,6 @@ abstract class BaseArchiver extends BaseFileManagement
 
 	/** @var bool Should I use Split ZIP? */
 	protected $useSplitArchive = false;
-
-	/** @var int Permissions for the backup archive part files */
-	protected $permissions = null;
 
 	/**
 	 * Release file pointers when the object is being serialized
@@ -114,7 +114,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	/**
 	 * Create a new part file and open it for writing
 	 *
-	 * @param   bool  $finalPart  Is this the final part?
+	 * @param   bool $finalPart Is this the final part?
 	 *
 	 * @return  void
 	 */
@@ -144,7 +144,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	 */
 	protected function createNewBackupArchive()
 	{
-		Factory::getLog()->debug(__CLASS__ . " :: Killing old archive");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: Killing old archive");
 
 		$this->fp = $this->fopen($this->_dataFileName, "wb");
 
@@ -156,7 +156,11 @@ abstract class BaseArchiver extends BaseFileManagement
 			}
 
 			@touch($this->_dataFileName);
-			@chmod($this->_dataFileName, 0666);
+
+			if (function_exists('chmod'))
+			{
+				chmod($this->_dataFileName, 0666);
+			}
 
 			$this->fp = $this->fopen($this->_dataFileName, "wb");
 
@@ -173,8 +177,8 @@ abstract class BaseArchiver extends BaseFileManagement
 	 * Opens the backup archive file for output. Returns false if the archive file cannot be opened in binary append
 	 * mode.
 	 *
-	 * @param   bool  $force  Should I forcibly reopen the file? If false, I'll only open the file if the current
-	 *                        file pointer is null.
+	 * @param   bool $force Should I forcibly reopen the file? If false, I'll only open the file if the current
+	 *                      file pointer is null.
 	 *
 	 * @return  void
 	 */
@@ -203,8 +207,8 @@ abstract class BaseArchiver extends BaseFileManagement
 	 */
 	protected function humanToIntegerBytes($setting)
 	{
-		$val  = trim($setting);
-		$last = strtolower($val[strlen($val) - 1]);
+		$val = trim($setting);
+		$last = strtolower($val{strlen($val) - 1});
 
 		if (is_numeric($last))
 		{
@@ -266,11 +270,13 @@ abstract class BaseArchiver extends BaseFileManagement
 		}
 
 		// We are told not to dereference symlinks. Are we on Windows?
-		$isWindows = (DIRECTORY_SEPARATOR == '\\');
-
 		if (function_exists('php_uname'))
 		{
 			$isWindows = stristr(php_uname(), 'windows');
+		}
+		else
+		{
+			$isWindows = (DIRECTORY_SEPARATOR == '\\');
 		}
 
 		// If we are not on Windows, enable symlink target storage
@@ -280,10 +286,10 @@ abstract class BaseArchiver extends BaseFileManagement
 	/**
 	 * Gets the file size and last modification time (also works on virtual files and symlinks)
 	 *
-	 * @param   string  $sourceNameOrData  File path to the source file or source data (if $isVirtual is true)
-	 * @param   bool    $isVirtual         Is this a virtual file?
-	 * @param   bool    $isSymlink         Is this a symlink?
-	 * @param   bool    $isDir             Is this a directory?
+	 * @param   string $sourceNameOrData File path to the source file or source data (if $isVirtual is true)
+	 * @param   bool   $isVirtual        Is this a virtual file?
+	 * @param   bool   $isSymlink        Is this a symlink?
+	 * @param   bool   $isDir            Is this a directory?
 	 *
 	 * @return  array
 	 */
@@ -295,7 +301,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			$fileSize    = akstrlen($sourceNameOrData);
 			$fileModTime = time();
 
-			return [$fileSize, $fileModTime];
+			return array($fileSize, $fileModTime);
 		}
 
 
@@ -304,7 +310,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			$fileSize    = akstrlen(@readlink($sourceNameOrData));
 			$fileModTime = 0;
 
-			return [$fileSize, $fileModTime];
+			return array($fileSize, $fileModTime);
 		}
 
 		// Is the file readable?
@@ -326,16 +332,16 @@ abstract class BaseArchiver extends BaseFileManagement
 		$fileSize    = $isDir ? 0 : @filesize($sourceNameOrData);
 		$fileModTime = $isDir ? 0 : @filemtime($sourceNameOrData);
 
-		return [$fileSize, $fileModTime];
+		return array($fileSize, $fileModTime);
 	}
 
 	/**
 	 * Get the preferred compression method for a file
 	 *
-	 * @param   int   $fileSize   File size in bytes
-	 * @param   int   $memLimit   Memory limit in bytes
-	 * @param   bool  $isDir      Is it a directory?
-	 * @param   bool  $isSymlink  Is it a symlink?
+	 * @param   int  $fileSize  File size in bytes
+	 * @param   int  $memLimit  Memory limit in bytes
+	 * @param   bool $isDir     Is it a directory?
+	 * @param   bool $isSymlink Is it a symlink?
 	 *
 	 * @return  int  Compression method to use: 0 (uncompressed) or 1 (gzip deflate)
 	 */
@@ -382,10 +388,10 @@ abstract class BaseArchiver extends BaseFileManagement
 	/**
 	 * Checks if the file exists and is readable
 	 *
-	 * @param   string  $sourceNameOrData  The path to the file being compressed, or the raw file data for virtual files
-	 * @param   bool    $isVirtual         Is this a virtual file?
-	 * @param   bool    $isSymlink         Is this a symlink?
-	 * @param   bool    $isDir             Is this a directory?
+	 * @param   string $sourceNameOrData The path to the file being compressed, or the raw file data for virtual files
+	 * @param   bool   $isVirtual        Is this a virtual file?
+	 * @param   bool   $isSymlink        Is this a symlink?
+	 * @param   bool   $isDir            Is this a directory?
 	 *
 	 * @return  void
 	 *
@@ -417,12 +423,12 @@ abstract class BaseArchiver extends BaseFileManagement
 	/**
 	 * Try to get the compressed data for a file
 	 *
-	 * @param   string  $sourceNameOrData
-	 * @param   bool    $isVirtual
-	 * @param   int     $compressionMethod
-	 * @param   string  $zdata
-	 * @param   int     $unc_len
-	 * @param   int     $c_len
+	 * @param   string $sourceNameOrData
+	 * @param   bool   $isVirtual
+	 * @param   int    $compressionMethod
+	 * @param   string $zdata
+	 * @param   int    $unc_len
+	 * @param   int    $c_len
 	 *
 	 * @return  void
 	 */
@@ -486,7 +492,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		$altExtension         = substr($extension, 0, 2) . '01';
 		$archiveTypeUppercase = strtoupper(substr($extension, 1));
 
-		Factory::getLog()->info(__CLASS__ . " :: Split $archiveTypeUppercase creation enabled");
+		Factory::getLog()->log(LogLevel::INFO, __CLASS__ . " :: Split $archiveTypeUppercase creation enabled");
 
 		$this->useSplitArchive              = true;
 		$this->partSize                     = $partSize;
@@ -591,7 +597,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			if ($seek_result === -1)
 			{
 				// What?! We can't resume!
-				$this->conditionalFileClose($sourceFilePointer);
+				@fclose($sourceFilePointer);
 
 				throw new ErrorException(sprintf('Could not resume packing of file %s. Your archive is damaged!', $sourceNameOrData));
 			}
@@ -602,29 +608,9 @@ abstract class BaseArchiver extends BaseFileManagement
 
 		$mustBreak = $this->putDataFromFileIntoArchive($sourceFilePointer, $fileLength);
 
-		$this->conditionalFileClose($sourceFilePointer);
+		@fclose($sourceFilePointer);
 
 		return $mustBreak;
-	}
-
-	/**
-	 * Return the requested permissions for the backup archive file.
-	 *
-	 * @return  int
-	 * @since   8.0.0
-	 */
-	protected function getPermissions(): int
-	{
-		if (!is_null($this->permissions))
-		{
-			return $this->permissions;
-		}
-
-		$configuration     = Factory::getConfiguration();
-		$permissions       = $configuration->get('engine.archiver.common.permissions', '0666') ?: '0666';
-		$this->permissions = octdec($permissions);
-
-		return $this->permissions;
 	}
 
 	/**
@@ -647,14 +633,14 @@ abstract class BaseArchiver extends BaseFileManagement
 		while (!feof($sourceFilePointer) && ($timer->getTimeLeft() > 0) && ($fileLength > 0))
 		{
 			// Normally I read up to AKEEBA_CHUNK bytes at a time
-			$chunkSize = AKEEBA_CHUNK;
+			$chunkSize    = AKEEBA_CHUNK;
 
 			// Do I have a split ZIP?
 			if ($this->useSplitArchive)
 			{
 				// I must only read up to the free space in the part file if it's less than AKEEBA_CHUNK.
 				$free_space = $this->getPartFreeSize();
-				$chunkSize  = min($free_space, AKEEBA_CHUNK);
+				$chunkSize = min($free_space, AKEEBA_CHUNK);
 
 				// If I ran out of free space I have to create a new part file.
 				if ($free_space <= 0)
@@ -665,7 +651,7 @@ abstract class BaseArchiver extends BaseFileManagement
 					if ($configuration->get('engine.postproc.common.after_part', 0))
 					{
 						$resumeOffset = @ftell($sourceFilePointer);
-						$this->conditionalFileClose($sourceFilePointer);
+						@fclose($sourceFilePointer);
 
 						$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 						$configuration->set('volatile.engine.archiver.processingfile', true);
@@ -680,7 +666,7 @@ abstract class BaseArchiver extends BaseFileManagement
 
 					// No immediate post-proc. Recalculate the optimal chunk size.
 					$free_space = $this->getPartFreeSize();
-					$chunkSize  = min($free_space, AKEEBA_CHUNK);
+					$chunkSize = min($free_space, AKEEBA_CHUNK);
 				}
 			}
 
@@ -708,7 +694,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		{
 			// We have to break, or we'll time out!
 			$resumeOffset = @ftell($sourceFilePointer);
-			$this->conditionalFileClose($sourceFilePointer);
+			@fclose($sourceFilePointer);
 
 			$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 			$configuration->set('volatile.engine.archiver.processingfile', true);

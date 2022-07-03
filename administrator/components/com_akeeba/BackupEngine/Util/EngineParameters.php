@@ -1,20 +1,20 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use DirectoryIterator;
-use LogicException;
 
 /**
  * Unified engine parameters helper class. Deals with scripting, GUI configuration elements and information on engine
@@ -23,99 +23,81 @@ use LogicException;
 class EngineParameters
 {
 	/**
-	 * Holds the parsed scripting.json contents
-	 *
-	 * @var array
-	 */
-	public $scripting = null;
-
-	/**
 	 * Holds the known paths holding JSON definitions of engines, installers and configuration gui elements
 	 *
 	 * @var  array
 	 */
-	protected $enginePartPaths = [];
+	protected $enginePartPaths = array();
 
 	/**
-	 * Cache of the engines known to this object
-	 *
-	 * @var array
+	 * @var array Cache of the engines known to this object
 	 */
-	protected $engine_list = [];
+	protected $engine_list = array();
 
-	/**
-	 * Cache of the GUI configuration elements known to this object
-	 *
-	 * @var array
-	 */
-	protected $gui_list = [];
+	/** @var array Cache of the GUI configuration elements known to this object */
+	protected $gui_list = array();
 
-	/**
-	 * Cache of the installers known to this object
-	 *
-	 * @var array
-	 */
-	protected $installer_list = [];
+	/** @var array Cache of the installers known to this object */
+	protected $installer_list = array();
 
-	/**
-	 * The currently active scripting type
-	 *
-	 * @var string
-	 */
+	/** @var array Holds the parsed scripting.json contents */
+	public $scripting = null;
+
+	/** @var string The currently active scripting type */
 	protected $activeType = null;
 
 	/**
-	 * Loads the scripting.json and returns an array with the domains, the scripts and the raw data
+	 * Loads the scripting.json and returns an array with the domains, the scripts and
+	 * the raw data
 	 *
 	 * @return  array  The parsed scripting.json. Array keys: domains, scripts, data
 	 */
-	public function loadScripting($jsonPath = '')
+	public function loadScripting()
 	{
-		if (!empty($this->scripting))
+		if (empty($this->scripting))
 		{
-			return $this->scripting;
+			$jsonPath = Factory::getAkeebaRoot() . '/Core/scripting.json';
+
+			if (@file_exists($jsonPath))
+			{
+				$rawData = file_get_contents($jsonPath);
+				$rawScriptingData = empty($rawData) ? [] : json_decode($rawData, true);
+				$domain_keys = explode('|', $rawScriptingData['volatile.akeebaengine.domains']);
+				$domains = array();
+
+				foreach ($domain_keys as $key)
+				{
+					$record = array(
+						'domain' => $rawScriptingData['volatile.domain.' . $key . '.domain'],
+						'class'  => $rawScriptingData['volatile.domain.' . $key . '.class'],
+						'text'   => $rawScriptingData['volatile.domain.' . $key . '.text']
+					);
+					$domains[$key] = $record;
+				}
+
+				$script_keys = explode('|', $rawScriptingData['volatile.akeebaengine.scripts']);
+				$scripts = array();
+
+				foreach ($script_keys as $key)
+				{
+					$record = array(
+						'chain' => explode('|', $rawScriptingData['volatile.scripting.' . $key . '.chain']),
+						'text'  => $rawScriptingData['volatile.scripting.' . $key . '.text']
+					);
+					$scripts[$key] = $record;
+				}
+
+				$this->scripting = array(
+					'domains' => $domains,
+					'scripts' => $scripts,
+					'data'    => $rawScriptingData
+				);
+			}
+			else
+			{
+				$this->scripting = array();
+			}
 		}
-
-		$this->scripting = [];
-		$jsonPath        = Factory::getAkeebaRoot() . '/Core/scripting.json';
-
-		if (!@file_exists($jsonPath))
-		{
-			return $this->scripting;
-		}
-
-		$rawData          = file_get_contents($jsonPath);
-		$rawScriptingData = empty($rawData) ? [] : json_decode($rawData, true);
-		$domain_keys      = explode('|', $rawScriptingData['volatile.akeebaengine.domains']);
-		$domains          = [];
-
-		foreach ($domain_keys as $key)
-		{
-			$record        = [
-				'domain' => $rawScriptingData['volatile.domain.' . $key . '.domain'],
-				'class'  => $rawScriptingData['volatile.domain.' . $key . '.class'],
-				'text'   => $rawScriptingData['volatile.domain.' . $key . '.text'],
-			];
-			$domains[$key] = $record;
-		}
-
-		$script_keys = explode('|', $rawScriptingData['volatile.akeebaengine.scripts']);
-		$scripts     = [];
-
-		foreach ($script_keys as $key)
-		{
-			$record        = [
-				'chain' => explode('|', $rawScriptingData['volatile.scripting.' . $key . '.chain']),
-				'text'  => $rawScriptingData['volatile.scripting.' . $key . '.text'],
-			];
-			$scripts[$key] = $record;
-		}
-
-		$this->scripting = [
-			'domains' => $domains,
-			'scripts' => $scripts,
-			'data'    => $rawScriptingData,
-		];
 
 		return $this->scripting;
 	}
@@ -127,7 +109,7 @@ class EngineParameters
 	 */
 	public function importScriptingToRegistry()
 	{
-		$scripting     = $this->loadScripting();
+		$scripting = $this->loadScripting();
 		$configuration = Factory::getConfiguration();
 		$configuration->mergeArray($scripting['data'], false);
 	}
@@ -164,20 +146,19 @@ class EngineParameters
 	public function getDomainChain()
 	{
 		$configuration = Factory::getConfiguration();
-		$script        = $configuration->get('akeeba.basic.backup_type', 'full');
+		$script = $configuration->get('akeeba.basic.backup_type', 'full');
 
 		$scripting = $this->loadScripting();
-		$domains   = $scripting['domains'];
-		$keys      = $scripting['scripts'][$script]['chain'];
+		$domains = $scripting['domains'];
+		$keys = $scripting['scripts'][$script]['chain'];
 
-		$result = [];
-
+		$result = array();
 		foreach ($keys as $domain_key)
 		{
-			$result[] = [
+			$result[] = array(
 				'domain' => $domains[$domain_key]['domain'],
-				'class'  => $domains[$domain_key]['class'],
-			];
+				'class'  => $domains[$domain_key]['class']
+			);
 		}
 
 		return $result;
@@ -186,8 +167,8 @@ class EngineParameters
 	/**
 	 * Append a path to the end of the paths list for a specific section
 	 *
-	 * @param   string  $path     Absolute filesystem path to add
-	 * @param   string  $section  The section to add it to (gui, engine, installer, filters)
+	 * @param   string $path    Absolute filesystem path to add
+	 * @param   string $section The section to add it to (gui, engine, installer, filters)
 	 *
 	 * @return  void
 	 */
@@ -211,8 +192,8 @@ class EngineParameters
 	/**
 	 * Add a path to the beginning of the paths list for a specific section
 	 *
-	 * @param   string  $path     Absolute filesystem path to add
-	 * @param   string  $section  The section to add it to (gui, engine, installer, filters)
+	 * @param   string $path    Absolute filesystem path to add
+	 * @param   string $section The section to add it to (gui, engine, installer, filters)
 	 *
 	 * @return  void
 	 */
@@ -236,7 +217,7 @@ class EngineParameters
 	/**
 	 * Get the paths for a specific section
 	 *
-	 * @param   string  $section  The section to get the path list for (engine, installer, gui, filter)
+	 * @param   string $section The section to get the path list for (engine, installer, gui, filter)
 	 *
 	 * @return  array
 	 */
@@ -245,81 +226,76 @@ class EngineParameters
 		// Create the key if it's not already present
 		if (!array_key_exists($section, $this->enginePartPaths))
 		{
-			$this->enginePartPaths[$section] = [];
-		}
-
-		if (!empty($this->enginePartPaths[$section]))
-		{
-			return $this->enginePartPaths[$section];
+			$this->enginePartPaths[$section] = array();
 		}
 
 		// Add the defaults if the list is empty
-		switch ($section)
+		if (empty($this->enginePartPaths[$section]))
 		{
-			case 'engine':
-				$this->enginePartPaths[$section] = [
-					Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot()),
-				];
-				break;
+			switch ($section)
+			{
+				case 'engine':
+					$this->enginePartPaths[$section] = array(
+						Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot()),
+					);
+					break;
 
-			case 'installer':
-				$this->enginePartPaths[$section] = [
-					Factory::getFilesystemTools()->TranslateWinPath(Platform::getInstance()->get_installer_images_path()),
-				];
-				break;
+				case 'installer':
+					$this->enginePartPaths[$section] = array(
+						Factory::getFilesystemTools()->TranslateWinPath(Platform::getInstance()->get_installer_images_path())
+					);
+					break;
 
-			case 'gui':
-				// Add core GUI definitions
-				$this->enginePartPaths[$section] = [
-					Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Core'),
-				];
+				case 'gui':
+					// Add core GUI definitions
+					$this->enginePartPaths[$section] = array(
+						Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Core')
+					);
 
-				// Add platform GUI definition files
-				$platform_paths = Platform::getInstance()->getPlatformDirectories();
+					// Add platform GUI definition files
+					$platform_paths = Platform::getInstance()->getPlatformDirectories();
 
-				foreach ($platform_paths as $p)
-				{
-					$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Config');
-
-					$pro = defined('AKEEBA_PRO') && AKEEBA_PRO;
-					$pro = defined('AKEEBABACKUP_PRO') ? (AKEEBABACKUP_PRO ? true : false) : $pro;
-
-					if ($pro)
+					foreach ($platform_paths as $p)
 					{
-						$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Config/Pro');
+						$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Config');
+
+						$pro     = defined('AKEEBA_PRO') && AKEEBA_PRO;
+						$pro     = defined('AKEEBABACKUP_PRO') ? (AKEEBABACKUP_PRO ? true : false) : $pro;
+
+						if ($pro)
+						{
+							$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Config/Pro');
+						}
 					}
-				}
-				break;
+					break;
 
-			case 'filter':
-				$this->enginePartPaths[$section] = [
-					Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Platform/Filter/Stack'),
-					Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Filter/Stack'),
-				];
+				case 'filter':
+					$this->enginePartPaths[$section] = array(
+						Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Platform/Filter/Stack'),
+						Factory::getFilesystemTools()->TranslateWinPath(Factory::getAkeebaRoot() . '/Filter/Stack'),
+					);
 
-				$platform_paths = Platform::getInstance()->getPlatformDirectories();
+					$platform_paths = Platform::getInstance()->getPlatformDirectories();
 
-				foreach ($platform_paths as $p)
-				{
-					$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Filter/Stack');
-				}
+					foreach ($platform_paths as $p)
+					{
+						$this->enginePartPaths[$section][] = Factory::getFilesystemTools()->TranslateWinPath($p . '/Filter/Stack');
+					}
 
-				break;
-
-			default:
-				throw new LogicException(sprintf('Can not get paths for engine section ‘%s’. No section by this name is known to Akeeba Engine.', $section));
+					break;
+			}
 		}
 
 		return $this->enginePartPaths[$section];
 	}
 
 	/**
-	 * Returns a hash list of Akeeba engines and their data. Each entry has the engine name as key and contains two
-	 * arrays, under the 'information' and 'parameters' keys.
+	 * Returns a hash list of Akeeba engines and their data. Each entry has the engine
+	 * name as key and contains two arrays, under the 'information' and 'parameters' keys.
 	 *
-	 * @param   string  $engine_type  The engine type to return information for
+	 * @param string $engine_type The engine type to return information for
 	 *
-	 * @return  array
+	 * @return array
 	 */
 	public function getEnginesList($engine_type)
 	{
@@ -332,8 +308,8 @@ class EngineParameters
 		}
 
 		// Find absolute path to normal and plugins directories
-		$temp      = $this->getEnginePartPaths('engine');
-		$path_list = [];
+		$temp = $this->getEnginePartPaths('engine');
+		$path_list = array();
 
 		foreach ($temp as $path)
 		{
@@ -341,7 +317,7 @@ class EngineParameters
 		}
 
 		// Initialize the array where we store our data
-		$this->engine_list[$engine_type] = [];
+		$this->engine_list[$engine_type] = array();
 
 		// Loop for the paths where engines can be found
 		foreach ($path_list as $path)
@@ -356,9 +332,9 @@ class EngineParameters
 				continue;
 			}
 
-			$di = new DirectoryIterator($path);
+			$di = new \DirectoryIterator($path);
 
-			/** @var DirectoryIterator $file */
+			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
 			{
 				if (!$file->isFile())
@@ -380,15 +356,16 @@ class EngineParameters
 					continue;
 				}
 
-				$information = [];
-				$parameters  = [];
+				$information = array();
+				$parameters = array();
 
 				$this->parseEngineJSON($file->getRealPath(), $information, $parameters);
 
-				$this->engine_list[$engine_type][lcfirst($bare_name)] = [
+				$this->engine_list[$engine_type][lcfirst($bare_name)] = array
+				(
 					'information' => $information,
-					'parameters'  => $parameters,
-				];
+					'parameters'  => $parameters
+				);
 			}
 		}
 
@@ -415,7 +392,7 @@ class EngineParameters
 		$path_list = $this->getEnginePartPaths('gui');
 
 		// Initialize the array where we store our data
-		$this->gui_list = [];
+		$this->gui_list = array();
 
 		// Loop for the paths where engines can be found
 		foreach ($path_list as $path)
@@ -430,10 +407,10 @@ class EngineParameters
 				continue;
 			}
 
-			$allJSONFiles = [];
-			$di           = new DirectoryIterator($path);
+			$allJSONFiles = array();
+			$di = new \DirectoryIterator($path);
 
-			/** @var DirectoryIterator $file */
+			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
 			{
 				if (!$file->isFile())
@@ -461,8 +438,8 @@ class EngineParameters
 			// Include each GUI def file
 			foreach ($allJSONFiles as $filename)
 			{
-				$information = [];
-				$parameters  = [];
+				$information = array();
+				$parameters = array();
 
 				$this->parseInterfaceJSON($filename, $information, $parameters);
 
@@ -474,12 +451,12 @@ class EngineParameters
 						$information['merge'] = 0;
 					}
 
-					$group_name = substr(basename($filename), 0, -5);
+					$group_name = substr(basename($filename), 0, -4);
 
-					$def = [
+					$def = array(
 						'information' => $information,
-						'parameters'  => $parameters,
-					];
+						'parameters'  => $parameters
+					);
 
 					if (!$information['merge'] || !isset($this->gui_list[$group_name]))
 					{
@@ -488,7 +465,7 @@ class EngineParameters
 					else
 					{
 						$this->gui_list[$group_name]['information'] = array_merge($this->gui_list[$group_name]['information'], $def['information']);
-						$this->gui_list[$group_name]['parameters']  = array_merge($this->gui_list[$group_name]['parameters'], $def['parameters']);
+						$this->gui_list[$group_name]['parameters'] = array_merge($this->gui_list[$group_name]['parameters'], $def['parameters']);
 					}
 				}
 			}
@@ -513,11 +490,11 @@ class EngineParameters
 			}
 
 			// Store JSON names in temp array because we'll sort based on filename (GUI order IS IMPORTANT!!)
-			$allJSONFiles = [];
+			$allJSONFiles = array();
 
-			$di = new DirectoryIterator($path);
+			$di = new \DirectoryIterator($path);
 
-			/** @var DirectoryIterator $file */
+			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
 			{
 				if (!$file->isFile())
@@ -545,24 +522,24 @@ class EngineParameters
 			// Include each filter def file
 			foreach ($allJSONFiles as $filename)
 			{
-				$information = [];
-				$parameters  = [];
+				$information = array();
+				$parameters = array();
 
 				$this->parseInterfaceJSON($filename, $information, $parameters);
 
 				if (!array_key_exists('03.filters', $this->gui_list))
 				{
-					$this->gui_list['03.filters'] = ['parameters' => []];
+					$this->gui_list['03.filters'] = array('parameters' => array());
 				}
 
 				if (!array_key_exists('parameters', $this->gui_list['03.filters']))
 				{
-					$this->gui_list['03.filters']['parameters'] = [];
+					$this->gui_list['03.filters']['parameters'] = array();
 				}
 
 				if (!is_array($parameters))
 				{
-					$parameters = [];
+					$parameters = array();
 				}
 
 				$this->gui_list['03.filters']['parameters'] = array_merge($this->gui_list['03.filters']['parameters'], $parameters);
@@ -575,7 +552,7 @@ class EngineParameters
 	/**
 	 * Parses the installer JSON files and returns an array of installers and their data
 	 *
-	 * @param   boolean  $forDisplay  If true only returns the information relevant for displaying the GUI
+	 * @param   boolean $forDisplay If true only returns the information relevant for displaying the GUI
 	 *
 	 * @return  array
 	 */
@@ -591,12 +568,12 @@ class EngineParameters
 		}
 
 		// Find absolute path to normal and plugins directories
-		$path_list = [
-			Platform::getInstance()->get_installer_images_path(),
-		];
+		$path_list = array(
+			Platform::getInstance()->get_installer_images_path()
+		);
 
 		// Initialize the array where we store our data
-		$this->installer_list = [];
+		$this->installer_list = array();
 
 		// Loop for the paths where engines can be found
 		foreach ($path_list as $path)
@@ -611,9 +588,9 @@ class EngineParameters
 				continue;
 			}
 
-			$di = new DirectoryIterator($path);
+			$di = new \DirectoryIterator($path);
 
-			/** @var DirectoryIterator $file */
+			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
 			{
 				if (!$file->isFile())
@@ -628,7 +605,7 @@ class EngineParameters
 				}
 
 				$rawData = file_get_contents($file->getRealPath());
-				$data    = empty($rawData) ? [] : json_decode($rawData, true);
+				$data = empty($rawData) ? [] : json_decode($rawData, true);
 
 				if ($forDisplay)
 				{
@@ -645,7 +622,7 @@ class EngineParameters
 
 				foreach ($data as $key => $values)
 				{
-					$this->installer_list[$key] = [];
+					$this->installer_list[$key] = array();
 
 					foreach ($values as $key2 => $value)
 					{
@@ -666,30 +643,30 @@ class EngineParameters
 	public function getJsonGuiDefinition()
 	{
 		// Initialize the array which will be converted to JSON representation
-		$json_array = [
-			'engines'    => [],
-			'installers' => [],
-			'gui'        => [],
-		];
+		$json_array = array(
+			'engines'    => array(),
+			'installers' => array(),
+			'gui'        => array()
+		);
 
 		// Get a reference to the configuration
 		$configuration = Factory::getConfiguration();
 
 		// Get data for all engines
-		$engine_types = [
+		$engine_types = array(
 			'archiver',
 			'dump',
 			'scan',
 			'writer',
 			'postproc',
-		];
+		);
 
 		foreach ($engine_types as $type)
 		{
 			$engines = $this->getEnginesList($type);
 
-			$tempArray    = [];
-			$engineTitles = [];
+			$tempArray = array();
+			$engineTitles = array();
 
 			foreach ($engines as $engine_name => $engine_data)
 			{
@@ -713,7 +690,7 @@ class EngineParameters
 				}
 
 				// Process parameters
-				$parameters = [];
+				$parameters = array();
 
 				foreach ($engine_data['parameters'] as $param_key => $param)
 				{
@@ -733,7 +710,7 @@ class EngineParameters
 
 							case 'enumkeys':
 								$enumkeys = explode('|', $option_value);
-								$new_keys = [];
+								$new_keys = array();
 								foreach ($enumkeys as $old_key)
 								{
 									$new_keys[] = Platform::getInstance()->translate($old_key);
@@ -761,8 +738,8 @@ class EngineParameters
 		}
 
 		// Get data for GUI elements
-		$json_array['gui'] = [];
-		$groupdefs         = $this->getGUIGroups();
+		$json_array['gui'] = array();
+		$groupdefs = $this->getGUIGroups();
 
 		foreach ($groupdefs as $groupKey => $definition)
 		{
@@ -779,7 +756,7 @@ class EngineParameters
 				continue;
 			}
 
-			$parameters = [];
+			$parameters = array();
 
 			foreach ($definition['parameters'] as $param_key => $param)
 			{
@@ -797,7 +774,7 @@ class EngineParameters
 
 						case 'enumkeys':
 							$enumkeys = explode('|', $option_value);
-							$new_keys = [];
+							$new_keys = array();
 							foreach ($enumkeys as $old_key)
 							{
 								$new_keys[] = Platform::getInstance()->translate($old_key);
@@ -816,7 +793,7 @@ class EngineParameters
 		// Get data for the installers
 		$json_array['installers'] = $this->getInstallerList(true);
 
-		uasort($json_array['installers'], function ($a, $b) {
+		uasort($json_array['installers'], function($a, $b){
 			if ($a['name'] == $b['name'])
 			{
 				return 0;
@@ -847,17 +824,17 @@ class EngineParameters
 			return false;
 		}
 
-		$information = [
+		$information = array(
 			'title'       => '',
-			'description' => '',
-		];
+			'description' => ''
+		);
 
-		$parameters = [];
+		$parameters = array();
 
-		$rawData  = file_get_contents($jsonPath);
+		$rawData = file_get_contents($jsonPath);
 		$jsonData = empty($rawData) ? [] : json_decode($rawData, true);
 
-		foreach ($jsonData ?? [] as $section => $data)
+		foreach ($jsonData as $section => $data)
 		{
 			if (is_array($data))
 			{
@@ -872,12 +849,12 @@ class EngineParameters
 				elseif (substr($section, 0, 1) != '_')
 				{
 					// Parse parameters
-					$newparam = [
+					$newparam = array(
 						'title'       => '',
 						'description' => '',
 						'type'        => 'string',
-						'default'     => '',
-					];
+						'default'     => ''
+					);
 
 					foreach ($data as $key => $value)
 					{

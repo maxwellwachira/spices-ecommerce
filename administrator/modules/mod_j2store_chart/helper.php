@@ -104,7 +104,7 @@ class modJ2storeChartHelper{
 
 		//sum of order payment amount.
 		$query->select('o.order_state_id,SUM(o.order_total) AS total, DATE_FORMAT(o.created_on,"%M") AS dmonth,COUNT(*) AS total_num_orders')->from('#__j2store_orders AS o');
-		$query->where("YEAR(DATE(o.created_on)) = ".$year);
+		$query->where("YEAR(DATE(o.created_on)) = $year");
 		//$query->where('o.order_state_id=1');
 
 		if(!in_array('*' ,$order_status)){
@@ -168,7 +168,7 @@ class modJ2storeChartHelper{
 		$query = $db->getQuery(true);
 		//sum of order payment amount. DATE_FORMAT(entrydate, '%M')
 		$query->select('o.order_state_id ,SUM(o.order_total) AS total,DATE_FORMAT(o.created_on,"%d") AS dday, COUNT(*) AS total_num_orders')->from('#__j2store_orders AS o');
-		$query->where("YEAR(DATE(o.created_on)) = ".$year." AND MONTH(DATE(o.created_on)) = ".$month);
+		$query->where("YEAR(DATE(o.created_on)) = $year AND MONTH(DATE(o.created_on)) = $month");
 		//$query->where('o.order_state_id=1');
 
 		if(!in_array('*' ,$order_status)){

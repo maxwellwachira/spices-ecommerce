@@ -1,21 +1,21 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Model\Mixin\ExclusionFilter;
 use Akeeba\Engine\Factory;
 use Exception;
-use FOF40\Container\Container;
-use FOF40\Model\Model;
-use Joomla\CMS\Language\Text;
+use FOF30\Container\Container;
+use FOF30\Model\Model;
+use JText;
 
 /**
  * Database Filters model
@@ -48,7 +48,7 @@ class DatabaseFilters extends Model
 		$database_list = $filters->getInclusions('db');
 
 		// Load the database object for the selected database
-		$config         = $database_list[$root];
+		$config         = $database_list[ $root ];
 		$config['user'] = $config['username'];
 		$db             = Factory::getDatabase($config);
 
@@ -59,49 +59,17 @@ class DatabaseFilters extends Model
 		}
 		catch (Exception $e)
 		{
-			$table_data = [];
-		}
-
-		$tableMeta = [];
-
-		try
-		{
-			$db->setQuery('SHOW TABLE STATUS');
-
-			$temp = $db->loadAssocList();
-
-			foreach ($temp as $record)
-			{
-				$tableMeta[$db->getAbstract($record['Name'])] = [
-					'engine'      => $record['Engine'],
-					'rows'        => $record['Rows'],
-					'dataLength'  => $record['Data_length'],
-					'indexLength' => $record['Index_length'],
-				];
-			}
-		}
-		catch (Exception $e)
-		{
+			$table_data = array();
 		}
 
 		// Process filters
-		$tables = [];
+		$tables = array();
 
 		if (!empty($table_data))
 		{
 			foreach ($table_data as $table_name => $table_type)
 			{
-				$status = [
-					'engine'      => null,
-					'rows'        => null,
-					'dataLength'  => null,
-					'indexLength' => null,
-				];
-
-				if (array_key_exists($table_name, $tableMeta))
-				{
-					$status = $tableMeta[$table_name];
-				}
+				$status = array();
 
 				// Add table type
 				$status['type'] = $table_type;
@@ -111,7 +79,7 @@ class DatabaseFilters extends Model
 				$status['tables'] = (!$result) ? 0 : (($byFilter == 'tables') ? 1 : 2);
 
 				// Check dbobject/content filter (skip table data)
-				$result              = $filters->isFilteredExtended($table_name, $root, 'dbobject', 'content', $byFilter);
+				$result              =  $filters->isFilteredExtended($table_name, $root, 'dbobject', 'content', $byFilter);
 				$status['tabledata'] = (!$result) ? 0 : (($byFilter == 'tabledata') ? 1 : 2);
 
 				// We can't filter contents of views, merge tables, black holes, procedures, functions and triggers
@@ -120,14 +88,14 @@ class DatabaseFilters extends Model
 					$status['tabledata'] = 2;
 				}
 
-				$tables[$table_name] = $status;
+				$tables[ $table_name ] = $status;
 			}
 		}
 
-		return [
+		return array(
 			'tables' => $tables,
-			'root'   => $root,
-		];
+			'root'   => $root
+		);
 	}
 
 	/**
@@ -141,7 +109,7 @@ class DatabaseFilters extends Model
 		$filters       = Factory::getFilters();
 		$database_list = $filters->getInclusions('db');
 
-		$ret = [];
+		$ret = array();
 
 		foreach ($database_list as $name => $definition)
 		{
@@ -156,12 +124,12 @@ class DatabaseFilters extends Model
 
 			if ($name == '[SITEDB]')
 			{
-				$root = Text::_('COM_AKEEBA_DBFILTER_LABEL_SITEDB');
+				$root = JText::_('COM_AKEEBA_DBFILTER_LABEL_SITEDB');
 			}
 
-			$ret[] = (object) [
-				'value' => $name,
-				'text'  => $root,
+			$ret[] = (object)[
+				'value'	=> $name,
+				'text'	=> $root,
 			];
 		}
 
@@ -261,7 +229,7 @@ class DatabaseFilters extends Model
 		$action = $this->getState('action');
 		$verb   = array_key_exists('verb', get_object_vars($action)) ? $action->verb : null;
 
-		$ret_array = [];
+		$ret_array = array();
 
 		switch ($verb)
 		{

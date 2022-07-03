@@ -40,11 +40,7 @@ class J2StoreModelReportItemised extends F0FModel
 		if (empty($this->_data))
 		{
 			$query = $this->_buildQuery();
-            try {
-                $list = $this->_getList($query, $this->getState('limitstart'), $this->getState('limit'));
-            } catch (Exception $e) {
-                $list = array();
-            }
+			$list = $this->_getList($query, $this->getState('limitstart'), $this->getState('limit'));
 			foreach ($list as $item){
 				$item->orderitem_attributes = F0FModel::getTmpInstance('OrderitemAttributes','J2StoreModel')->orderitem_id($item->j2store_orderitem_id)->getList();
 			}
@@ -219,14 +215,9 @@ class J2StoreModelReportItemised extends F0FModel
 		foreach($where as $w) {
 			$query->where($w);
 		}
-        if(!in_array(strtolower($filter_order_Dir),array('asc','desc'))){
-            $filter_order_Dir = 'desc';
-        }
-        if(!empty($filter_order) && in_array($filter_order,array('oi.product_id','oi.orderitem_name','sum','count'))){
-            $query->order($db->qn($filter_order).' '.$filter_order_Dir);
-           // $query->order($filter_order.'  '.$filter_order_Dir);
-        }
 
+		if(!empty($filter_order))
+		$query->order($filter_order.'  '.$filter_order_Dir);
 
 		$query->order('oi.order_id');
 		return;

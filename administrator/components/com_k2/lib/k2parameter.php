@@ -1,30 +1,36 @@
 <?php
 /**
- * @version    2.10.x
- * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @version     2.7.x
+ * @package     K2
+ * @author      JoomlaWorks http://www.joomlaworks.net
+ * @copyright   Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license     GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
-if (K2_JVERSION == '30') {
+if (K2_JVERSION == '30')
+{
     class K2Parameter
     {
-        public function __construct($data, $path = '', $namespace)
+        function __construct($data, $path = '', $namespace)
         {
             $this->namespace = $namespace;
             $this->values = new JRegistry($data);
         }
 
-        public function get($path, $default = null)
+        function get($path, $default = null)
         {
             return $this->values->get($this->namespace.$path, $default);
         }
+
     }
-} else {
+
+}
+else
+{
+
     jimport('joomla.html.parameter');
 
     /**
@@ -44,7 +50,7 @@ if (K2_JVERSION == '30') {
          * @var     array
          * @since   1.5
          */
-        public $namespace = null;
+        var $namespace = null;
 
         /**
          * Constructor
@@ -55,28 +61,32 @@ if (K2_JVERSION == '30') {
          * @param   string Namespace to the xml setup file
          * @since   1.5
          */
-        public function __construct($data, $path = '', $namespace)
+        function __construct($data, $path = '', $namespace)
         {
             parent::__construct('_default');
 
             // Set base path
-            $this->_elementPath[] = JPATH_COMPONENT_ADMINISTRATOR.'/elements';
+            $this->_elementPath[] = JPATH_COMPONENT_ADMINISTRATOR.DS.'elements';
 
-            if (trim($data)) {
+            if (trim($data))
+            {
                 $this->loadINI($data);
             }
 
-            if ($path) {
+            if ($path)
+            {
                 @$this->loadSetupFile($path);
             }
 
-            if ($namespace) {
+            if ($namespace)
+            {
                 $this->namespace = $namespace;
             }
 
             $this->_raw = $data;
 
-            if (K2_JVERSION != '15') {
+            if (K2_JVERSION != '15')
+            {
                 $this->bind($data);
             }
         }
@@ -90,9 +100,10 @@ if (K2_JVERSION == '30') {
          * @return  string
          * @since   1.5
          */
-        public function get($key, $default = '', $group = '_default')
+        function get($key, $default = '', $group = '_default')
         {
-            if (K2_JVERSION != '15') {
+            if (K2_JVERSION != '15')
+            {
                 return parent::get($this->namespace.$key, $default);
             }
             $value = $this->getValue($group.'.'.$this->namespace.$key);
@@ -109,7 +120,7 @@ if (K2_JVERSION == '30') {
          * @return  array   Any array of the label, the form element and the tooltip
          * @since   1.5
          */
-        public function getParam(&$node, $control_name = 'params', $group = '_default')
+        function getParam(&$node, $control_name = 'params', $group = '_default')
         {
             //get the type of the parameter
             $type = $node->attributes('type');
@@ -120,7 +131,8 @@ if (K2_JVERSION == '30') {
             $element = $this->loadElement($type);
 
             // error happened
-            if ($element === false) {
+            if ($element === false)
+            {
                 $result = array();
                 $result[0] = $node->attributes('name');
                 $result[1] = JText::_('K2_ELEMENT_NOT_DEFINED_FOR_TYPE').' = '.$type;
@@ -146,34 +158,40 @@ if (K2_JVERSION == '30') {
          * @return  mixed   Value of entry or null
          * @since   1.5
          */
-        public function getValue($regpath, $default = null)
+        function getValue($regpath, $default = null)
         {
             $result = $default;
 
             // Explode the registry path into an array
-            if ($nodes = explode('.', $regpath)) {
+            if ($nodes = explode('.', $regpath))
+            {
                 // Get the namespace
                 //$namespace = array_shift($nodes);
                 $count = count($nodes);
-                if ($count < 2) {
+                if ($count < 2)
+                {
                     $namespace = $this->_defaultNameSpace;
                     $nodes[1] = $nodes[0];
-                } else {
+                }
+                else
+                {
                     $namespace = $nodes[0];
                 }
 
-                if (isset($this->_registry[$namespace])) {
+                if (isset($this->_registry[$namespace]))
+                {
                     $ns = &$this->_registry[$namespace]['data'];
                     $pathNodes = $count - 1;
 
                     //for ($i = 0; $i < $pathNodes; $i ++) {
-                    for ($i = 1; $i < $pathNodes; $i++) {
-                        if ((isset($ns->$nodes[$i]))) {
+                    for ($i = 1; $i < $pathNodes; $i++)
+                    {
+                        if ((isset($ns->$nodes[$i])))
                             $ns = &$ns->$nodes[$i];
-                        }
                     }
 
-                    if (isset($ns->$nodes[$i])) {
+                    if (isset($ns->$nodes[$i]))
+                    {
                         $result = $ns->$nodes[$i];
                     }
                 }
@@ -189,9 +207,10 @@ if (K2_JVERSION == '30') {
          * @return  string  HTML
          * @since   1.5
          */
-        public function render($name = 'params', $group = '_default')
+        function render($name = 'params', $group = '_default')
         {
-            if (!isset($this->_xml[$group])) {
+            if (!isset($this->_xml[$group]))
+            {
                 return false;
             }
 
@@ -199,26 +218,32 @@ if (K2_JVERSION == '30') {
             $html = array();
             $html[] = '<table class="paramlist admintable" cellspacing="1">';
 
-            if ($description = $this->_xml[$group]->attributes('description')) {
+            if ($description = $this->_xml[$group]->attributes('description'))
+            {
                 // add the params description to the display
                 $desc = JText::_($description);
                 $html[] = '<tr><td class="paramlist_description" colspan="2">'.$desc.'</td></tr>';
             }
 
-            foreach ($params as $param) {
+            foreach ($params as $param)
+            {
                 $html[] = '<tr>';
 
-                if ($param[0]) {
+                if ($param[0])
+                {
                     $html[] = '<td class="paramlist_key"><span class="editlinktip">'.$param[0].'</span></td>';
                     $html[] = '<td class="paramlist_value">'.$param[1].'</td>';
-                } else {
+                }
+                else
+                {
                     $html[] = '<td class="paramlist_value" colspan="2">'.$param[1].'</td>';
                 }
 
                 $html[] = '</tr>';
             }
 
-            if (count($params) < 1) {
+            if (count($params) < 1)
+            {
                 $html[] = "<tr><td colspan=\"2\"><i>".(K2_JVERSION != '15') ? JText::_('JLIB_HTML_NO_PARAMETERS_FOR_THIS_ITEM') : JText::_('There are no Parameters for this item')."</i></td></tr>";
             }
 
@@ -226,5 +251,7 @@ if (K2_JVERSION == '30') {
 
             return implode("\n", $html);
         }
+
     }
+
 }

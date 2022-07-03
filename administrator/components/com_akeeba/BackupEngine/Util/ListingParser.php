@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * Parses directory listings of the standard UNIX or MS-DOS style, i.e. what is most commonly returned by FTP and SFTP
@@ -86,9 +88,9 @@ class ListingParser
 	 */
 	protected function parseUnixListing($list, $quick = false)
 	{
-		$ret = [];
+		$ret = array();
 
-		$list = str_replace(["\r\n", "\r", "\n\n"], ["\n", "\n", "\n"], $list);
+		$list = str_replace(array("\r\n", "\r", "\n\n"), array("\n", "\n", "\n"), $list);
 		$list = explode("\n", $list);
 		$list = array_map('rtrim', $list);
 
@@ -96,12 +98,12 @@ class ListingParser
 		{
 			$vInfo = preg_split("/[\s]+/", $v, 9);
 
-			if ((is_array($vInfo) || $vInfo instanceof \Countable ? count($vInfo) : 0) != 9)
+			if (count($vInfo) != 9)
 			{
 				continue;
 			}
 
-			$entry = [
+			$entry = array(
 				'name'   => '',
 				'type'   => 'file',
 				'target' => '',
@@ -110,16 +112,16 @@ class ListingParser
 				'size'   => '0',
 				'date'   => '0',
 				'perms'  => '0',
-			];
+			);
 
 			if ($quick)
 			{
-				$entry = [
+				$entry = array(
 					'name'   => '',
 					'type'   => 'file',
 					'size'   => '0',
 					'target' => '',
-				];
+				);
 			}
 
 			// ===== Parse permissions =====
@@ -169,15 +171,15 @@ class ListingParser
 				$bitPart   = 0;
 				$permsPart = '';
 
-				[$thisPerms, $thisBit] = $this->textPermsDecode($userPerms);
+				list($thisPerms, $thisBit) = $this->textPermsDecode($userPerms);
 				$bitPart   += 4 * $thisBit; // SetUID
 				$permsPart .= $thisPerms;
 
-				[$thisPerms, $thisBit] = $this->textPermsDecode($groupPerms);
+				list($thisPerms, $thisBit) = $this->textPermsDecode($groupPerms);
 				$bitPart   += 2 * $thisBit; // SetGID
 				$permsPart .= $thisPerms;
 
-				[$thisPerms, $thisBit] = $this->textPermsDecode($otherPerms);
+				list($thisPerms, $thisBit) = $this->textPermsDecode($otherPerms);
 				$bitPart   += $thisBit; // Sticky (restricted deletion)
 				$permsPart .= $thisPerms;
 
@@ -205,7 +207,7 @@ class ListingParser
 			// Link target parsing
 			if (strpos($name, '->') !== false)
 			{
-				[$name, $target] = explode('->', $name);
+				list($name, $target) = explode('->', $name);
 
 				$entry['target'] = trim($target);
 			}
@@ -239,9 +241,9 @@ class ListingParser
 	 */
 	protected function parseMSDOSListing($list, $quick = false)
 	{
-		$ret = [];
+		$ret = array();
 
-		$list = str_replace(["\r\n", "\r", "\n\n"], ["\n", "\n", "\n"], $list);
+		$list = str_replace(array("\r\n", "\r", "\n\n"), array("\n", "\n", "\n"), $list);
 		$list = explode("\n", $list);
 		$list = array_map('rtrim', $list);
 
@@ -249,12 +251,12 @@ class ListingParser
 		{
 			$vInfo = preg_split("/[\s]+/", $v, 5);
 
-			if ((is_array($vInfo) || $vInfo instanceof \Countable ? count($vInfo) : 0) < 4)
+			if (count($vInfo) < 4)
 			{
 				continue;
 			}
 
-			$entry = [
+			$entry = array(
 				'name'   => '',
 				'type'   => 'file',
 				'target' => '',
@@ -263,23 +265,23 @@ class ListingParser
 				'size'   => '0',
 				'date'   => '0',
 				'perms'  => '0',
-			];
+			);
 
 			if ($quick)
 			{
-				$entry = [
+				$entry = array(
 					'name'   => '',
 					'type'   => 'file',
 					'size'   => '0',
 					'target' => '',
-				];
+				);
 			}
 
 			// The first two fields are date and time
-			$dateString = $vInfo[0] . ' ' . $vInfo[1];
+			$dateString    = $vInfo[0] . ' ' . $vInfo[1];
 
 			// If position 2 is AM/PM append it and remove it from the list
-			if (in_array(strtoupper($vInfo[2]), ['AM', 'PM']))
+			if (in_array(strtoupper($vInfo[2]), array('AM', 'PM')))
 			{
 				$dateString .= ' ' . $vInfo[2];
 
@@ -347,7 +349,7 @@ class ListingParser
 	 */
 	private function textPermsDecode($perms)
 	{
-		$permBit  = 0;
+		$permBit = 0;
 		$flagBits = 0;
 
 		if (strpos($perms, 'r'))
@@ -380,6 +382,6 @@ class ListingParser
 			$flagBits += 1;
 		}
 
-		return [$permBit, $flagBits];
+		return array($permBit, $flagBits);
 	}
 }

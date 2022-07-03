@@ -1,0 +1,276 @@
+/**
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org
+ * @credits       Mary Lou - http://tympanus.net/codrops/2013/08/28/transitions-for-off-canvas-navigations/
+ *------------------------------------------------------------------------------
+ */
+
+
+// VARIABLES & MIXINS
+// ------------------
+@import "vars.less"; // Include Variables and Mixins
+
+
+// EXTEND STYLE IN BASE
+// --------------------
+@import "../../../plugins/system/t3/base-bs3/less/off-canvas.less";
+
+
+//
+// OFF-CANVAS
+// -------------------------------------
+
+// Toggle Button
+// -------------------
+.t3-header .off-canvas-toggle {
+	//position: fixed;
+	//left: 0;
+}
+
+.off-canvas-toggle {
+  line-height: @navbar-height;
+  font-size: 16px;
+  margin: 14px 30px 0 0;
+  background-color: transparent;
+  padding: 0;
+  color: @link-color;
+  
+  &:hover, &:focus {
+    outline: none !important;
+	background-color: transparent;
+	color: @link-hover-color;
+  }
+  
+  @media (max-width: @grid-float-breakpoint) {
+	margin-left: 40px;
+  }
+}
+
+
+//
+// OFF-CANVAS CONTENT STYLES
+// -------------------------------------
+.t3-off-canvas {
+
+  // Generic
+  // -----------------------------------
+  background: @t3-off-canvas-background;
+  color: @t3-off-canvas-text-color;
+
+
+  // Header
+  // -----------------------------------
+  .t3-off-canvas-header {
+    background: @t3-off-canvas-header-background;
+    padding: @t3-global-padding (@t3-global-padding * 0.75);
+
+    // Title
+    h2 {
+      margin: 0;
+      text-transform: uppercase;
+	  font-size: 24px;
+	  color: @t3-off-canvas-header-text-color;
+	  .fa {
+		margin-right: 15px;
+	  }
+    }
+
+  }
+
+  // Close Button
+  .close {
+    margin: 0;
+    height: 40px;
+    line-height: 40px;
+    width: 40px;
+	color: @t3-off-canvas-header-text-color;
+    position: absolute;
+    top: 20px;
+    right: 15px;
+	text-shadow: none;
+	font-size: 28px;
+	font-weight: normal;
+	.opacity(1.0);
+	&:hover {
+		background-color: transparent;
+		color: @gray-light;
+	}
+  }
+
+
+  // Body
+  // -----------------------------------
+  .t3-off-canvas-body {
+    padding: @t3-global-padding * 1.25;
+
+    // Links
+    // ------------
+    a {
+      text-decoration: none;
+
+      &:hover,
+      &:focus {
+        color: @t3-off-canvas-link-hover-color;
+        text-decoration: none;
+      }
+
+      &:focus {
+        .tab-focus();
+      }
+    }
+
+
+    // Navigations
+    // ------------
+    .nav {
+		font-size: @font-size-base - 5px;
+		text-transform: uppercase;
+		letter-spacing: 2px;
+		
+		> li > a {
+			border-color: @gray-dark;
+			
+			&:focus {
+				outline: none;
+			}
+		}
+    }
+
+    // Dropdown Menu
+    .dropdown-menu {
+    }
+
+
+    // Modules
+    // ------------
+    .t3-module, .module-ct, .t3-module .module-inner {
+      position: inherit;
+    }
+	
+	.t3-module {
+		margin-bottom: @t3-global-margin * 2.5;
+	}
+	
+
+    .module-title  {
+      color: @t3-off-canvas-header-text-color;
+      font-size: 14px;
+	  letter-spacing: 1px;
+	  border-bottom: 1px solid lighten(@t3-off-canvas-background, 5%);
+    }
+
+    .pretext {
+      font-size: @font-size-small;
+      margin-bottom: @t3-global-margin;
+      text-align: center;
+    }
+
+    // Login Module
+    #login-form {
+      text-align: center;
+      color: @gray;
+
+      .pretext {
+        font-size: @font-size-small;
+        margin-bottom: @t3-global-margin;
+      }
+
+      .unstyled {
+        margin-left: 0;
+				padding-left: 0;
+        list-style: none;
+				font-size: 12px;
+
+        a {
+          font-size: @font-size-small;
+          border-bottom: 0;
+          text-transform: none;
+          font-weight: normal;
+        }
+      }
+
+      .btn {
+        width: 100%;
+				height: auto;
+      }
+
+      #form-login-username,
+      #form-login-password,
+      #form-login-remember {
+        text-align: left;
+      }
+
+      .checkbox {
+        font-size: @font-size-small;
+      }
+
+      input#modlgn-remember {
+        vertical-align: top;
+        display: inline-block;
+        margin-top: 2px;
+      }
+		
+			.input-group .input-group-addon i {
+				width: 15px;
+			}
+
+      .userdata {
+        position: relative;    
+        margin-top: 20px;
+
+        input[type="text"],
+        input[type="password"] {
+          background: @gray-dark;
+          border: 0;
+          width: 100%;
+          color: @text-color;
+
+          &:focus {
+            .box-shadow(none);
+            border: 0;
+            color: @white !important;
+          }
+        }
+
+        .input-group-addon {
+          background: @gray-dark;
+          border: 0;
+          border-right: 1px solid @gray;
+        }
+
+        .btn {
+          padding: (@t3-global-padding / 2.5) 0;
+          font-size: @t3-font-size-bigger;
+        }
+      }
+
+      .control-group {
+        margin-top: @t3-global-margin / 2;
+        margin-bottom: @t3-global-margin;
+      }
+
+      .form-group {
+        margin-bottom: @t3-global-margin/2;
+      }
+
+    }
+	
+	
+    .t3-module + .t3-module #login-form.form-vertical .login-greeting, 
+    .t3-module + .t3-module #login-form.form-vertical .logout-button,
+    .t3-module + .t3-module .module-title {
+		  
+    }
+
+  // End Off-Canvas Body
+  }
+
+// End Off-Canvas Content Styles
+}

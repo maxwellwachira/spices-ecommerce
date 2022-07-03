@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * The main class autoloader for AkeebaEngine
@@ -33,20 +35,9 @@ class Autoloader
 	/**
 	 * The directories where Akeeba Engine platforms are stored
 	 *
-	 * @var      array
+	 * @var	  array
 	 */
 	public static $platformDirs = null;
-
-	/**
-	 * Public constructor. Registers the autoloader with PHP.
-	 */
-	public function __construct()
-	{
-		self::$enginePath = __DIR__;
-
-		spl_autoload_register([$this, 'autoload_akeeba_engine']);
-		spl_autoload_register([$this, 'autoload_psr3']);
-	}
 
 	/**
 	 * Initialise this autoloader
@@ -61,6 +52,17 @@ class Autoloader
 		}
 
 		return self::$autoloader;
+	}
+
+	/**
+	 * Public constructor. Registers the autoloader with PHP.
+	 */
+	public function __construct()
+	{
+		self::$enginePath = __DIR__;
+
+		spl_autoload_register(array($this, 'autoload_akeeba_engine'));
+		spl_autoload_register(array($this, 'autoload_psr3'));
 	}
 
 	/**
@@ -83,7 +85,7 @@ class Autoloader
 
 		// Remove the prefix and explode on backslashes
 		$className = substr($className, 14);
-		$class     = explode('\\', $className);
+		$class = explode('\\', $className);
 
 		// Do we have a list of platform directories?
 		if (is_null(self::$platformDirs) && class_exists('\\Akeeba\\Engine\\Platform', false))
@@ -92,16 +94,16 @@ class Autoloader
 
 			if (!is_array(self::$platformDirs))
 			{
-				self::$platformDirs = [];
+				self::$platformDirs = array();
 			}
 		}
 
-		$rootPaths = [self::$enginePath];
+		$rootPaths = array(self::$enginePath);
 
 		if (is_array(self::$platformDirs))
 		{
 			$rootPaths = array_merge(
-				self::$platformDirs, [self::$enginePath]
+				self::$platformDirs, array(self::$enginePath)
 			);
 		}
 
@@ -120,7 +122,7 @@ class Autoloader
 			{
 				reset($class);
 				$lastPart = end($class);
-				$path     = $rootPath . '/' . implode('/', $class) . '/' . $lastPart . '.php';
+				$path = $rootPath . '/' . implode('/', $class) . '/' . $lastPart . '.php';
 
 				if (@file_exists($path))
 				{
@@ -150,7 +152,7 @@ class Autoloader
 
 		// Remove the prefix and explode on backslashes
 		$className = substr($className, 7);
-		$class     = explode('\\', $className);
+		$class = explode('\\', $className);
 
 		$rootPath = self::$enginePath . '/Psr/Log';
 
@@ -167,7 +169,7 @@ class Autoloader
 		{
 			reset($class);
 			$lastPart = end($class);
-			$path     = $rootPath . '/' . implode('/', $class) . '/' . $lastPart . '.php';
+			$path = $rootPath . '/' . implode('/', $class) . '/' . $lastPart . '.php';
 
 			if (@file_exists($path))
 			{

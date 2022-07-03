@@ -2058,7 +2058,6 @@ class F0FModel extends F0FUtilsObject
 	 */
 	public function buildQuery($overrideLimits = false)
 	{
-        $ref_model = $this;
 		$table = $this->getTable();
 		$tableName = $table->getTableName();
 		$tableKey = $table->getKeyName();
@@ -2067,7 +2066,7 @@ class F0FModel extends F0FUtilsObject
 		$query = $db->getQuery(true);
 
 		// Call the behaviors
-		$this->modelDispatcher->trigger('onBeforeBuildQuery', array(&$ref_model, &$query));
+		$this->modelDispatcher->trigger('onBeforeBuildQuery', array(&$this, &$query));
 
 		$alias = $this->getTableAlias();
 
@@ -2086,7 +2085,7 @@ class F0FModel extends F0FUtilsObject
 
 		if (!$overrideLimits)
 		{
-			$order = $ref_model->getState('filter_order', null, 'cmd');
+			$order = $this->getState('filter_order', null, 'cmd');
 
 			if (!in_array($order, array_keys($table->getData())))
 			{
@@ -2100,7 +2099,7 @@ class F0FModel extends F0FUtilsObject
 				$order = $db->qn($this->getTableAlias()) . '.' . $order;
 			}
 
-			$dir = strtoupper($ref_model->getState('filter_order_Dir', 'ASC', 'cmd'));
+			$dir = strtoupper($this->getState('filter_order_Dir', 'ASC', 'cmd'));
 			$dir = in_array($dir, array('DESC', 'ASC')) ? $dir : 'ASC';
 
 			// If the table cache is broken you may end up with an empty order by.
@@ -2111,7 +2110,7 @@ class F0FModel extends F0FUtilsObject
 		}
 
 		// Call the behaviors
-		$this->modelDispatcher->trigger('onAfterBuildQuery', array(&$ref_model, &$query));
+		$this->modelDispatcher->trigger('onAfterBuildQuery', array(&$this, &$query));
 
 		return $query;
 	}
@@ -2710,9 +2709,8 @@ class F0FModel extends F0FUtilsObject
 	{
 		try
 		{
-		    $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onAfterGetItem', array(&$ref_model, &$record));
+			$result = $this->modelDispatcher->trigger('onAfterGetItem', array(&$this, &$record));
 		}
 		catch (Exception $e)
 		{
@@ -2746,9 +2744,9 @@ class F0FModel extends F0FUtilsObject
 
 			// Bind the data
 			$table->bind($data);
-            $ref_model = $this;
+
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onBeforeSave', array(&$ref_model, &$data));
+			$result = $this->modelDispatcher->trigger('onBeforeSave', array(&$this, &$data));
 
 			if (in_array(false, $result, true))
 			{
@@ -2794,9 +2792,8 @@ class F0FModel extends F0FUtilsObject
 
 		try
 		{
-            $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onAfterSave', array(&$ref_model));
+			$result = $this->modelDispatcher->trigger('onAfterSave', array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -2835,9 +2832,9 @@ class F0FModel extends F0FUtilsObject
 		try
 		{
 			$table->load($id);
-            $ref_model = $this;
+
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onBeforeDelete', array(&$ref_model));
+			$result = $this->modelDispatcher->trigger('onBeforeDelete', array(&$this));
 
 			if (in_array(false, $result, true))
 			{
@@ -2881,8 +2878,7 @@ class F0FModel extends F0FUtilsObject
 		F0FPlatform::getInstance()->importPlugin('content');
 
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterDelete', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterDelete', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2916,8 +2912,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onBeforeCopy(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onBeforeCopy', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onBeforeCopy', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2938,8 +2933,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onAfterCopy(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterCopy', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterCopy', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2960,8 +2954,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onBeforePublish(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onBeforePublish', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onBeforePublish', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -2982,8 +2975,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onAfterPublish(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterPublish', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterPublish', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3004,8 +2996,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onBeforeHit(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onBeforeHit', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onBeforeHit', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3026,8 +3017,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onAfterHit(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterHit', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterHit', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3048,8 +3038,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onBeforeMove(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onBeforeMove', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onBeforeMove', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3070,8 +3059,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onAfterMove(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterMove', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterMove', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3092,8 +3080,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onBeforeReorder(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onBeforeReorder', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onBeforeReorder', array(&$this));
 
 		if (in_array(false, $result, true))
 		{
@@ -3114,8 +3101,7 @@ class F0FModel extends F0FUtilsObject
 	protected function onAfterReorder(&$table)
 	{
 		// Call the behaviors
-        $ref_model = $this;
-		$result = $this->modelDispatcher->trigger('onAfterReorder', array(&$ref_model));
+		$result = $this->modelDispatcher->trigger('onAfterReorder', array(&$this));
 
 		if (in_array(false, $result, true))
 		{

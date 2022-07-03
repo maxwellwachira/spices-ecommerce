@@ -43,10 +43,10 @@ defined('_JEXEC') or die;
                 <?php foreach($this->item->product_options as $poption ):?>
                     <tr id="pao_current_option_<?php echo $poption->j2store_productoption_id;?>">
                         <td>
-                            <?php echo $this->escape($poption->option_name);?>
+                            <?php echo $poption->option_name;?>
                             <?php echo J2Html::hidden($this->form_prefix.'[item_options]['.$poption->j2store_productoption_id .'][j2store_productoption_id]', $poption->j2store_productoption_id);?>
                             <?php echo J2Html::hidden($this->form_prefix.'[item_options]['.$poption->j2store_productoption_id .'][option_id]', $poption->option_id);?>
-                            <small>(<?php  echo $this->escape($poption->option_unique_name);?>)</small>
+                            <small>(<?php  echo $poption->option_unique_name;?>)</small>
                             <small><?php JText::_('J2STORE_OPTION_TYPE');?><?php echo JText::_('J2STORE_'.JString::strtoupper($poption->type))?></small>
                         </td>
                         <td><?php echo J2Html::text($this->form_prefix.'[item_options]['.$poption->j2store_productoption_id .'][ordering]',$poption->ordering,array('id'=>'ordering' ,'class'=>'input-small'));?></td>
@@ -61,7 +61,7 @@ defined('_JEXEC') or die;
                     <?php echo J2Html::label(JText::_('J2STORE_SEARCH_AND_ADD_VARIANT_OPTION')); ?>
                     <select name="option_select_id" id="option_select_id">
                         <?php foreach ($this->product_option_list as $option_list):?>
-                            <option value="<?php echo $option_list->j2store_option_id?>"><?php echo $this->escape($option_list->option_name) .' ('.$this->escape($option_list->option_unique_name).')';?></option>
+                            <option value="<?php echo $option_list->j2store_option_id?>"><?php echo $option_list->option_name .' ('.$option_list->option_unique_name.')';?></option>
                         <?php endforeach; ?>
                     </select>
                     <a onclick="addOption()" class="btn btn-success"> <?php echo JText::_('J2STORE_ADD_OPTIONS')?></a>

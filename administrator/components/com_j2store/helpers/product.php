@@ -181,7 +181,7 @@ class J2Product extends JObject{
 			$sku = preg_replace('#[^a-z0-9_-]#i','_',$product->product_name);
 		}
 
-		if(in_array($product->product_type,array('variable','advancedvariable'))) {
+		if($product->product_type == 'variable') {
 			if($variant->is_master == 0) {
 				//append the variant ID as well. Just to be sure of a unique value
 				$sku = $sku.'_'.$variant->j2store_variant_id;
@@ -414,7 +414,7 @@ class J2Product extends JObject{
 			$query = $db->getQuery(true);
 			$query->select('pov.*');
 			$query->from('#__j2store_product_optionvalues AS pov');
-			$query->where('pov.productoption_id='. $db->q($product_option_id));
+			$query->where('pov.productoption_id='.$product_option_id);
 			//$query->where('pov.parent_optionvalue='.$parnt_optionvalue_id);
 			$query->where('( parent_optionvalue  = '. $db->q($parnt_optionvalue_id)
 					.'OR parent_optionvalue LIKE CONCAT('. $db->q($parnt_optionvalue_id.',%') .')'
@@ -547,7 +547,7 @@ class J2Product extends JObject{
 		$option_price = 0;
 		$option_weight = 0;
 		$option_data = array();
-        $utility = J2Store::utilities();
+
 		foreach ($options as $product_option_id => $option_value) {
 
 			$product_option = $this->getCartProductOptions($product_option_id, $product_id);
@@ -640,7 +640,7 @@ class J2Product extends JObject{
 							'option_id'               => $product_option->option_id,
 							'optionvalue_id'         => '',
 							'name'                    => $product_option->option_name,
-							'option_value'            => $utility->text_sanitize($option_value),
+							'option_value'            => $option_value,
 							'type'                    => $product_option->type,
 							'price'                   => '',
 							'price_prefix'            => '',
@@ -879,7 +879,7 @@ class J2Product extends JObject{
 
 			case 'low_stock':
 				//using the notify quantity for this
-				if($variant->quantity > 0 && $variant->quantity <= $variant->notify_qty) {
+				if($variant->quantity <= $variant->notify_qty) {
 					$text = JText::sprintf('J2STORE_LOW_STOCK_WITH_QUANTITY', $variant->quantity);
 				} else {
 					$text = '';
@@ -1011,7 +1011,7 @@ class J2Product extends JObject{
 		$db = JFactory::getDbo();
 		$query = $db->getQuery(true)->select('SUM(product_qty) as total_cart_qty')
 		->from('#__j2store_cartitems')
-		->where('variant_id='.$db->q($variant_id));
+		->where('variant_id='.$variant_id);
 
 		if(!empty($cart_id)) {
 			$query->where('cart_id ='.$db->q($cart_id));
@@ -1057,7 +1057,7 @@ class J2Product extends JObject{
 		$db = JFactory::getDbo();
 		$optionvalues = array();
 		foreach($product_options as $productoption_id => $optionvalue) {
-			$optionvalues[] = intval($optionvalue);
+			$optionvalues[] = $optionvalue;
 		}
 		sort($optionvalues);
 		$values = implode(',', $optionvalues);
@@ -1065,24 +1065,13 @@ class J2Product extends JObject{
 		$query = $db->getQuery(true)->select('#__j2store_product_variant_optionvalues.variant_id')->from('#__j2store_product_variant_optionvalues')
 		->where('product_optionvalue_ids='.$db->q($values));
 		$db->setQuery($query);
-		/*$row = $db->loadObject();
+		$row = $db->loadObject();
 		//load the variant
 		if(isset($row->variant_id) && $row->variant_id) {
 			$variant = F0FModel::getTmpInstance('Variants', 'J2StoreModel')->getItem($row->variant_id);
 		} else {
 			$variant = false;
-		}*/
-        $rows = $db->loadObjectList();
-        if(!empty($rows)){
-            foreach ($rows as $row){
-                $variant = F0FModel::getTmpInstance('Variants', 'J2StoreModel')->getItem($row->variant_id);
-                if($row->variant_id > 0 && ($row->variant_id == $variant->j2store_variant_id)){
-                    break;
-                }
-            }
-        }else{
-            $variant = false;
-        }
+		}
 		return $variant;
 	}
 
@@ -1122,8 +1111,8 @@ class J2Product extends JObject{
 			$query = $db->getQuery(true);
 			$query->select('po.*');
 			$query->from('#__j2store_product_options AS po');
-			$query->where('po.j2store_productoption_id='.$db->q($product_option_id));
-			$query->where('po.product_id='.$db->q($product_id));
+			$query->where('po.j2store_productoption_id='.$product_option_id);
+			$query->where('po.product_id='.$product_id);
 
 			//join the options table to get the name
 			$query->select('o.option_name, o.type');
@@ -1146,23 +1135,19 @@ class J2Product extends JObject{
 			$ovsets = array( );
 		}
 		if(empty($option_value)) return $ovsets;
-        //sanity check
+		//sanity check
         if(is_array($option_value)){
-            JArrayHelper::toInteger($option_value);
             $option_value = implode(',',$option_value);
-        }else {
-            $option_value = intval($option_value);
         }
-
-        if ( !isset( $ovsets[$product_option_id][$option_value])) {
+		if ( !isset( $ovsets[$product_option_id][$option_value])) {
 
 			//first get the product options
 			$db = JFactory::getDbo();
 			$query = $db->getQuery(true);
 			$query->select('pov.*');
 			$query->from('#__j2store_product_optionvalues AS pov');
-			$query->where('pov.j2store_product_optionvalue_id='.$db->q($option_value));
-			$query->where('pov.productoption_id='.$db->q($product_option_id));
+			$query->where('pov.j2store_product_optionvalue_id='.$option_value);
+			$query->where('pov.productoption_id='.$product_option_id);
 
 			//join the optionvalues table to get the name
 			$query->select('ov.j2store_optionvalue_id, ov.optionvalue_name');
@@ -1219,7 +1204,7 @@ class J2Product extends JObject{
                     }else{
                         $show = false;
                     }
-                    J2Store::plugin()->event('AfterProcessUpSellItem',array($upsell_product,&$show));
+
 					// Dont show if product not available. No use in showing a related product that is not available!
 					if ($show == false)
 						continue;
@@ -1280,7 +1265,6 @@ class J2Product extends JObject{
                     }else{
                         $show = false;
                     }
-                    J2Store::plugin()->event('AfterProcessCrossSellItem',array($cross_sell_product,&$show));
 					// Dont show if product not available. No use in showing a related product that is not available!
 					if ($show == false)
 						continue;
@@ -1408,24 +1392,6 @@ class J2Product extends JObject{
         $status = false;
         if( $catelog == 0 && $allow_display ){
             $status = true;
-        }
-        return $status;
-    }
-    public function canShowprice($params){
-        $show_product_price = $params->get('show_product_price_for_register_user', 0);
-        $user_id = JFactory::getUser()->id;
-        $status = true;
-        if( $show_product_price && empty($user_id)){
-            $status = false;
-        }
-        return $status;
-    }
-    public function canShowSku($params){
-        $show_product_sku = $params->get('show_product_sku_for_register_user', 0);
-        $user_id = JFactory::getUser()->id;
-        $status = true;
-        if( $show_product_sku && empty($user_id)){
-            $status = false;
         }
         return $status;
     }

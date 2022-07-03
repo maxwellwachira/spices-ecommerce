@@ -1,5 +1,5 @@
 /**
-*  Ajax Autocomplete for jQuery, version 1.4.11
+*  Ajax Autocomplete for jQuery, version 1.4.7
 *  (c) 2017 Tomas Kirda
 *
 *  Ajax Autocomplete for jQuery is freely distributable under the terms of an MIT-style license.
@@ -70,7 +70,7 @@
         that.isLocal = false;
         that.suggestionsContainer = null;
         that.noSuggestionsContainer = null;
-        that.options = $.extend(true, {}, Autocomplete.defaults, options);
+        that.options = $.extend({}, Autocomplete.defaults, options);
         that.classes = {
             selected: 'autocomplete-selected',
             suggestion: 'autocomplete-suggestion'
@@ -163,6 +163,7 @@
                 options = that.options,
                 container;
 
+            // Remove autocomplete attribute to prevent native suggestions:
             that.element.setAttribute('autocomplete', 'off');
 
             // html() deals with many types: htmlString or Element or Array or jQuery
@@ -219,10 +220,6 @@
         onFocus: function () {
             var that = this;
 
-            if (that.disabled) {
-                return;
-            }
-
             that.fixPosition();
 
             if (that.el.val().length >= that.options.minChars) {
@@ -231,19 +228,12 @@
         },
 
         onBlur: function () {
-            var that = this,
-                options = that.options,
-                value = that.el.val(),
-                query = that.getQuery(value);
+            var that = this;
 
             // If user clicked on a suggestion, hide() will
             // be canceled, otherwise close suggestions
             that.blurTimeoutId = setTimeout(function () {
                 that.hide();
-
-                if (that.selection && that.currentValue !== query) {
-                    (options.onInvalidateSelection || $.noop).call(that.element);
-                }
             }, 200);
         },
 
@@ -274,7 +264,7 @@
                 'z-index': options.zIndex
             });
 
-            this.options = options;
+            this.options = options;            
         },
 
 

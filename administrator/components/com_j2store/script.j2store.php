@@ -67,7 +67,7 @@ class Com_J2storeInstallerScript extends F0FUtilsInstallscript{
 
 
 	protected $minimumJoomlaVersion = '3.4.0';
-    protected $maximumJoomlaVersion = '3.99.99';
+
 
 	protected $removeFilesAllVersions = array(
 			'files'   => array(
@@ -120,26 +120,24 @@ class Com_J2storeInstallerScript extends F0FUtilsInstallscript{
 							'system' 		=> 		array(
 														'j2store' => 1,
 														'j2pagecache' => 0,
-														'j2canonical' => 0
+										                                    'campaignrabbit' => 1
 													),
 							'search' 		=> 		array('j2store' => 0),
 							'finder' 		=> 		array('j2store' => 0),
-							'user' 		=> 		array('j2userregister' => 0),
+
 							'j2store' 		=>		array(
 														'shipping_free' 			=>	0,
  							 				 			'shipping_standard' 		=>	1,
 							   							'payment_cash' 				=>	1,
 							   							'payment_moneyorder'		=>	1,
 							   							'payment_banktransfer'		=>	1,
-							 							'payment_paypal'			=>	1,
-														'report_products' 			=> 	1,
-							 							'payment_sagepayform' 			=>	1,
+							 							'payment_paymill' 			=>	1,
+							 							'payment_sagepay' 			=>	1,
 							 							'report_itemised' 			=> 	1,
 							 							'app_localization_data' 	=> 	1,
 							 							'app_diagnostics'			=> 	1,
                                                         'app_currencyupdater'		=> 	1,
-                                                        'app_flexivariable'		    => 	1,
-                                                        'app_schemaproducts'        =>  1
+                                                        'app_campaignrabbit'		=> 	1
 							 						)
 						)
 					);
@@ -311,6 +309,8 @@ public function preflight($type, $parent) {
 
 		}
 		//----end of file removal//
+
+
 		//all set. Lets rock..
 		return true;
 	} else {
@@ -534,7 +534,7 @@ private function _installFOF($parent)
 			foreach ($queries as $query)
 			{
 				$query = trim($query);
-				if ($query != '' && $query[0] != '#')
+				if ($query != '' && $query{0} != '#')
 				{
 					$db->setQuery($query);
 					try {
@@ -559,4 +559,3 @@ private function _installFOF($parent)
 
 
 }
-

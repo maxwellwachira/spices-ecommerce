@@ -3,7 +3,7 @@
  * @package     Joomla.Plugin
  * @subpackage  Content.confirmconsent
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -161,13 +161,15 @@ class JFormFieldConsentBox extends JFormFieldCheckboxes
 	}
 
 	/**
-	 * Method to get the field input markup.
+	 * Method to get a control group with label and input.
 	 *
-	 * @return  string  The field input markup.
+	 * @param   array  $options  Options to be passed into the rendering of the field
 	 *
-	 * @since   3.9.2
+	 * @return  string  A string containing the html for the control group
+	 *
+	 * @since   3.9.1
 	 */
-	protected function getInput()
+	public function renderField($options = array())
 	{
 		$modalHtml  = '';
 		$layoutData = $this->getLayoutData();
@@ -181,7 +183,7 @@ class JFormFieldConsentBox extends JFormFieldCheckboxes
 			$modalHtml = HTMLHelper::_('bootstrap.renderModal', 'modal-' . $this->id, $modalParams);
 		}
 
-		return $modalHtml . parent::getInput();
+		return $modalHtml . parent::renderField($options);
 	}
 
 	/**
@@ -227,15 +229,6 @@ class JFormFieldConsentBox extends JFormFieldCheckboxes
 		catch (JDatabaseExceptionExecuting $e)
 		{
 			// Something at the database layer went wrong
-			return Route::_(
-				'index.php?option=com_content&view=article&id='
-				. $this->articleid . '&tmpl=component'
-			);
-		}
-
-		if (!is_object($article))
-		{
-			// We have not found the article object lets show a 404 to the user
 			return Route::_(
 				'index.php?option=com_content&view=article&id='
 				. $this->articleid . '&tmpl=component'

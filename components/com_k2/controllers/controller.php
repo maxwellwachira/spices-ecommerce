@@ -1,38 +1,49 @@
 <?php
 /**
- * @version    2.10.x
- * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @version     2.7.x
+ * @package     K2
+ * @author      JoomlaWorks http://www.joomlaworks.net
+ * @copyright   Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license     GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
 jimport('joomla.application.component.controller');
 
-if (version_compare(JVERSION, '3.0', 'ge')) {
+if (version_compare(JVERSION, '3.0', 'ge'))
+{
     class K2Controller extends JControllerLegacy
     {
         public function display($cachable = false, $urlparams = array())
         {
             parent::display($cachable, $urlparams);
         }
+
     }
-} elseif (version_compare(JVERSION, '2.5', 'ge')) {
+
+}
+else if (version_compare(JVERSION, '2.5', 'ge'))
+{
     class K2Controller extends JController
     {
         public function display($cachable = false, $urlparams = false)
         {
             parent::display($cachable, $urlparams);
         }
+
     }
-} else {
+
+}
+else
+{
     class K2Controller extends JController
     {
         public function display($cachable = false)
         {
             parent::display($cachable);
         }
+
     }
+
 }

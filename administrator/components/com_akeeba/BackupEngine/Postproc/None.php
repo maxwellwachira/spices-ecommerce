@@ -1,37 +1,32 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Postproc;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 class None extends Base
 {
+
 	public function __construct()
 	{
 		// No point in breaking the step; we simply do nothing :)
-		$this->recommendsBreakAfter           = false;
-		$this->recommendsBreakBefore          = false;
-		$this->advisesDeletionAfterProcessing = false;
+		$this->break_after = false;
+		$this->break_before = false;
+		$this->allow_deletes = false;
 	}
 
-	public function processPart($localFilepath, $remoteBaseName = null)
+	public function processPart($absolute_filename, $upload_as = null)
 	{
 		// Really nothing to do!!
 		return true;
-	}
-
-	protected function makeConnector()
-	{
-		// I have to return an object to satisfy the definition.
-		return (object) [
-			'foo' => 'bar',
-		];
 	}
 }

@@ -1,21 +1,21 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Controller;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Controller\Mixin\CustomACL;
 use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
 use Akeeba\Backup\Admin\Model\Log as LogModel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF40\Controller\Controller;
+use FOF30\Controller\Controller;
 
 class Log extends Controller
 {
@@ -123,24 +123,5 @@ class Log extends Controller
 
 		flush();
 		$this->container->platform->closeApplication();
-	}
-
-	public function inlineRaw()
-	{
-		Platform::getInstance()->load_configuration(Platform::getInstance()->get_active_profile());
-
-		$tag = $this->input->get('tag', null, 'cmd');
-
-		if (empty($tag))
-		{
-			$tag = null;
-		}
-
-		/** @var LogModel $model */
-		$model = $this->getModel();
-		$model->setState('tag', $tag);
-		echo "<pre>";
-		$model->echoRawLog();
-		echo "</pre>";
 	}
 }

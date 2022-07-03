@@ -38,22 +38,21 @@ $J2gridCol = ($this->params->get('bootstrap_version', 2) == 2) ? 'span' : 'col-m
 			   				<?php if(isset($thumb_image) &&  JFile::exists(JPATH::clean(JPATH_SITE.'/'.$thumb_image))):?>
 			   					<span class="upsell-product-image">
 			   						<a href="<?php echo $upsell_product->product_view_url; ?>">
-			   							<img alt="<?php echo $this->escape($upsell_product->product_name) ;?>" class="j2store-product-thumb-image-<?php echo $upsell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" />
+			   							<img alt="<?php echo $upsell_product->product_name ;?>" class="j2store-product-thumb-image-<?php echo $upsell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" />
 			   						</a>
 			   					</span>
 						   	<?php endif; ?>
 
 							<h3 class="upsell-product-title">
 								<a href="<?php echo $upsell_product->product_view_url; ?>">
-									<?php echo $this->escape($upsell_product->product_name); ?>
+									<?php echo $upsell_product->product_name; ?>
 								</a>
 							</h3>
-                        <?php if( J2Store::product()->canShowprice($this->params) ): ?>
+
 							<?php
 							$this->product = $upsell_product;
 							echo $this->loadAnyTemplate('site:com_j2store/product/item_price');
 							?>
-                        <?php endif; ?>
 						<?php if( J2Store::product()->canShowCart($this->params) ): ?>
 							<?php
 								$this->singleton_product = $upsell_product;

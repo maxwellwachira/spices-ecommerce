@@ -35,53 +35,47 @@ class J2StoreModelProductPrices extends F0FModel {
 
 		$this->_buildQueryWhere($query);
 		$this->_buildQueryOrder($query);
-        $product_price_obj = $this;
-		J2Store::plugin()->event('ProductPricesAfterBuildQuery', array(&$query, &$product_price_obj));
+		J2Store::plugin()->event('ProductPricesAfterBuildQuery', array(&$query, &$this));
 		return $query;
 	}
 
-    protected function _buildQueryWhere($query)
-    {
-        $db = $this->getDbo();
-        $state = $this->getFilterValues();
-        JLoader::import('joomla.utilities.date');
+	protected function _buildQueryWhere($query)
+	{
+		$db = $this->getDbo();
+		$state = $this->getFilterValues();
+		JLoader::import('joomla.utilities.date');
 
-        $from = trim($state->filter_date);
-        if (strlen($from))
-        {
-            $nullDate	= JFactory::getDbo()->getNullDate();
-            $query->where("#__j2store_product_prices.date_from <= ".$db->q($from));
-            $query->where("(#__j2store_product_prices.date_to >= ".$db->q($from)." OR #__j2store_product_prices.date_to = ".$db->q($nullDate)." )");
-        }
-
-
-        if ($state->filter_quantity)
-        {
-            $query->where("(#__j2store_product_prices.quantity_from <= ".$db->q($state->filter_quantity).")");
-        }
-
-        if ($state->group_id)
-        {
-            $query->where('#__j2store_product_prices.customer_group_id IN ('.$state->group_id.')');
-        }
-
-        if ($state->variant_id)
-        {
-            $query->where('#__j2store_product_prices.variant_id = '.$db->q((int)$state->variant_id));
-        }
+		$from = trim($state->filter_date);
+		if (strlen($from))
+		{
+			$nullDate	= JFactory::getDbo()->getNullDate();
+			$query->where("#__j2store_product_prices.date_from <= '".$from."'");
+			$query->where("(#__j2store_product_prices.date_to >= '".$from."' OR #__j2store_product_prices.date_to = '$nullDate' )");
+		}
 
 
-    }
+		if ($state->filter_quantity)
+		{
+			$query->where("(#__j2store_product_prices.quantity_from <= '".$state->filter_quantity."')");
+		}
+
+		if ($state->group_id)
+		{
+			$query->where('#__j2store_product_prices.customer_group_id IN ('.$state->group_id.')');
+		}
+
+		 if ($state->variant_id)
+		{
+			$query->where('#__j2store_product_prices.variant_id = '.(int)$state->variant_id);
+		}
+
+
+	}
 
 	protected function _buildQueryOrder($query) {
 		$state = $this->getFilterValues();
-        if(isset($state->orderby) && !empty($state->orderby) && in_array($state->orderby,array('variant_id','price','quantity_from'))) {
-            $db = $this->getDbo();
-            if(!in_array(strtolower($state->direction),array('asc','desc'))){
-                $state->direction = 'desc';
-            }
-            $query->order($db->qn('#__j2store_product_prices').'.'.$db->qn($state->orderby).' '.$state->direction);
-			//$query->order('#__j2store_product_prices.'.$state->orderby.' '.$state->direction);
+		if($state->orderby) {
+			$query->order('#__j2store_product_prices.'.$state->orderby.' '.$state->direction);
 		}
 	}
 

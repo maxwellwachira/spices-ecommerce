@@ -1,17 +1,21 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Scan;
 
-defined('AKEEBAENGINE') || die();
+use Akeeba\Engine\Base\BaseObject;
 
-abstract class Base
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
+
+abstract class Base extends BaseObject
 {
 	/**
 	 * Gets all the files of a given folder
@@ -21,7 +25,7 @@ abstract class Base
 	 *
 	 * @return  array  A simple array of files
 	 */
-	abstract public function getFiles($folder, &$position);
+	abstract public function &getFiles($folder, &$position);
 
 	/**
 	 * Gets all the folders (subdirectories) of a given folder
@@ -31,5 +35,5 @@ abstract class Base
 	 *
 	 * @return  array  A simple array of folders
 	 */
-	abstract public function getFolders($folder, &$position);
+	abstract public function &getFolders($folder, &$position);
 }

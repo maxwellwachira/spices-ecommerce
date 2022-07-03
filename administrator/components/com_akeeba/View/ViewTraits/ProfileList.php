@@ -1,16 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\ViewTraits;
 
 // Protect from unauthorized access
-use Joomla\CMS\HTML\HTMLHelper;
+use Akeeba\Engine\Platform;
+use JHtml;
 
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 trait ProfileList
 {
@@ -19,7 +20,7 @@ trait ProfileList
 	 *
 	 * @var   array
 	 */
-	public $profileList = [];
+	public $profileList = array();
 
 	/**
 	 * Populates the profileList property with an options list for use by JHtmlSelect
@@ -34,16 +35,16 @@ trait ProfileList
 		$db = $this->container->db;
 
 		$query = $db->getQuery(true)
-			->select([
-				$db->qn('id'),
-				$db->qn('description'),
-			])->from($db->qn('#__ak_profiles'))
-			->order($db->qn('id') . " ASC");
+					->select(array(
+						$db->qn('id'),
+						$db->qn('description')
+					))->from($db->qn('#__ak_profiles'))
+					->order($db->qn('id') . " ASC");
 
 		$db->setQuery($query);
 		$rawList = $db->loadAssocList();
 
-		$this->profileList = [];
+		$this->profileList = array();
 
 		if (!is_array($rawList))
 		{
@@ -59,7 +60,7 @@ trait ProfileList
 				$description = '#' . $row['id'] . '. ' . $description;
 			}
 
-			$this->profileList[] = HTMLHelper::_('select.option', $row['id'], $description);
+			$this->profileList[] = JHtml::_('select.option', $row['id'], $description);
 		}
 	}
 }

@@ -67,8 +67,8 @@ $this->params = J2Store::config();
 					<a target="_blank" href="<?php echo $item->product_edit_url;?>"> <img
 						class="j2store-product-thumb-image"
 						src="<?php echo $thumbimage;?>"
-						title="<?php echo $this->escape($item->product_name);?>"
-						alt="<?php echo $this->escape($item->product_name);?>" />
+						title="<?php echo $item->product_name;?>"
+						alt="<?php echo $item->product_name;?>" />
 					</a>
 				</div>
 								<?php endif; ?>
@@ -95,8 +95,8 @@ $this->params = J2Store::config();
 
 			</td>
 
-                        <?php if(!in_array($item->product_type,array('variable','variablesubscriptionproduct'))):?>
-						<td><?php echo $this->escape($item->sku); ?></td>
+						<?php if($item->product_type !='variable'):?>
+						<td><?php echo $item->sku; ?></td>
 					<td> <?php echo J2store::currency()->format($item->price); ?></td>
 					
 			
@@ -119,7 +119,7 @@ $this->params = J2Store::config();
 							<?php endif;?>
 						<?php else:?>
 						<td colspan="4">
-                            <?php if(in_array($item->product_type,array('variable','variablesubscriptionproduct'))):?>
+							<?php if($item->product_type=='variable'):?>
 							<?php echo JText::_('J2STORE_HAS_VARIANTS'); ?>
 							<button type="button" class="btn btn-small btn-warning"
 					id="showvariantbtn-<?php echo $item->j2store_product_id;?>"

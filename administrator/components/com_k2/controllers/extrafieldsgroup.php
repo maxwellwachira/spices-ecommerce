@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,6 +14,7 @@ jimport('joomla.application.component.controller');
 
 class K2ControllerExtraFieldsGroup extends K2Controller
 {
+
     public function display($cachable = false, $urlparams = array())
     {
         JRequest::setVar('view', 'extrafieldsgroup');
@@ -23,12 +24,7 @@ class K2ControllerExtraFieldsGroup extends K2Controller
         parent::display();
     }
 
-    public function apply()
-    {
-        $this->save();
-    }
-
-    public function save()
+    function save()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('extraFields');
@@ -37,14 +33,15 @@ class K2ControllerExtraFieldsGroup extends K2Controller
         $model->saveGroup();
     }
 
-    public function saveAndNew()
+    function apply()
     {
         $this->save();
     }
 
-    public function cancel()
+    function cancel()
     {
-        $app = JFactory::getApplication();
-        $app->redirect('index.php?option=com_k2&view=extrafieldsgroups');
+        $mainframe = JFactory::getApplication();
+        $mainframe->redirect('index.php?option=com_k2&view=extrafieldsgroups');
     }
+
 }

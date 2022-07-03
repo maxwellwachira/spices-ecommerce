@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,34 +14,36 @@ jimport('joomla.application.component.controller');
 
 class K2ControllerCategory extends K2Controller
 {
+
     public function display($cachable = false, $urlparams = array())
     {
         JRequest::setVar('view', 'category');
         parent::display();
     }
 
-    public function save()
+    function save()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('category');
         $model->save();
     }
 
-    public function saveAndNew()
+    function saveAndNew()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('category');
         $model->save();
     }
 
-    public function apply()
+    function apply()
     {
         $this->save();
     }
 
-    public function cancel()
+    function cancel()
     {
-        $app = JFactory::getApplication();
-        $app->redirect('index.php?option=com_k2&view=categories');
+        $mainframe = JFactory::getApplication();
+        $mainframe->redirect('index.php?option=com_k2&view=categories');
     }
+
 }

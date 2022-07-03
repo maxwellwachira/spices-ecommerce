@@ -1,20 +1,18 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
-use FOF40\InstallScript\Plugin;
-
-defined('_JEXEC') || die;
+defined('_JEXEC') or die;
 
 // Load FOF if not already loaded
-if (!defined('FOF40_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof40/include.php'))
+if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
 {
-	throw new RuntimeException('This extension requires FOF 4.');
+	throw new RuntimeException('This extension requires FOF 3.0.');
 }
 
-class plgSystemBackuponupdateInstallerScript extends Plugin
+class plgSystemBackuponupdateInstallerScript extends FOF30\Utils\InstallScript\Plugin
 {
 }

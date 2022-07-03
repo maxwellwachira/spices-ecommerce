@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_config
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -153,8 +153,6 @@ abstract class ConfigModelForm extends ConfigModelCms
 		// Get the form.
 		// Register the paths for the form -- failing here
 		$paths = new SplPriorityQueue;
-		$paths->insert(JPATH_COMPONENT_ADMINISTRATOR . '/model/form', 'normal');
-		$paths->insert(JPATH_COMPONENT_ADMINISTRATOR . '/model/field', 'normal');
 		$paths->insert(JPATH_COMPONENT . '/model/form', 'normal');
 		$paths->insert(JPATH_COMPONENT . '/model/field', 'normal');
 		$paths->insert(JPATH_COMPONENT . '/model/rule', 'normal');
@@ -167,8 +165,6 @@ abstract class ConfigModelForm extends ConfigModelCms
 		// Solution until JForm supports splqueue
 		JForm::addFormPath(JPATH_COMPONENT . '/models/forms');
 		JForm::addFieldPath(JPATH_COMPONENT . '/models/fields');
-		JForm::addFormPath(JPATH_COMPONENT_ADMINISTRATOR . '/model/form');
-		JForm::addFieldPath(JPATH_COMPONENT_ADMINISTRATOR . '/model/field');
 		JForm::addFormPath(JPATH_COMPONENT . '/model/form');
 		JForm::addFieldPath(JPATH_COMPONENT . '/model/field');
 

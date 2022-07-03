@@ -44,29 +44,15 @@ class JFormFieldOrderstatusList extends JFormFieldList {
 		$attr = array();
 		// Get the field options.
 				// Initialize some field attributes.
-        if($this->class){
-            $attr['class']= !empty($this->class) ? $this->class: '';
-        }
-
-        if($this->size){
-            $attr ['size']= !empty($this->size) ?$this->size : '';
-        }
-
+		$attr['class']= !empty($this->class) ? $this->class: '';
+		$attr ['size']= !empty($this->size) ?$this->size : '';
 		if($this->multiple){
             $attr ['multiple']= $this->multiple ? 'multiple': '';
         }
-        if($this->required){
-            $attr ['required']= $this->required ? true:false;
-        }
-
-        if($this->autofocus){
-            $attr ['autofocus']= $this->autofocus ? 'autofocus' : '';
-        }
-
+		$attr ['required']= $this->required ? true:false;
+		$attr ['autofocus']= $this->autofocus ? 'autofocus' : '';
 		// Initialize JavaScript field attributes.
-        if($this->onchange){
-            $attr ['onchange']= $this->onchange ?  $this->onchange : '';
-        }
+		$attr ['onchange']= $this->onchange ?  $this->onchange : '';
 
 		//generate country filter list
 		$orderstatus_options = array();

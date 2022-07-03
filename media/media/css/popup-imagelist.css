@@ -1,12 +1,7 @@
 /**
- * @copyright	Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright	Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license		GNU General Public License version 2 or later; see LICENSE.txt
  */
-
-.contentpane {
-	padding: 0 !important;
-	overflow-x: hidden;
-}
 
 .item {
 	float: left;
@@ -69,7 +64,7 @@ html>body .item img {
 }
 
 .thumbnails.thumbnails-media {
-	margin: 0 -8px;
+	margin-left: 0;
 }
 .thumbnails-media .thumbnail {
 	background-color: #f4f4f4;
@@ -79,7 +74,8 @@ html>body .item img {
 	padding: 0px;
 	height: 100px;
 	width: 100px;
-	margin: 8px;
+	margin: 8px 16px;
+	margin-left: 0 !important;
 	position: relative;
 	text-align: center;
 	overflow: hidden;

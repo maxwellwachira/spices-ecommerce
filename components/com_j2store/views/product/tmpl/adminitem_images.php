@@ -27,13 +27,13 @@ $image_path = JUri::root();
 		   	<a class="j2store-product-image-link" href="<?php echo  $this->product->product_view_url;?>">
 		   <?php endif;?>
 		   	<span>
-		   		<img alt="<?php echo (!empty($this->product->thumb_image_alt)) ? $this->escape($this->product->thumb_image_alt) : $this->escape($this->product->product_name); ?>" title="<?php echo $this->escape($this->product->product_name) ;?>" class="j2store-product-thumb-image-<?php echo $this->product->j2store_product_id; ?>"  src="<?php echo $image_path.$thumb_image;?>" />
+		   		<img  alt="<?php echo $this->product->product_name ;?>" title="<?php echo $this->product->product_name ;?>" class="j2store-product-thumb-image-<?php echo $this->product->j2store_product_id; ?>"  src="<?php echo $image_path.$thumb_image;?>" />
 		  	 </span>
 		  	 <?php if($this->params->get('category_link_image_to_product',0) == 1):?>
 		  	 </a>
 		   <?php endif;?>
 		   <?php elseif(!empty($this->product->thumb_image)):?>
-			   <?php echo J2Store::product()->displayImage($this->product,array('type'=>'ItemThumb','params' => $this->params, 'alt' => $this->escape($this->product->thumb_image_alt))); ?>
+			   <?php echo J2Store::product()->displayImage($this->product,array('type'=>'ItemThumb','params' => $this->params)); ?>
 		   <?php endif; ?>
 	</div>
 	 <?php endif; ?>
@@ -53,7 +53,7 @@ $image_path = JUri::root();
 		   	<a class="j2store-product-image-link" href="<?php echo  $this->product->product_view_url;?>">
 		   <?php endif;?>
 		   <span class='<?php echo $class; ?>' id='j2store-item-main-image-<?php echo $this->product->j2store_product_id; ?>'>
-		  	 <img alt="<?php echo (!empty($this->product->main_image_alt)) ? $this->escape($this->product->main_image_alt) : $this->escape($this->product->product_name); ?>" title="<?php echo $this->escape($this->product->product_name) ;?>" class="j2store-product-main-image-<?php echo $this->product->j2store_product_id; ?>"  src="<?php echo $image_path.$main_image;?>" />
+		  	 <img alt="<?php echo $this->product->product_name ;?>" title="<?php echo $this->product->product_name ;?>" class="j2store-product-main-image-<?php echo $this->product->j2store_product_id; ?>"  src="<?php echo $image_path.$main_image;?>" />
 		  	 </span>
 		  	 <?php if($this->params->get('category_link_image_to_product',0) == 1):?>
 		  	 	</a>
@@ -68,7 +68,7 @@ $image_path = JUri::root();
 				   });
 			   </script>
 		   <?php elseif(!empty($this->product->main_image)):?>
-			   <?php echo J2Store::product()->displayImage($this->product,array('type'=>'ItemMain','params' => $this->params, 'alt'=>$this->product->main_image_alt)); ?>
+			   <?php echo J2Store::product()->displayImage($this->product,array('type'=>'ItemMain','params' => $this->params)); ?>
 		   <?php endif; ?>
 	</div>
 	 <?php endif; ?>
@@ -85,7 +85,6 @@ $image_path = JUri::root();
 					<?php
 						$additional_images = json_decode($this->product->additional_images);
 						if(isset($additional_images) && count($additional_images)):
-                            $additional_images_alt = json_decode($this->product->additional_images_alt,true);
 						foreach($additional_images as $key => $image):?>
 						<?php
 						if(JFile::exists(JPATH_SITE.'/'.$image)):
@@ -97,12 +96,12 @@ $image_path = JUri::root();
 								 id="addimage-<?php echo $this->product->j2store_product_id; ?>-<?php echo $key;?>"
 								 class="j2store-item-additionalimage-preview j2store-img-responsive"
 								 src="<?php echo $image_src;?>"
-                                 alt="<?php echo (isset($additional_images_alt[$key]) && !empty($additional_images_alt[$key])) ? $this->escape($additional_images_alt[$key]) : $this->escape($this->product->product_name); ?>"
-								 title="<?php echo $this->escape($this->product->product_name) ;?>"
+								 alt="<?php echo $this->product->product_name; ?>"
+								 title="<?php echo $this->product->product_name ;?>"
 								 />
 						</li>
 							<?php elseif(!empty($image)):?>
-							<?php echo J2Store::product()->displayImage($this->product,array('type'=>'ViewAdditional','params' => $this->params,'key'=>$key,'image' => $image,'alt'=>(isset($additional_images_alt[$key]) && !empty($additional_images_alt[$key])) ? $additional_images_alt[$key] : $this->product->product_name)); ?>
+							<?php echo J2Store::product()->displayImage($this->product,array('type'=>'ViewAdditional','params' => $this->params,'key'=>$key,'image' => $image)); ?>
 					<?php endif;?>
 					<?php endforeach;?>
 						<?php if($main_image &&  JFile::exists(JPATH_SITE.'/'.$main_image)):?>
@@ -110,14 +109,14 @@ $image_path = JUri::root();
 						 <img onmouseover="setMainPreview('additial-main-image-<?php echo $this->product->j2store_product_id; ?>', <?php echo $this->product->j2store_product_id; ?>, <?php echo $this->params->get('item_enable_image_zoom', 1); ?>, 'inner')"
 								  onclick="setMainPreview('additial-main-image-<?php echo $this->product->j2store_product_id; ?>', <?php echo $this->product->j2store_product_id; ?>, <?php echo $this->params->get('item_enable_image_zoom', 1); ?>, 'inner')"
 								  id="additial-main-image-<?php echo $this->product->j2store_product_id; ?>"
-                                    alt="<?php echo (!empty($this->product->main_image_alt)) ? $this->escape($this->product->main_image_alt) : $this->escape($this->product->product_name); ?>"
+							 	  alt="<?php echo $this->product->product_name ;?>"
 							 	  class="j2store-item-additionalimage-preview j2store-img-responsive additional-mainimage"
 							 	  src="<?php echo $image_path.$main_image;?>"
-							  		title="<?php echo $this->escape($this->product->product_name) ;?>"
+							  		title="<?php echo $this->product->product_name ;?>"
 							 	/>
 						</li>
 						<?php elseif (!empty($this->product->main_image)):?>
-							<?php echo J2Store::product()->displayImage($this->product,array('type'=>'AdditionalMain','params' => $this->params,'alt'=>$this->escape($this->product->main_image_alt))); ?>
+							<?php echo J2Store::product()->displayImage($this->product,array('type'=>'AdditionalMain','params' => $this->params)); ?>
 						<?php endif;?>
 					<?php endif;?>
 				</ul>

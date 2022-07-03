@@ -3,7 +3,7 @@
  * @package     Joomla.Plugin
  * @subpackage  Installer.packageinstaller
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -14,7 +14,6 @@ JHtml::_('jquery.token');
 
 JText::script('PLG_INSTALLER_PACKAGEINSTALLER_UPLOAD_ERROR_UNKNOWN');
 JText::script('PLG_INSTALLER_PACKAGEINSTALLER_UPLOAD_ERROR_EMPTY');
-JText::script('COM_INSTALLER_MSG_WARNINGS_UPLOADFILETOOBIG');
 
 JFactory::getDocument()->addScriptDeclaration('
 	Joomla.submitbuttonpackage = function()
@@ -25,10 +24,6 @@ JFactory::getDocument()->addScriptDeclaration('
 		if (form.install_package.value == "")
 		{
 			alert("' . JText::_('PLG_INSTALLER_PACKAGEINSTALLER_NO_PACKAGE', true) . '");
-		}
-		else if (form.install_package.files[0].size > form.max_upload_size.value)
-		{
-			alert("' . JText::_('COM_INSTALLER_MSG_WARNINGS_UPLOADFILETOOBIG', true) . '");
 		}
 		else
 		{
@@ -53,17 +48,16 @@ JFactory::getDocument()->addScriptDeclaration(
 			return;
 		}
 
-		var uploading   = false;
-		var dragZone    = $('#dragarea');
-		var fileInput   = $('#install_package');
-		var fileSizeMax = $('#max_upload_size').val();
-		var button      = $('#select-file-button');
-		var url         = 'index.php?option=com_installer&task=install.ajax_upload';
-		var returnUrl   = $('#installer-return').val();
-		var actions     = $('.upload-actions');
-		var progress    = $('.upload-progress');
+		var uploading = false;
+		var dragZone  = $('#dragarea');
+		var fileInput = $('#install_package');
+		var button    = $('#select-file-button');
+		var url       = 'index.php?option=com_installer&task=install.ajax_upload';
+		var returnUrl = $('#installer-return').val();
+		var actions   = $('.upload-actions');
+		var progress  = $('.upload-progress');
 		var progressBar = progress.find('.bar');
-		var percentage  = progress.find('.uploading-number');
+		var percentage = progress.find('.uploading-number');
 
 		if (returnUrl) {
 			url += '&return=' + returnUrl;
@@ -127,12 +121,6 @@ JFactory::getDocument()->addScriptDeclaration(
 			var file = files[0];
 
 			var data = new FormData;
-
-			if (file.size > fileSizeMax) {
-				alert(Joomla.JText._('COM_INSTALLER_MSG_WARNINGS_UPLOADFILETOOBIG'), true);
-				return;
-			}
-
 			data.append('install_package', file);
 			data.append('installtype', 'upload');
 
@@ -290,8 +278,7 @@ JFactory::getDocument()->addStyleDeclaration(
 CSS
 );
 
-$maxSizeBytes = JFilesystemHelper::fileUploadMaxSize(false);
-$maxSize = JHtml::_('number.bytes', $maxSizeBytes);
+$maxSize = JFilesystemHelper::fileUploadMaxSize();
 ?>
 <legend><?php echo JText::_('PLG_INSTALLER_PACKAGEINSTALLER_UPLOAD_INSTALL_JOOMLA_EXTENSION'); ?></legend>
 
@@ -350,8 +337,7 @@ $maxSize = JHtml::_('number.bytes', $maxSizeBytes);
 	<div class="control-group">
 		<label for="install_package" class="control-label"><?php echo JText::_('PLG_INSTALLER_PACKAGEINSTALLER_EXTENSION_PACKAGE_FILE'); ?></label>
 		<div class="controls">
-			<input class="input_box" id="install_package" name="install_package" type="file" size="57" />
-			<input id="max_upload_size" name="max_upload_size" type="hidden" value="<?php echo $maxSizeBytes; ?>" /><br>
+			<input class="input_box" id="install_package" name="install_package" type="file" size="57" /><br>
 			<?php echo JText::sprintf('JGLOBAL_MAXIMUM_UPLOAD_SIZE_LIMIT', $maxSize); ?>
 		</div>
 	</div>

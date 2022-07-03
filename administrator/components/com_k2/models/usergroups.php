@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 
 jimport('joomla.application.component.model');
 
-JTable::addIncludePath(JPATH_COMPONENT.'/tables');
+JTable::addIncludePath(JPATH_COMPONENT.DS.'tables');
 
 class K2ModelUserGroups extends K2Model
 {
@@ -20,14 +20,14 @@ class K2ModelUserGroups extends K2Model
     function getData()
     {
 
-        $app = JFactory::getApplication();
+        $mainframe = JFactory::getApplication();
         $option = JRequest::getCmd('option');
         $view = JRequest::getCmd('view');
-        $db = JFactory::getDbo();
-        $limit = $app->getUserStateFromRequest('global.list.limit', 'limit', $app->getCfg('list_limit'), 'int');
-        $limitstart = $app->getUserStateFromRequest($option.$view.'.limitstart', 'limitstart', 0, 'int');
-        $filter_order = $app->getUserStateFromRequest($option.$view.'filter_order', 'filter_order', '', 'cmd');
-        $filter_order_Dir = $app->getUserStateFromRequest($option.$view.'filter_order_Dir', 'filter_order_Dir', '', 'word');
+        $db = JFactory::getDBO();
+        $limit = $mainframe->getUserStateFromRequest('global.list.limit', 'limit', $mainframe->getCfg('list_limit'), 'int');
+        $limitstart = $mainframe->getUserStateFromRequest($option.$view.'.limitstart', 'limitstart', 0, 'int');
+        $filter_order = $mainframe->getUserStateFromRequest($option.$view.'filter_order', 'filter_order', '', 'cmd');
+        $filter_order_Dir = $mainframe->getUserStateFromRequest($option.$view.'filter_order_Dir', 'filter_order_Dir', '', 'word');
 
         $query = "SELECT userGroup.*, (SELECT COUNT(DISTINCT userID) FROM #__k2_users WHERE `group`=userGroup.id) AS numOfUsers FROM #__k2_user_groups AS userGroup";
 
@@ -46,10 +46,10 @@ class K2ModelUserGroups extends K2Model
     function getTotal()
     {
 
-        $app = JFactory::getApplication();
+        $mainframe = JFactory::getApplication();
         $option = JRequest::getCmd('option');
         $view = JRequest::getCmd('view');
-        $db = JFactory::getDbo();
+        $db = JFactory::getDBO();
 
         $query = "SELECT COUNT(*) FROM #__k2_user_groups";
 
@@ -61,8 +61,8 @@ class K2ModelUserGroups extends K2Model
     function remove()
     {
 
-        $app = JFactory::getApplication();
-        $db = JFactory::getDbo();
+        $mainframe = JFactory::getApplication();
+        $db = JFactory::getDBO();
         $cid = JRequest::getVar('cid');
         foreach ($cid as $id)
         {
@@ -72,8 +72,8 @@ class K2ModelUserGroups extends K2Model
         }
         $cache = JFactory::getCache('com_k2');
         $cache->clean();
-		$app->enqueueMessage(JText::_('K2_DELETE_COMPLETED'));
-        $app->redirect('index.php?option=com_k2&view=usergroups');
+		$mainframe->enqueueMessage(JText::_('K2_DELETE_COMPLETED'));
+        $mainframe->redirect('index.php?option=com_k2&view=usergroups');
     }
 
 }

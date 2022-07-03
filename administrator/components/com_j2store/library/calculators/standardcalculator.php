@@ -30,8 +30,8 @@ class StandardCalculator extends JObject {
 		//see if we have advanced pricing for this product / variant
 		
 		$model = F0FModel::getTmpInstance('ProductPrices', 'J2StoreModel');
-		$standard_calculator = $this;
-		J2Store::plugin()->event('BeforeGetPrice', array(&$pricing, &$model,&$standard_calculator));
+		
+		J2Store::plugin()->event('BeforeGetPrice', array(&$pricing, &$model,&$this));
 
 		$quantity = $this->get('quantity');
 		$date = $this->get('date');
@@ -47,7 +47,7 @@ class StandardCalculator extends JObject {
 		$nullDate = JFactory::getDBO( )->getNullDate( );
 		if ( empty( $date ) || $date == $nullDate )
 		{
-			$date = JFactory::getDate('now')->toSql(true);//format('Y-m-d');
+			$date = JFactory::getDate('now', $tz)->format('Y-m-d');//toSql(true);
 		}
 
 		//where date_from <= $date

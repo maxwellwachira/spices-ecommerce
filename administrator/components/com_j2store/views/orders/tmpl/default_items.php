@@ -109,7 +109,6 @@ JHTML::_('behavior.modal');
 						->attribs($attr)
 						->setPlaceHolders(array(''=>JText::_('J2STORE_SELECT_OPTION')))
 						->hasOne('Orderstatuses')
-                        ->ordering('ordering')
 						->setRelations(
 								array (
 										'fields' => array
@@ -126,7 +125,7 @@ JHTML::_('behavior.modal');
 							<?php echo JText::_('J2STORE_NOTIFY_CUSTOMER');?>
 						</label>
 						<input type="hidden" name="return" value="orders" />
-						<input class="btn btn-primary" id="order-list-save_<?php echo $row->j2store_order_id;?>" type="button" onclick="submitOrderState('<?php echo $row->j2store_order_id; ?>','<?php echo $row->order_id; ?>')"
+						<input class="btn btn-primary" id="order-list-save_<?php echo $row->j2store_order_id;?>" type="button" onclick="submitOrderState(<?php echo $row->j2store_order_id; ?>,<?php echo $row->order_id; ?>)"
 							value="<?php echo JText::_('J2STORE_ORDER_STATUS_SAVE'); ?>" />
 				</td>
 					<?php echo J2Store::plugin ()->eventWithHtml ( 'AdminOrderListTabContent', array($row))?>

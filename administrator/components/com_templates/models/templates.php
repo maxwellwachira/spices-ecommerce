@@ -3,13 +3,11 @@
  * @package     Joomla.Administrator
  * @subpackage  com_templates
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
-
-use Joomla\String\StringHelper;
 
 /**
  * Methods supporting a list of template extension records.
@@ -100,7 +98,7 @@ class TemplatesModelTemplates extends JModelList
 			}
 			else
 			{
-				$search = $db->quote('%' . StringHelper::strtolower($search) . '%');
+				$search = $db->quote('%' . strtolower($search) . '%');
 				$query->where('(' . ' LOWER(a.element) LIKE ' . $search . ' OR LOWER(a.name) LIKE ' . $search . ')');
 			}
 		}

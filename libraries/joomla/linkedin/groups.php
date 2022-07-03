@@ -3,7 +3,7 @@
  * @package     Joomla.Platform
  * @subpackage  Linkedin
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -72,19 +72,18 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to find the groups a member belongs to.
 	 *
-	 * @param   string   $id               The unique identifier for a user.
-	 * @param   string   $fields           Request fields beyond the default ones.
-	 * @param   integer  $start            Starting location within the result set for paginated returns.
-	 * @param   integer  $count            The number of results returned.
-	 * @param   string   $membershipState  The state of the caller’s membership to the specified group.
-	 *                                     Values are: non-member, awaiting-confirmation, awaiting-parent-group-confirmation, member, moderator,
-	 *                                     manager, owner.
+	 * @param   string   $id                The unique identifier for a user.
+	 * @param   string   $fields            Request fields beyond the default ones.
+	 * @param   integer  $start             Starting location within the result set for paginated returns.
+	 * @param   integer  $count             The number of results returned.
+	 * @param   string   $membership_state  The state of the caller’s membership to the specified group.
+	 * 										Values are: non-member, awaiting-confirmation, awaiting-parent-group-confirmation, member, moderator, manager, owner.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getMemberships($id = null, $fields = null, $start = 0, $count = 5, $membershipState = null)
+	public function getMemberships($id = null, $fields = null, $start = 0, $count = 5, $membership_state = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -127,9 +126,9 @@ class JLinkedinGroups extends JLinkedinObject
 		}
 
 		// Check if membership_state is specified.
-		if ($membershipState)
+		if ($membership_state)
 		{
-			$data['membership-state'] = $membershipState;
+			$data['membership-state'] = $membership_state;
 		}
 
 		// Build the request path.
@@ -144,17 +143,17 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to find the groups a member belongs to.
 	 *
-	 * @param   string   $personId  The unique identifier for a user.
-	 * @param   string   $groupId   The unique identifier for a group.
-	 * @param   string   $fields    Request fields beyond the default ones.
-	 * @param   integer  $start     Starting location within the result set for paginated returns.
-	 * @param   integer  $count     The number of results returned.
+	 * @param   string   $person_id  The unique identifier for a user.
+	 * @param   string   $group_id   The unique identifier for a group.
+	 * @param   string   $fields     Request fields beyond the default ones.
+	 * @param   integer  $start      Starting location within the result set for paginated returns.
+	 * @param   integer  $count      The number of results returned.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getSettings($personId = null, $groupId = null, $fields = null, $start = 0, $count = 5)
+	public function getSettings($person_id = null, $group_id = null, $fields = null, $start = 0, $count = 5)
 	{
 		$token = $this->oauth->getToken();
 
@@ -167,9 +166,9 @@ class JLinkedinGroups extends JLinkedinObject
 		$base = '/v1/people/';
 
 		// Check if person_id is specified.
-		if ($personId)
+		if ($person_id)
 		{
-			$base .= $personId . '/group-memberships';
+			$base .= $person_id . '/group-memberships';
 		}
 		else
 		{
@@ -177,9 +176,9 @@ class JLinkedinGroups extends JLinkedinObject
 		}
 
 		// Check if group_id is specified.
-		if ($groupId)
+		if ($group_id)
 		{
-			$base .= '/' . $groupId;
+			$base .= '/' . $group_id;
 		}
 
 		$data['format'] = 'json';
@@ -214,19 +213,19 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to change a groups settings.
 	 *
-	 * @param   string   $groupId          The unique identifier for a group.
-	 * @param   boolean  $showLogo         Show group logo in profile.
-	 * @param   string   $digestFrequency  Email digest frequency.
-	 * @param   boolean  $announcements    Email announcements from managers.
-	 * @param   boolean  $allowMessages    Allow messages from members.
-	 * @param   boolean  $newPost          Email for every new post.
+	 * @param   string   $group_id          The unique identifier for a group.
+	 * @param   boolean  $show_logo         Show group logo in profile.
+	 * @param   string   $digest_frequency  Email digest frequency.
+	 * @param   boolean  $announcements     Email announcements from managers.
+	 * @param   boolean  $allow_messages    Allow messages from members.
+	 * @param   boolean  $new_post          Email for every new post.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function changeSettings($groupId, $showLogo = null, $digestFrequency = null, $announcements = null,
-		$allowMessages = null, $newPost = null)
+	public function changeSettings($group_id, $show_logo = null, $digest_frequency = null, $announcements = null,
+		$allow_messages = null, $new_post = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -236,19 +235,19 @@ class JLinkedinGroups extends JLinkedinObject
 		);
 
 		// Set the API base
-		$base = '/v1/people/~/group-memberships/' . $groupId;
+		$base = '/v1/people/~/group-memberships/' . $group_id;
 
 		// Build xml.
 		$xml = '<group-membership>';
 
-		if (!is_null($showLogo))
+		if (!is_null($show_logo))
 		{
-			$xml .= '<show-group-logo-in-profile>' . $this->booleanToString($showLogo) . '</show-group-logo-in-profile>';
+			$xml .= '<show-group-logo-in-profile>' . $this->booleanToString($show_logo) . '</show-group-logo-in-profile>';
 		}
 
-		if ($digestFrequency)
+		if ($digest_frequency)
 		{
-			$xml .= '<email-digest-frequency><code>' . $digestFrequency . '</code></email-digest-frequency>';
+			$xml .= '<email-digest-frequency><code>' . $digest_frequency . '</code></email-digest-frequency>';
 		}
 
 		if (!is_null($announcements))
@@ -256,14 +255,14 @@ class JLinkedinGroups extends JLinkedinObject
 			$xml .= '<email-announcements-from-managers>' . $this->booleanToString($announcements) . '</email-announcements-from-managers>';
 		}
 
-		if (!is_null($allowMessages))
+		if (!is_null($allow_messages))
 		{
-			$xml .= '<allow-messages-from-members>' . $this->booleanToString($allowMessages) . '</allow-messages-from-members>';
+			$xml .= '<allow-messages-from-members>' . $this->booleanToString($allow_messages) . '</allow-messages-from-members>';
 		}
 
-		if (!is_null($newPost))
+		if (!is_null($new_post))
 		{
-			$xml .= '<email-for-every-new-post>' . $this->booleanToString($newPost) . '</email-for-every-new-post>';
+			$xml .= '<email-for-every-new-post>' . $this->booleanToString($new_post) . '</email-for-every-new-post>';
 		}
 
 		$xml .= '</group-membership>';
@@ -282,19 +281,19 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to join a group.
 	 *
-	 * @param   string   $groupId          The unique identifier for a group.
-	 * @param   boolean  $showLogo         Show group logo in profile.
-	 * @param   string   $digestFrequency  Email digest frequency.
-	 * @param   boolean  $announcements    Email announcements from managers.
-	 * @param   boolean  $allowMessages    Allow messages from members.
-	 * @param   boolean  $newPost          Email for every new post.
+	 * @param   string   $group_id          The unique identifier for a group.
+	 * @param   boolean  $show_logo         Show group logo in profile.
+	 * @param   string   $digest_frequency  Email digest frequency.
+	 * @param   boolean  $announcements     Email announcements from managers.
+	 * @param   boolean  $allow_messages    Allow messages from members.
+	 * @param   boolean  $new_post          Email for every new post.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function joinGroup($groupId, $showLogo = null, $digestFrequency = null, $announcements = null,
-		$allowMessages = null, $newPost = null)
+	public function joinGroup($group_id, $show_logo = null, $digest_frequency = null, $announcements = null,
+		$allow_messages = null, $new_post = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -310,16 +309,16 @@ class JLinkedinGroups extends JLinkedinObject
 		$base = '/v1/people/~/group-memberships';
 
 		// Build xml.
-		$xml = '<group-membership><group><id>' . $groupId . '</id></group>';
+		$xml = '<group-membership><group><id>' . $group_id . '</id></group>';
 
-		if (!is_null($showLogo))
+		if (!is_null($show_logo))
 		{
-			$xml .= '<show-group-logo-in-profile>' . $this->booleanToString($showLogo) . '</show-group-logo-in-profile>';
+			$xml .= '<show-group-logo-in-profile>' . $this->booleanToString($show_logo) . '</show-group-logo-in-profile>';
 		}
 
-		if ($digestFrequency)
+		if ($digest_frequency)
 		{
-			$xml .= '<email-digest-frequency><code>' . $digestFrequency . '</code></email-digest-frequency>';
+			$xml .= '<email-digest-frequency><code>' . $digest_frequency . '</code></email-digest-frequency>';
 		}
 
 		if (!is_null($announcements))
@@ -327,14 +326,14 @@ class JLinkedinGroups extends JLinkedinObject
 			$xml .= '<email-announcements-from-managers>' . $this->booleanToString($announcements) . '</email-announcements-from-managers>';
 		}
 
-		if (!is_null($allowMessages))
+		if (!is_null($allow_messages))
 		{
-			$xml .= '<allow-messages-from-members>' . $this->booleanToString($allowMessages) . '</allow-messages-from-members>';
+			$xml .= '<allow-messages-from-members>' . $this->booleanToString($allow_messages) . '</allow-messages-from-members>';
 		}
 
-		if (!is_null($newPost))
+		if (!is_null($new_post))
 		{
-			$xml .= '<email-for-every-new-post>' . $this->booleanToString($newPost) . '</email-for-every-new-post>';
+			$xml .= '<email-for-every-new-post>' . $this->booleanToString($new_post) . '</email-for-every-new-post>';
 		}
 
 		$xml .= '<membership-state><code>member</code></membership-state></group-membership>';
@@ -353,13 +352,13 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to leave a group.
 	 *
-	 * @param   string  $groupId  The unique identifier for a group.
+	 * @param   string  $group_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function leaveGroup($groupId)
+	public function leaveGroup($group_id)
 	{
 		$token = $this->oauth->getToken();
 
@@ -372,7 +371,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/people/~/group-memberships/' . $groupId;
+		$base = '/v1/people/~/group-memberships/' . $group_id;
 
 		// Build the request path.
 		$path = $this->getOption('api.url') . $base;
@@ -384,21 +383,21 @@ class JLinkedinGroups extends JLinkedinObject
 	}
 
 	/**
-	 * Method to get discussions for a group.
+	 * Method to get dicussions for a group.
 	 *
-	 * @param   string   $id             The unique identifier for a group.
-	 * @param   string   $fields         Request fields beyond the default ones.
-	 * @param   integer  $start          Starting location within the result set for paginated returns.
-	 * @param   integer  $count          The number of results returned.
-	 * @param   string   $order          Sort order for posts. Valid for: recency, popularity.
-	 * @param   string   $category       Category of posts. Valid for: discussion
-	 * @param   string   $modifiedSince  Timestamp filter for posts created after the specified value.
+	 * @param   string   $id              The unique identifier for a group.
+	 * @param   string   $fields          Request fields beyond the default ones.
+	 * @param   integer  $start           Starting location within the result set for paginated returns.
+	 * @param   integer  $count           The number of results returned.
+	 * @param   string   $order           Sort order for posts. Valid for: recency, popularity.
+	 * @param   string   $category        Category of posts. Valid for: discussion
+	 * @param   string   $modified_since  Timestamp filter for posts created after the specified value.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getDiscussions($id, $fields = null, $start = 0, $count = 0, $order = null, $category = 'discussion', $modifiedSince = null)
+	public function getDiscussions($id, $fields = null, $start = 0, $count = 0, $order = null, $category = 'discussion', $modified_since = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -443,9 +442,9 @@ class JLinkedinGroups extends JLinkedinObject
 		}
 
 		// Check if modified_since is specified.
-		if ($modifiedSince)
+		if ($modified_since)
 		{
-			$data['modified-since'] = $modifiedSince;
+			$data['modified-since'] = $modified_since;
 		}
 
 		// Build the request path.
@@ -460,22 +459,22 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to get posts a user started / participated in / follows for a group.
 	 *
-	 * @param   string   $groupId        The unique identifier for a group.
-	 * @param   string   $role           Filter for posts related to the caller. Valid for: creator, commenter, follower.
-	 * @param   string   $personId       The unique identifier for a user.
-	 * @param   string   $fields         Request fields beyond the default ones.
-	 * @param   integer  $start          Starting location within the result set for paginated returns.
-	 * @param   integer  $count          The number of results returned.
-	 * @param   string   $order          Sort order for posts. Valid for: recency, popularity.
-	 * @param   string   $category       Category of posts. Valid for: discussion
-	 * @param   string   $modifiedSince  Timestamp filter for posts created after the specified value.
+	 * @param   string   $group_id        The unique identifier for a group.
+	 * @param   string   $role            Filter for posts related to the caller. Valid for: creator, commenter, follower.
+	 * @param   string   $person_id       The unique identifier for a user.
+	 * @param   string   $fields          Request fields beyond the default ones.
+	 * @param   integer  $start           Starting location within the result set for paginated returns.
+	 * @param   integer  $count           The number of results returned.
+	 * @param   string   $order           Sort order for posts. Valid for: recency, popularity.
+	 * @param   string   $category        Category of posts. Valid for: discussion
+	 * @param   string   $modified_since  Timestamp filter for posts created after the specified value.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getUserPosts($groupId, $role, $personId = null, $fields = null, $start = 0, $count = 0,
-		$order = null, $category = 'discussion', $modifiedSince = null)
+	public function getUserPosts($group_id, $role, $person_id = null, $fields = null, $start = 0, $count = 0,
+		$order = null, $category = 'discussion', $modified_since = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -488,16 +487,16 @@ class JLinkedinGroups extends JLinkedinObject
 		$base = '/v1/people/';
 
 		// Check if person_id is specified.
-		if ($personId)
+		if ($person_id)
 		{
-			$base .= $personId;
+			$base .= $person_id;
 		}
 		else
 		{
 			$base .= '~';
 		}
 
-		$base .= '/group-memberships/' . $groupId . '/posts';
+		$base .= '/group-memberships/' . $group_id . '/posts';
 
 		$data['format'] = 'json';
 		$data['role'] = $role;
@@ -533,9 +532,9 @@ class JLinkedinGroups extends JLinkedinObject
 		}
 
 		// Check if modified_since is specified.
-		if ($modifiedSince)
+		if ($modified_since)
 		{
-			$data['modified-since'] = $modifiedSince;
+			$data['modified-since'] = $modified_since;
 		}
 
 		// Build the request path.
@@ -550,14 +549,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to retrieve details about a post.
 	 *
-	 * @param   string  $postId  The unique identifier for a post.
-	 * @param   string  $fields  Request fields beyond the default ones.
+	 * @param   string  $post_id  The unique identifier for a post.
+	 * @param   string  $fields   Request fields beyond the default ones.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getPost($postId, $fields = null)
+	public function getPost($post_id, $fields = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -567,7 +566,7 @@ class JLinkedinGroups extends JLinkedinObject
 		);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId;
+		$base = '/v1/posts/' . $post_id;
 
 		$data['format'] = 'json';
 
@@ -589,16 +588,16 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to retrieve all comments of a post.
 	 *
-	 * @param   string   $postId  The unique identifier for a post.
-	 * @param   string   $fields  Request fields beyond the default ones.
-	 * @param   integer  $start   Starting location within the result set for paginated returns.
-	 * @param   integer  $count   The number of results returned.
+	 * @param   string   $post_id  The unique identifier for a post.
+	 * @param   string   $fields   Request fields beyond the default ones.
+	 * @param   integer  $start    Starting location within the result set for paginated returns.
+	 * @param   integer  $count    The number of results returned.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getPostComments($postId, $fields = null, $start = 0, $count = 0)
+	public function getPostComments($post_id, $fields = null, $start = 0, $count = 0)
 	{
 		$token = $this->oauth->getToken();
 
@@ -608,7 +607,7 @@ class JLinkedinGroups extends JLinkedinObject
 		);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId . '/comments';
+		$base = '/v1/posts/' . $post_id . '/comments';
 
 		$data['format'] = 'json';
 
@@ -642,15 +641,15 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to retrieve all comments of a post.
 	 *
-	 * @param   string  $groupId  The unique identifier for a group.
-	 * @param   string  $title    Post title.
-	 * @param   string  $summary  Post summary.
+	 * @param   string  $group_id  The unique identifier for a group.
+	 * @param   string  $title     Post title.
+	 * @param   string  $summary   Post summary.
 	 *
 	 * @return  string  The created post's id.
 	 *
 	 * @since   3.2.0
 	 */
-	public function createPost($groupId, $title, $summary)
+	public function createPost($group_id, $title, $summary)
 	{
 		$token = $this->oauth->getToken();
 
@@ -663,7 +662,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 201);
 
 		// Set the API base
-		$base = '/v1/groups/' . $groupId . '/posts';
+		$base = '/v1/groups/' . $group_id . '/posts';
 
 		// Build xml.
 		$xml = '<post><title>' . $title . '</title><summary>' . $summary . '</summary></post>';
@@ -685,14 +684,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to like or unlike a post.
 	 *
-	 * @param   string   $postId  The unique identifier for a group.
-	 * @param   boolean  $like    True to like post, false otherwise.
+	 * @param   string   $post_id  The unique identifier for a group.
+	 * @param   boolean  $like     True to like post, false otherwise.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	private function _likeUnlike($postId, $like)
+	private function _likeUnlike($post_id, $like)
 	{
 		$token = $this->oauth->getToken();
 
@@ -705,7 +704,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId . '/relation-to-viewer/is-liked';
+		$base = '/v1/posts/' . $post_id . '/relation-to-viewer/is-liked';
 
 		// Build xml.
 		$xml = '<is-liked>' . $this->booleanToString($like) . '</is-liked>';
@@ -724,42 +723,42 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method used to like a post.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function likePost($postId)
+	public function likePost($post_id)
 	{
-		return $this->_likeUnlike($postId, true);
+		return $this->_likeUnlike($post_id, true);
 	}
 
 	/**
 	 * Method used to unlike a post.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function unlikePost($postId)
+	public function unlikePost($post_id)
 	{
-		return $this->_likeUnlike($postId, false);
+		return $this->_likeUnlike($post_id, false);
 	}
 
 	/**
 	 * Method to follow or unfollow a post.
 	 *
-	 * @param   string   $postId  The unique identifier for a group.
-	 * @param   boolean  $follow  True to like post, false otherwise.
+	 * @param   string   $post_id  The unique identifier for a group.
+	 * @param   boolean  $follow   True to like post, false otherwise.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	private function _followUnfollow($postId, $follow)
+	private function _followUnfollow($post_id, $follow)
 	{
 		$token = $this->oauth->getToken();
 
@@ -772,7 +771,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId . '/relation-to-viewer/is-following';
+		$base = '/v1/posts/' . $post_id . '/relation-to-viewer/is-following';
 
 		// Build xml.
 		$xml = '<is-following>' . $this->booleanToString($follow) . '</is-following>';
@@ -791,42 +790,42 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method used to follow a post.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function followPost($postId)
+	public function followPost($post_id)
 	{
-		return $this->_followUnfollow($postId, true);
+		return $this->_followUnfollow($post_id, true);
 	}
 
 	/**
 	 * Method used to unfollow a post.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function unfollowPost($postId)
+	public function unfollowPost($post_id)
 	{
-		return $this->_followUnfollow($postId, false);
+		return $this->_followUnfollow($post_id, false);
 	}
 
 	/**
 	 * Method to flag a post as a Promotion or Job.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
-	 * @param   string  $flag    Flag as a 'promotion' or 'job'.
+	 * @param   string  $post_id  The unique identifier for a group.
+	 * @param   string  $flag     Flag as a 'promotion' or 'job'.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function flagPost($postId, $flag)
+	public function flagPost($post_id, $flag)
 	{
 		$token = $this->oauth->getToken();
 
@@ -839,7 +838,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId . '/category/code';
+		$base = '/v1/posts/' . $post_id . '/category/code';
 
 		// Build xml.
 		$xml = '<code>' . $flag . '</code>';
@@ -858,13 +857,13 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to delete a post if the current user is the creator or flag it as inappropriate otherwise.
 	 *
-	 * @param   string  $postId  The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function deletePost($postId)
+	public function deletePost($post_id)
 	{
 		$token = $this->oauth->getToken();
 
@@ -877,7 +876,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId;
+		$base = '/v1/posts/' . $post_id;
 
 		// Build the request path.
 		$path = $this->getOption('api.url') . $base;
@@ -891,14 +890,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to access the comments resource.
 	 *
-	 * @param   string  $commentId  The unique identifier for a comment.
-	 * @param   string  $fields     Request fields beyond the default ones.
+	 * @param   string  $comment_id  The unique identifier for a comment.
+	 * @param   string  $fields      Request fields beyond the default ones.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getComment($commentId, $fields = null)
+	public function getComment($comment_id, $fields = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -908,7 +907,7 @@ class JLinkedinGroups extends JLinkedinObject
 		);
 
 		// Set the API base
-		$base = '/v1/comments/' . $commentId;
+		$base = '/v1/comments/' . $comment_id;
 
 		$data['format'] = 'json';
 
@@ -930,14 +929,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to add a comment to a post
 	 *
-	 * @param   string  $postId   The unique identifier for a group.
+	 * @param   string  $post_id  The unique identifier for a group.
 	 * @param   string  $comment  The post comment's text.
 	 *
 	 * @return  string   The created comment's id.
 	 *
 	 * @since   3.2.0
 	 */
-	public function addComment($postId, $comment)
+	public function addComment($post_id, $comment)
 	{
 		$token = $this->oauth->getToken();
 
@@ -950,7 +949,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 201);
 
 		// Set the API base
-		$base = '/v1/posts/' . $postId . '/comments';
+		$base = '/v1/posts/' . $post_id . '/comments';
 
 		// Build xml.
 		$xml = '<comment><text>' . $comment . '</text></comment>';
@@ -972,13 +971,13 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to delete a comment if the current user is the creator or flag it as inappropriate otherwise.
 	 *
-	 * @param   string  $commentId  The unique identifier for a group.
+	 * @param   string  $comment_id  The unique identifier for a group.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function deleteComment($commentId)
+	public function deleteComment($comment_id)
 	{
 		$token = $this->oauth->getToken();
 
@@ -991,7 +990,7 @@ class JLinkedinGroups extends JLinkedinObject
 		$this->oauth->setOption('success_code', 204);
 
 		// Set the API base
-		$base = '/v1/comments/' . $commentId;
+		$base = '/v1/comments/' . $comment_id;
 
 		// Build the request path.
 		$path = $this->getOption('api.url') . $base;
@@ -1005,14 +1004,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to get suggested groups for a user.
 	 *
-	 * @param   string  $personId  The unique identifier for a user.
-	 * @param   string  $fields    Request fields beyond the default ones.
+	 * @param   string  $person_id  The unique identifier for a user.
+	 * @param   string  $fields     Request fields beyond the default ones.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function getSuggested($personId = null, $fields = null)
+	public function getSuggested($person_id = null, $fields = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -1025,9 +1024,9 @@ class JLinkedinGroups extends JLinkedinObject
 		$base = '/v1/people/';
 
 		// Check if person_id is specified.
-		if ($personId)
+		if ($person_id)
 		{
-			$base .= $personId . '/suggestions/groups';
+			$base .= $person_id . '/suggestions/groups';
 		}
 		else
 		{
@@ -1054,14 +1053,14 @@ class JLinkedinGroups extends JLinkedinObject
 	/**
 	 * Method to delete a group suggestion for a user.
 	 *
-	 * @param   string  $suggestionId  The unique identifier for a suggestion.
-	 * @param   string  $personId      The unique identifier for a user.
+	 * @param   string  $suggestion_id  The unique identifier for a suggestion.
+	 * @param   string  $person_id      The unique identifier for a user.
 	 *
 	 * @return  array  The decoded JSON response
 	 *
 	 * @since   3.2.0
 	 */
-	public function deleteSuggestion($suggestionId, $personId = null)
+	public function deleteSuggestion($suggestion_id, $person_id = null)
 	{
 		$token = $this->oauth->getToken();
 
@@ -1077,13 +1076,13 @@ class JLinkedinGroups extends JLinkedinObject
 		$base = '/v1/people/';
 
 		// Check if person_id is specified.
-		if ($personId)
+		if ($person_id)
 		{
-			$base .= $personId . '/suggestions/groups/' . $suggestionId;
+			$base .= $person_id . '/suggestions/groups/' . $suggestion_id;
 		}
 		else
 		{
-			$base .= '~/suggestions/groups/' . $suggestionId;
+			$base .= '~/suggestions/groups/' . $suggestion_id;
 		}
 
 		// Build the request path.

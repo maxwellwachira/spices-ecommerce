@@ -1,23 +1,24 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\RegExFileFilter;
 
 // Protect from unauthorized access
+use Akeeba\Backup\Admin\Model\Profiles;
 use Akeeba\Backup\Admin\Model\RegExFileFilters;
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileIdAndName;
 use Akeeba\Engine\Factory;
-use Joomla\CMS\HTML\HTMLHelper as JHtml;
-use Joomla\CMS\Language\Text as JText;
-use Joomla\CMS\Uri\Uri as JUri;
+use Akeeba\Engine\Platform;
+use JHtml;
+use JText;
 
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-class Html extends \FOF40\View\DataView\Html
+class Html extends \FOF30\View\DataView\Html
 {
 	use ProfileIdAndName;
 
@@ -36,13 +37,20 @@ class Html extends \FOF40\View\DataView\Html
 	public $roots = [];
 
 	/**
+	 * The view's interface data encoded in JSON format
+	 *
+	 * @var  string
+	 */
+	public $json = '';
+
+	/**
 	 * Main page
 	 */
 	public function onBeforeMain()
 	{
 		// Load Javascript files
-		$this->container->template->addJS('media://com_akeeba/js/FileFilters.min.js', true, false, $this->container->mediaVersion);
-		$this->container->template->addJS('media://com_akeeba/js/RegExFileFilter.min.js', true, false, $this->container->mediaVersion);
+		$this->addJavascriptFile('media://com_akeeba/js/FileFilters.min.js');
+		$this->addJavascriptFile('media://com_akeeba/js/RegExFileFilter.min.js');
 
 		/** @var RegExFileFilters $model */
 		$model = $this->getModel();
@@ -72,16 +80,13 @@ class Html extends \FOF40\View\DataView\Html
 			}
 		}
 		$site_root         = $roots[0];
-		$this->root_select = JHtml::_('select.genericlist', $options, 'root', [
-			'list.select' => $site_root,
-			'id'          => 'active_root',
-		]);
+		$attribs           = 'onchange="akeeba.Regexfsfilters.activeRootChanged();"';
+		$this->root_select = JHtml::_('select.genericlist', $options, 'root', $attribs, 'value', 'text', $site_root, 'active_root');
 		$this->roots       = $roots;
 
-		// Pass script options
-		$platform = $this->container->platform;
-		$platform->addScriptOptions('akeeba.System.params.AjaxURL', JUri::base() . 'index.php?option=com_akeeba&view=RegExFileFilters&task=ajax');
-		$platform->addScriptOptions('akeeba.RegExFileFilter.guiData', $model->get_regex_filters($site_root));
+		// Get a JSON representation of the directory data
+		$json       = json_encode($model->get_regex_filters($site_root));
+		$this->json = $json;
 
 		$this->getProfileIdAndName();
 

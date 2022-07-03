@@ -1,17 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-use FOF40\Model\Model;
-use Joomla\CMS\Language\Text;
+use FOF30\Model\Model;
+use JText;
 use RuntimeException;
 
 class FTPBrowser extends Model
@@ -70,7 +70,7 @@ class FTPBrowser extends Model
 	 *
 	 * @var  array
 	 */
-	public $parts = [];
+	public $parts = array();
 
 	/**
 	 * Path to the parent directory
@@ -90,14 +90,14 @@ class FTPBrowser extends Model
 
 		// Parse directory to parts
 		$parsed_dir  = trim($dir, '/');
-		$this->parts = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
+		$this->parts = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
 
 		// Find the path to the parent directory
 		$this->parent_directory = '';
 
-		if (!empty($this->parts))
+		if (!empty($parts))
 		{
-			$copy_of_parts = $this->parts;
+			$copy_of_parts = $parts;
 			array_pop($copy_of_parts);
 
 			$this->parent_directory = '/';
@@ -120,7 +120,7 @@ class FTPBrowser extends Model
 
 		if ($con === false)
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_FTPBROWSER_ERROR_HOSTNAME'));
+			throw new RuntimeException(JText::_('COM_AKEEBA_FTPBROWSER_ERROR_HOSTNAME'));
 		}
 
 		// Login
@@ -128,7 +128,7 @@ class FTPBrowser extends Model
 
 		if ($result === false)
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_FTPBROWSER_ERROR_USERPASS'));
+			throw new RuntimeException(JText::_('COM_AKEEBA_FTPBROWSER_ERROR_USERPASS'));
 		}
 
 		// Set the passive mode -- don't care if it fails, though!
@@ -141,7 +141,7 @@ class FTPBrowser extends Model
 
 			if ($result === false)
 			{
-				throw new RuntimeException(Text::_('COM_AKEEBA_FTPBROWSER_ERROR_NOACCESS'));
+				throw new RuntimeException(JText::_('COM_AKEEBA_FTPBROWSER_ERROR_NOACCESS'));
 			}
 		}
 		else
@@ -149,7 +149,7 @@ class FTPBrowser extends Model
 			$this->directory = @ftp_pwd($con);
 
 			$parsed_dir             = trim($this->directory, '/');
-			$this->parts            = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
+			$this->parts            = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
 			$this->parent_directory = $this->directory;
 		}
 
@@ -160,43 +160,13 @@ class FTPBrowser extends Model
 
 		if ($list === false)
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_FTPBROWSER_ERROR_UNSUPPORTED'));
+			throw new RuntimeException(JText::_('COM_AKEEBA_FTPBROWSER_ERROR_UNSUPPORTED'));
 		}
 
 		// Parse the raw listing into an array
 		$folders = $this->parse_rawlist($list);
 
 		return $folders;
-	}
-
-	/**
-	 * Perform the actual folder browsing. Returns an array that's usable by the UI.
-	 *
-	 * @return  array
-	 */
-	public function doBrowse()
-	{
-		$error = '';
-		$list  = [];
-
-		try
-		{
-			$list = $this->getListing();
-		}
-		catch (RuntimeException $e)
-		{
-			$error = $e->getMessage();
-		}
-
-		$response_array = [
-			'error'       => $error,
-			'list'        => $list,
-			'breadcrumbs' => $this->parts,
-			'directory'   => $this->directory,
-			'parent'      => $this->parent_directory,
-		];
-
-		return $response_array;
 	}
 
 	/**
@@ -229,5 +199,35 @@ class FTPBrowser extends Model
 		asort($folders);
 
 		return $folders;
+	}
+
+	/**
+	 * Perform the actual folder browsing. Returns an array that's usable by the UI.
+	 *
+	 * @return  array
+	 */
+	public function doBrowse()
+	{
+		$error = '';
+		$list = [];
+
+		try
+		{
+			$list = $this->getListing();
+		}
+		catch (RuntimeException $e)
+		{
+			$error = $e->getMessage();
+		}
+
+		$response_array = array(
+			'error'       => $error,
+			'list'        => $list,
+			'breadcrumbs' => $this->parts,
+			'directory'   => $this->directory,
+			'parent'      => $this->parent_directory
+		);
+
+		return $response_array;
 	}
 }

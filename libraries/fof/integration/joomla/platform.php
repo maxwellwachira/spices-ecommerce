@@ -4,9 +4,7 @@
  * @subpackage  platform
  * @copyright   Copyright (C) 2010-2016 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
- * @note        This file has been modified by the Joomla! Project and no longer reflects the original work of its author.
  */
-
 // Protect from unauthorized access
 defined('FOF_INCLUDED') or die;
 
@@ -118,7 +116,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 	/**
 	 * Main function to detect if we're running in a CLI environment and we're admin
 	 *
-	 * @return  array  isCLI and isAdmin. It's not an associative array, so we can use list.
+	 * @return  array  isCLI and isAdmin. It's not an associtive array, so we can use list.
 	 */
 	protected function isCliAdmin()
 	{
@@ -150,7 +148,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 			}
 			else
 			{
-				$isAdmin = !JFactory::$application ? false : JFactory::getApplication()->isClient('administrator');
+				$isAdmin = !JFactory::$application ? false : JFactory::getApplication()->isAdmin();
 			}
 		}
 
@@ -280,7 +278,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 	/**
 	 * Return the absolute path to the application's template overrides
 	 * directory for a specific component. We will use it to look for template
-	 * files instead of the regular component directories. If the application
+	 * files instead of the regular component directorues. If the application
 	 * does not have such a thing as template overrides return an empty string.
 	 *
 	 * @param   string   $component  The name of the component for which to fetch the overrides
@@ -783,7 +781,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 	/**
 	 * logs in a user
 	 *
-	 * @param   array  $authInfo  authentication information
+	 * @param   array  $authInfo  authentification information
 	 *
 	 * @return  boolean  True on success
 	 */
@@ -819,7 +817,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
                     $response->email = $user->email;
                     $response->fullname = $user->name;
 
-                    if (JFactory::getApplication()->isClient('administrator'))
+                    if (JFactory::getApplication()->isAdmin())
                     {
                         $response->language = $user->getParam('admin_language');
                     }

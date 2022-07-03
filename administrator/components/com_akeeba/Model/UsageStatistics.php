@@ -1,19 +1,20 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use AkeebaUsagestats;
-use FOF40\Encrypt\Randval;
-use FOF40\Model\Model;
-use Joomla\CMS\Uri\Uri;
+use FOF30\Database\Installer;
+use FOF30\Model\Model;
+use JCrypt;
+use JUri;
 
 /**
  * Usage statistics collection model. Implements the anonymous collection of PHP, MySQL and Joomla! version information
@@ -36,12 +37,12 @@ class UsageStatistics extends Model
 
 		// No id or the saved URL is not the same as the current one (ie site restored to a new url)?
 		// Create a new, random site ID and save it to the database
-		if (empty($siteId) || (md5(Uri::base()) != $siteUrl))
+		if (empty($siteId) || (md5(JUri::base()) != $siteUrl))
 		{
-			$siteUrl = md5(Uri::base());
+			$siteUrl = md5(JUri::base());
 			$this->setCommonVariable('stats_siteurl', $siteUrl);
 
-			$randomData = random_bytes(120);
+			$randomData = JCrypt::genRandomBytes(120);
 			$siteId     = sha1($randomData);
 
 			$this->setCommonVariable('stats_siteid', $siteId);
@@ -105,7 +106,7 @@ class UsageStatistics extends Model
 			define('AKEEBA_DATE', date('Y-m-d'));
 		}
 
-		$db = $container->db;
+		$db    = $container->db;
 
 		try
 		{
@@ -121,14 +122,14 @@ class UsageStatistics extends Model
 		// I can't use list since dev release don't have any dots
 		$at_parts    = explode('.', AKEEBA_VERSION);
 		$at_major    = $at_parts[0];
-		$at_minor    = $at_parts[1] ?? '';
-		$at_revision = $at_parts[2] ?? '';
+		$at_minor    = isset($at_parts[1]) ? $at_parts[1] : '';
+		$at_revision = isset($at_parts[2]) ? $at_parts[2] : '';
 
-		[$php_major, $php_minor, $php_revision] = explode('.', phpversion());
+		list($php_major, $php_minor, $php_revision) = explode('.', phpversion());
 		$php_qualifier = strpos($php_revision, '~') !== false ? substr($php_revision, strpos($php_revision, '~')) : '';
 
-		[$cms_major, $cms_minor, $cms_revision] = explode('.', JVERSION);
-		[$db_major, $db_minor, $db_revision] = explode('.', $db->getVersion());
+		list($cms_major, $cms_minor, $cms_revision) = explode('.', JVERSION);
+		list($db_major, $db_minor, $db_revision) = explode('.', $db->getVersion());
 		$db_qualifier = strpos($db_revision, '~') !== false ? substr($db_revision, strpos($db_revision, '~')) : '';
 
 		$db_driver = get_class($db);
@@ -136,6 +137,14 @@ class UsageStatistics extends Model
 		if (stripos($db_driver, 'mysql') !== false)
 		{
 			$stats->setValue('dt', 1);
+		}
+		elseif (stripos($db_driver, 'sqlsrv') !== false || stripos($db_driver, 'sqlazure'))
+		{
+			$stats->setValue('dt', 2);
+		}
+		elseif (stripos($db_driver, 'postgresql') !== false)
+		{
+			$stats->setValue('dt', 3);
 		}
 		else
 		{
@@ -181,9 +190,9 @@ class UsageStatistics extends Model
 	{
 		$db    = $this->container->db;
 		$query = $db->getQuery(true)
-			->select($db->qn('value'))
-			->from($db->qn('#__akeeba_common'))
-			->where($db->qn('key') . ' = ' . $db->q($key));
+					->select($db->qn('value'))
+					->from($db->qn('#__akeeba_common'))
+					->where($db->qn('key') . ' = ' . $db->q($key));
 
 		try
 		{
@@ -210,9 +219,9 @@ class UsageStatistics extends Model
 	{
 		$db    = $this->container->db;
 		$query = $db->getQuery(true)
-			->select('COUNT(*)')
-			->from($db->qn('#__akeeba_common'))
-			->where($db->qn('key') . ' = ' . $db->q($key));
+					->select('COUNT(*)')
+					->from($db->qn('#__akeeba_common'))
+					->where($db->qn('key') . ' = ' . $db->q($key));
 
 		try
 		{
@@ -228,20 +237,22 @@ class UsageStatistics extends Model
 		{
 			if (!$count)
 			{
-				$insertObject = (object) [
+				$insertObject = (object)array(
 					'key'   => $key,
 					'value' => $value,
-				];
+				);
 				$db->insertObject('#__akeeba_common', $insertObject);
 			}
 			else
 			{
-				$insertObject = (object) [
-					'key'   => $key,
-					'value' => $value,
-				];
+				$keyName = version_compare(JVERSION, '1.7.0', 'lt') ? $db->qn('key') : 'key';
 
-				$db->updateObject('#__akeeba_common', $insertObject, 'key');
+				$insertObject = (object)array(
+					$keyName => $key,
+					'value'  => $value,
+				);
+
+				$db->updateObject('#__akeeba_common', $insertObject, $keyName);
 			}
 		}
 		catch (\Exception $e)

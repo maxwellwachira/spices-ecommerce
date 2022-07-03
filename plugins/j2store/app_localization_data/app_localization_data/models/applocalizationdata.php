@@ -48,10 +48,9 @@ class J2StoreModelAppLocalizationdata extends F0FModel
 		$query = "TRUNCATE TABLE ".$db->quoteName('#__j2store_'.$tablename);
 		$db->setQuery($query);
 		$status = true;
-        $app = JFactory::getApplication();
 		if (!$db->execute())
 		{
-            $app->enqueueMessage(JText::sprintf('JLIB_INSTALLER_ERROR_SQL_ERROR', $db->stderr(true)), 'error');
+			$application->enqueueMessage(JText::sprintf('JLIB_INSTALLER_ERROR_SQL_ERROR', $db->stderr(true)), 'error');
 			$status  = false;
 		}
 		if($status){
@@ -74,7 +73,6 @@ class J2StoreModelAppLocalizationdata extends F0FModel
 			//Force parsing of SQL file since Joomla! does that only in install mode, not in upgrades
 			$sql = JPATH_ADMINISTRATOR.'/components/com_j2store/sql/install/mysql/'.$tablename.'.sql';
 			$queries = JDatabaseDriver::splitSql(file_get_contents($sql));
-            $app = JFactory::getApplication();
 			foreach ($queries as $query)
 			{
 				$query = trim($query);
@@ -83,7 +81,7 @@ class J2StoreModelAppLocalizationdata extends F0FModel
 					$db->setQuery($query);
 					if (!$db->execute())
 					{
-                        $app->enqueueMessage(JText::sprintf('JLIB_INSTALLER_ERROR_SQL_ERROR', $db->stderr(true)), 'error');
+						$application->enqueueMessage(JText::sprintf('JLIB_INSTALLER_ERROR_SQL_ERROR', $db->stderr(true)), 'error');
 						$status  = false;
 					}
 				}

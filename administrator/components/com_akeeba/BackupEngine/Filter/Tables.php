@@ -1,30 +1,44 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Filter;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
+
+use Akeeba\Engine\Factory;
 
 /**
  * Database table exclusion filter
  */
 class Tables extends Base
 {
-	public function __construct()
+	function __construct()
 	{
-		$this->object  = 'dbobject';
+		$this->object = 'dbobject';
 		$this->subtype = 'all';
-		$this->method  = 'direct';
+		$this->method = 'direct';
+
+		if (Factory::getKettenrad()->getTag() == 'restorepoint')
+		{
+			$this->enabled = false;
+		}
 
 		if (empty($this->filter_name))
 		{
 			$this->filter_name = strtolower(basename(__FILE__, '.php'));
+		}
+
+		if (Factory::getKettenrad()->getTag() == 'restorepoint')
+		{
+			$this->enabled = false;
 		}
 
 		parent::__construct();

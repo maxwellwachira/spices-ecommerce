@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
@@ -28,8 +30,6 @@ class SecureSettings
 	 */
 	protected $keyFilename = 'serverkey.php';
 
-	protected $key = null;
-
 	/**
 	 * Set the key filename e.g. 'serverkey.php';
 	 *
@@ -43,16 +43,6 @@ class SecureSettings
 	}
 
 	/**
-	 * Sets the server key, overriding an already loaded key.
-	 *
-	 * @param $key
-	 */
-	public function setKey($key)
-	{
-		$this->key = $key;
-	}
-
-	/**
 	 * Gets the configured server key, automatically loading the server key storage file
 	 * if required.
 	 *
@@ -60,27 +50,24 @@ class SecureSettings
 	 */
 	public function getKey()
 	{
-		if (is_null($this->key))
+		if (defined('AKEEBA_SERVERKEY'))
 		{
-			$this->key = '';
-
-			if (!defined('AKEEBA_SERVERKEY'))
-			{
-				$filename = dirname(__FILE__) . '/../' . $this->keyFilename;
-
-				if (file_exists($filename))
-				{
-					include_once $filename;
-				}
-			}
-
-			if (defined('AKEEBA_SERVERKEY'))
-			{
-				$this->key = base64_decode(AKEEBA_SERVERKEY);
-			}
+			return base64_decode(AKEEBA_SERVERKEY);
 		}
 
-		return $this->key;
+		$filename = dirname(__FILE__) . '/../' . $this->keyFilename;
+
+		if (file_exists($filename))
+		{
+			include_once $filename;
+		}
+
+		if (defined('AKEEBA_SERVERKEY'))
+		{
+			return base64_decode(AKEEBA_SERVERKEY);
+		}
+
+		return '';
 	}
 
 	/**

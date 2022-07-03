@@ -1,25 +1,24 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Platform;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
-use Akeeba\Engine\Driver\Mysqli;
+use Akeeba\Engine\Base\BaseObject;
 use Akeeba\Engine\Driver\QueryException;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform\Exception\DecryptionException;
 use Akeeba\Engine\Util\ProfileMigration;
-use DateTime;
-use DateTimeZone;
-use Exception;
-use RuntimeException;
+use Psr\Log\LogLevel;
 
 abstract class Base implements PlatformInterface
 {
@@ -30,7 +29,7 @@ abstract class Base implements PlatformInterface
 	public $platformName = null;
 
 	/** @var array Configuration overrides */
-	public $configOverrides = [];
+	public $configOverrides = array();
 
 	/** @var bool Should I throw an exception when settings decryption fails? */
 	public $decryptionException = false;
@@ -43,7 +42,7 @@ abstract class Base implements PlatformInterface
 
 	public function getPlatformDirectories()
 	{
-		return [dirname(__FILE__) . '/' . $this->platformName];
+		return array(dirname(__FILE__) . '/' . $this->platformName);
 	}
 
 	public function isThisPlatform()
@@ -58,7 +57,7 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Saves the current configuration to the database table
 	 *
-	 * @param   int  $profile_id  The profile where to save the configuration to, defaults to current profile
+	 * @param    int $profile_id The profile where to save the configuration to, defaults to current profile
 	 *
 	 * @return    bool    True if everything was saved properly
 	 */
@@ -87,7 +86,7 @@ abstract class Base implements PlatformInterface
 		$dump_profile   = $secureSettings->encryptSettings($dump_profile);
 
 		// Does the record already exist?
-		$sql = $db->getQuery(true)
+		$sql    = $db->getQuery(true)
 			->select('COUNT(*)')
 			->from($db->qn($this->tableNameProfiles))
 			->where($db->qn('id') . ' = ' . $db->q($profile_id));
@@ -97,7 +96,7 @@ abstract class Base implements PlatformInterface
 			$count  = $db->setQuery($sql)->loadResult();
 			$exists = ($count > 0);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$exists = true;
 		}
@@ -113,15 +112,13 @@ abstract class Base implements PlatformInterface
 		{
 			$sql = $db->getQuery(true)
 				->insert($db->qn($this->tableNameProfiles))
-				->columns([
-					$db->qn('id'), $db->qn('description'), $db->qn('configuration'),
-					$db->qn('filters'), $db->qn('quickicon'),
-				])
+				->columns(array($db->qn('id'), $db->qn('description'), $db->qn('configuration'),
+					$db->qn('filters'), $db->qn('quickicon')))
 				->values(
 					$db->q(1) . ', ' .
 					$db->q("Default backup profile") . ', ' .
-					$db->q($dump_profile) . ', ' .
-					$db->q('') . ', ' .
+					$db->q($dump_profile)  . ', ' .
+					$db->q('')  . ', ' .
 					$db->q(1)
 				);
 		}
@@ -132,7 +129,7 @@ abstract class Base implements PlatformInterface
 		{
 			$result = $db->query();
 		}
-		catch (Exception $exc)
+		catch (\Exception $exc)
 		{
 			return false;
 		}
@@ -143,8 +140,8 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Loads the current configuration off the database table
 	 *
-	 * @param   int   $profile_id  The profile where to read the configuration from, defaults to current profile
-	 * @param   bool  $reset       Should I reset the Configuration object before loading the profile? Default: true.
+	 * @param   int  $profile_id The profile where to read the configuration from, defaults to current profile
+	 * @param   bool $reset      Should I reset the Configuration object before loading the profile? Default: true.
 	 *
 	 * @return  bool  True if everything was read properly
 	 */
@@ -183,7 +180,7 @@ abstract class Base implements PlatformInterface
 
 			$databaseData = $db->setQuery($sql)->loadResult();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$databaseData = null;
 		}
@@ -211,7 +208,7 @@ abstract class Base implements PlatformInterface
 			// If this is the case we probably don't have the necessary table. Throw an exception.
 			if (!$saved)
 			{
-				throw new RuntimeException("Could not save data to backup profile #$profile_id", 500);
+				throw new \RuntimeException("Could not save data to backup profile #$profile_id", 500);
 			}
 
 			return $this->load_configuration($profile_id);
@@ -346,9 +343,43 @@ abstract class Base implements PlatformInterface
 		return true;
 	}
 
+	/**
+	 * Flattens a hierarchical array to a set of registry keys.
+	 *
+	 * For example
+	 * [ 'foo' => [ 'bar' => [ 'baz' => 1, 'bat' => 2 ] ] ]
+	 * becomes
+	 * [ 'foo.bar.baz' => 1, 'foo.bar.bat' => 2 ]
+	 *
+	 * @param   array   $array   The array to flatten
+	 * @param   string  $prefix  The prefix to use (leave blank; it's used in recursive calls)
+	 *
+	 * @return  array  An array with flattened keys
+	 *
+	 * @since   6.4.1
+	 */
+	protected function arrayToRegistryDefinitions(array $array, $prefix = '')
+	{
+		$keys = [];
+
+		foreach ($array as $k => $v)
+		{
+			if (is_array($v))
+			{
+				$keys = array_merge($keys, $this->arrayToRegistryDefinitions($v, $prefix . $k . "."));
+
+				continue;
+			}
+
+			$keys[$prefix . $k] = $v;
+		}
+
+		return $keys;
+	}
+
 	public function get_stock_directories()
 	{
-		return [];
+		return array();
 	}
 
 	public function get_site_root()
@@ -366,7 +397,7 @@ abstract class Base implements PlatformInterface
 		return 1;
 	}
 
-	public function get_profile_name($id = null)
+    public function get_profile_name($id = null)
 	{
 		return '';
 	}
@@ -383,7 +414,7 @@ abstract class Base implements PlatformInterface
 
 	public function get_local_timestamp($format)
 	{
-		$dateNow = new DateTime('now', new DateTimeZone('UTC'));
+		$dateNow = new \DateTime('now', new \DateTimeZone('UTC'));
 
 		return $dateNow->format($format);
 	}
@@ -400,20 +431,19 @@ abstract class Base implements PlatformInterface
 
 	public function get_default_database_driver($use_platform = true)
 	{
-		return Mysqli::class;
+		return '\\Akeeba\\Engine\\Driver\\Mysqli';
 	}
 
 	/**
 	 * Creates or updates the statistics record of the current backup attempt
 	 *
-	 * @param   int    $id    Backup record ID, use null for new record
-	 * @param   array  $data  The data to store
+	 * @param int                            $id     Backup record ID, use null for new record
+	 * @param array                          $data   The data to store
+	 * @param \Akeeba\Engine\Base\BaseObject $caller The calling object
 	 *
-	 * @return int|null The new record id, or null if this doesn't apply
-	 *
-	 * @throws Exception On database error
+	 * @return int|null|bool The new record id, or null if this doesn't apply, or false if it failed
 	 */
-	public function set_or_update_statistics($id = null, $data = [])
+	public function set_or_update_statistics($id = null, $data = array(), &$caller)
 	{
 		// No valid data?
 		if (!is_array($data))
@@ -435,7 +465,7 @@ abstract class Base implements PlatformInterface
 		if (is_null($id))
 		{
 			// Create a new record
-			$sql_fields = [];
+			$sql_fields = array();
 			$sql_values = '';
 
 			foreach ($data as $key => $value)
@@ -446,7 +476,7 @@ abstract class Base implements PlatformInterface
 				}
 
 				$sql_fields[] = $db->qn($key);
-				$sql_values   .= (!empty($sql_values) ? ',' : '') . $db->quote($value);
+				$sql_values .= (!empty($sql_values) ? ',' : '') . $db->quote($value);
 			}
 
 			$sql = $db->getQuery(true)
@@ -455,13 +485,26 @@ abstract class Base implements PlatformInterface
 				->values($sql_values);
 
 			$db->setQuery($sql);
-			$db->query();
+
+			try
+			{
+				$db->query();
+			}
+			catch (\Exception $exc)
+			{
+				if (is_object($caller) && ($caller instanceof BaseObject))
+				{
+					$caller->setError($exc->getMessage());
+				}
+
+				return false;
+			}
 
 			return $db->insertid();
 		}
 		else
 		{
-			$sql_set = [];
+			$sql_set = array();
 			foreach ($data as $key => $value)
 			{
 				if ($key == 'id')
@@ -476,41 +519,56 @@ abstract class Base implements PlatformInterface
 				->set($sql_set)
 				->where($db->qn('id') . '=' . $db->q($id));
 			$db->setQuery($sql);
-			$db->query();
+
+			try
+			{
+				$db->query();
+			}
+			catch (\Exception $exc)
+			{
+				if (is_object($caller) && ($caller instanceof BaseObject))
+				{
+					$caller->setError($exc->getMessage());
+				}
+
+				return false;
+			}
 
 			return null;
 		}
 	}
 
+
 	/**
 	 * Loads and returns a backup statistics record as a hash array
 	 *
-	 * @param   int  $id  Backup record ID
+	 * @param int $id Backup record ID
 	 *
 	 * @return array
 	 */
 	public function get_statistics($id)
 	{
-		$db    = Factory::getDatabase($this->get_platform_database_options());
+		$db = Factory::getDatabase($this->get_platform_database_options());
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($db->qn($this->tableNameStats))
 			->where($db->qn('id') . ' = ' . $db->q($id));
 		$db->setQuery($query);
 
-		return $db->loadAssoc();
+		return $db->loadAssoc(true);
 	}
+
 
 	/**
 	 * Completely removes a backup statistics record
 	 *
-	 * @param   int  $id  Backup record ID
+	 * @param int $id Backup record ID
 	 *
 	 * @return bool True on success
 	 */
 	public function delete_statistics($id)
 	{
-		$db    = Factory::getDatabase($this->get_platform_database_options());
+		$db = Factory::getDatabase($this->get_platform_database_options());
 		$query = $db->getQuery(true)
 			->delete($db->qn($this->tableNameStats))
 			->where($db->qn('id') . ' = ' . $db->q($id));
@@ -521,13 +579,14 @@ abstract class Base implements PlatformInterface
 		{
 			$db->query();
 		}
-		catch (Exception $exc)
+		catch (\Exception $exc)
 		{
 			$result = false;
 		}
 
 		return $result;
 	}
+
 
 	/**
 	 * Returns a list of backup statistics records, respecting the pagination
@@ -540,15 +599,15 @@ abstract class Base implements PlatformInterface
 	 *
 	 * @return array
 	 */
-	function &get_statistics_list($config = [])
+	function &get_statistics_list($config = array())
 	{
-		$defaultConfiguration = [
+		$defaultConfiguration = array(
 			'limitstart' => 0,
 			'limit'      => 0,
-			'filters'    => [],
-			'order'      => null,
-		];
-		$config               = (object) array_merge($defaultConfiguration, $config);
+			'filters'    => array(),
+			'order'      => null
+		);
+		$config = (object)array_merge($defaultConfiguration, $config);
 
 		$db = Factory::getDatabase($this->get_platform_database_options());
 
@@ -598,10 +657,10 @@ abstract class Base implements PlatformInterface
 
 		if (empty($config->order) || !is_array($config->order))
 		{
-			$config->order = [
+			$config->order = array(
 				'by'    => 'id',
-				'order' => 'DESC',
-			];
+				'order' => 'DESC'
+			);
 		}
 
 		$query->select('*')
@@ -618,8 +677,8 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Return the total number of statistics records
 	 *
-	 * @param   array  $filters  An array of filters to apply to the results. Alternatively you can just pass a profile
-	 *                           ID to filter by that profile.
+	 * @param    array $filters An array of filters to apply to the results. Alternatively you can just pass a profile
+	 *                          ID to filter by that profile.
 	 *
 	 * @return int
 	 */
@@ -680,15 +739,15 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Returns an array with the specifics of running backups
 	 *
-	 * @param   string  $tag
+	 * @param   string $tag
 	 *
-	 * @return  array   Array list of associative arrays
 	 * @throws  QueryException
 	 *
+	 * @return  array   Array list of associative arrays
 	 */
 	public function get_running_backups($tag = null)
 	{
-		$db    = Factory::getDatabase($this->get_platform_database_options());
+		$db = Factory::getDatabase($this->get_platform_database_options());
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($db->qn($this->tableNameStats))
@@ -710,16 +769,16 @@ abstract class Base implements PlatformInterface
 	 * statistics ID's with "valid"-looking names. IT DOES NOT CHECK FOR THE
 	 * EXISTENCE OF THE BACKUP FILE!
 	 *
-	 * @param   bool    $useprofile  If true, it will only return backup records of the current profile
-	 * @param   array   $tagFilters  Which tags to include; leave blank for all. If the first item is "NOT", then all
-	 *                               tags EXCEPT those listed will be included.     *
-	 * @param   string  $ordering
+	 * @param   bool   $useprofile If true, it will only return backup records of the current profile
+	 * @param   array  $tagFilters Which tags to include; leave blank for all. If the first item is "NOT", then all
+	 *                             tags EXCEPT those listed will be included.     *
+	 * @param   string $ordering
 	 *
-	 * @return  array A list of ID's for records w/ "valid"-looking backup files
 	 * @throws  QueryException
 	 *
+	 * @return  array A list of ID's for records w/ "valid"-looking backup files
 	 */
-	public function &get_valid_backup_records($useprofile = false, $tagFilters = [], $ordering = 'DESC')
+	public function &get_valid_backup_records($useprofile = false, $tagFilters = array(), $ordering = 'DESC')
 	{
 		$db = Factory::getDatabase($this->get_platform_database_options());
 
@@ -746,7 +805,7 @@ abstract class Base implements PlatformInterface
 		if (!empty($tagFilters))
 		{
 			$operator = '';
-			$first    = array_shift($tagFilters);
+			$first = array_shift($tagFilters);
 			if ($first == 'NOT')
 			{
 				$operator = 'NOT';
@@ -756,7 +815,7 @@ abstract class Base implements PlatformInterface
 				array_unshift($tagFilters, $first);
 			}
 
-			$quotedTags = [];
+			$quotedTags = array();
 			foreach ($tagFilters as $tag)
 			{
 				$quotedTags[] = $db->q($tag);
@@ -775,11 +834,11 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Invalidates older records sharing the same $archivename
 	 *
-	 * @param   string  $archivename
+	 * @param string $archivename
 	 */
 	public function remove_duplicate_backup_records($archivename)
 	{
-		Factory::getLog()->debug("Removing any old records with $archivename filename");
+		Factory::getLog()->log(LogLevel::DEBUG, "Removing any old records with $archivename filename");
 		$db = Factory::getDatabase($this->get_platform_database_options());
 
 		$query = $db->getQuery(true)
@@ -791,7 +850,7 @@ abstract class Base implements PlatformInterface
 		$db->setQuery($query);
 		$array = $db->loadColumn();
 
-		Factory::getLog()->debug((is_array($array) || $array instanceof \Countable ? count($array) : 0) . " records found");
+		Factory::getLog()->log(LogLevel::DEBUG, count($array) . " records found");
 
 		// No records?! Quit.
 		if (empty($array))
@@ -799,7 +858,7 @@ abstract class Base implements PlatformInterface
 			return;
 		}
 		// Only one record. Quit.
-		if ((is_array($array) || $array instanceof \Countable ? count($array) : 0) == 1)
+		if (count($array) == 1)
 		{
 			return;
 		}
@@ -814,7 +873,7 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Marks the specified backup records as having no files
 	 *
-	 * @param   array  $ids  Array of backup record IDs to ivalidate
+	 * @param array $ids Array of backup record IDs to ivalidate
 	 */
 	public function invalidate_backup_records($ids)
 	{
@@ -822,14 +881,14 @@ abstract class Base implements PlatformInterface
 		{
 			return false;
 		}
-		$db   = Factory::getDatabase($this->get_platform_database_options());
-		$temp = [];
+		$db = Factory::getDatabase($this->get_platform_database_options());
+		$temp = array();
 		foreach ($ids as $id)
 		{
 			$temp[] = $db->q($id);
 		}
 		$list = implode(',', $temp);
-		$sql  = $db->getQuery(true)
+		$sql = $db->getQuery(true)
 			->update($db->qn($this->tableNameStats))
 			->set($db->qn('filesexist') . ' = ' . $db->q('0'))
 			->where($db->qn('id') . ' IN (' . $list . ')');;
@@ -839,7 +898,7 @@ abstract class Base implements PlatformInterface
 		{
 			$db->query();
 		}
-		catch (Exception $exc)
+		catch (\Exception $exc)
 		{
 			return false;
 		}
@@ -860,7 +919,7 @@ abstract class Base implements PlatformInterface
 	public function get_valid_remote_records($profile = null, $engine = null)
 	{
 		$config = Factory::getConfiguration();
-		$result = [];
+		$result = array();
 
 		if (is_null($profile))
 		{
@@ -876,7 +935,7 @@ abstract class Base implements PlatformInterface
 			return $result;
 		}
 
-		$db  = Factory::getDatabase($this->get_platform_database_options());
+		$db = Factory::getDatabase($this->get_platform_database_options());
 		$sql = $db->getQuery(true)
 			->select('*')
 			->from($db->qn($this->tableNameStats))
@@ -934,7 +993,7 @@ abstract class Base implements PlatformInterface
 	/**
 	 * Saves the nested filter data array $filter_data to the database
 	 *
-	 * @param   array  $filter_data  The filter data to save
+	 * @param    array $filter_data The filter data to save
 	 *
 	 * @return    bool    True on success
 	 */
@@ -954,7 +1013,7 @@ abstract class Base implements PlatformInterface
 		{
 			$db->setQuery($sql)->query();
 		}
-		catch (Exception $exc)
+		catch (\Exception $exc)
 		{
 			return false;
 		}
@@ -964,7 +1023,7 @@ abstract class Base implements PlatformInterface
 
 	public function get_platform_database_options()
 	{
-		return [];
+		return array();
 	}
 
 	public function translate($key)
@@ -978,10 +1037,10 @@ abstract class Base implements PlatformInterface
 
 	public function getPlatformVersion()
 	{
-		return [
+		return array(
 			'name'    => 'Platform',
-			'version' => 'unknown',
-		];
+			'version' => 'unknown'
+		);
 	}
 
 	public function log_platform_special_directories()
@@ -995,7 +1054,7 @@ abstract class Base implements PlatformInterface
 
 	public function get_administrator_emails()
 	{
-		return [];
+		return array();
 	}
 
 	public function send_email($to, $subject, $body, $attachFile = null)
@@ -1021,39 +1080,5 @@ abstract class Base implements PlatformInterface
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Flattens a hierarchical array to a set of registry keys.
-	 *
-	 * For example
-	 * [ 'foo' => [ 'bar' => [ 'baz' => 1, 'bat' => 2 ] ] ]
-	 * becomes
-	 * [ 'foo.bar.baz' => 1, 'foo.bar.bat' => 2 ]
-	 *
-	 * @param   array   $array   The array to flatten
-	 * @param   string  $prefix  The prefix to use (leave blank; it's used in recursive calls)
-	 *
-	 * @return  array  An array with flattened keys
-	 *
-	 * @since   6.4.1
-	 */
-	protected function arrayToRegistryDefinitions(array $array, $prefix = '')
-	{
-		$keys = [];
-
-		foreach ($array as $k => $v)
-		{
-			if (is_array($v))
-			{
-				$keys = array_merge($keys, $this->arrayToRegistryDefinitions($v, $prefix . $k . "."));
-
-				continue;
-			}
-
-			$keys[$prefix . $k] = $v;
-		}
-
-		return $keys;
 	}
 }

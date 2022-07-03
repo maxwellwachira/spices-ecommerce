@@ -1,18 +1,18 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Filter;
 
 // Protection against direct access
-defined('AKEEBAENGINE') || die();
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF40\Container\Container;
+use FOF30\Container\Container;
 
 /**
  * Subdirectories exclusion filter. Excludes temporary, cache and backup output

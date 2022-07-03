@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -158,25 +158,19 @@ class StreamTransport implements TransportInterface
 		// Add our options to the current ones, if any.
 		$contextOptions['http'] = isset($contextOptions['http']) ? array_merge($contextOptions['http'], $options) : $options;
 
-		$streamOptions = array(
-			'http' => $options,
-			'ssl' => array(
-				'verify_peer'   => true,
-				'cafile'        => $this->options->get('stream.certpath', __DIR__ . '/cacert.pem'),
-				'verify_depth'  => 5,
-			),
+		// Create the stream context for the request.
+		$context = stream_context_create(
+			array(
+				'http' => $options,
+				'ssl' => array(
+					'verify_peer'   => true,
+					'cafile'        => $this->options->get('stream.certpath', __DIR__ . '/cacert.pem'),
+					'verify_depth'  => 5,
+				),
+			)
 		);
 
-		// Ensure the ssl peer name is verified where possible
-		if (version_compare(PHP_VERSION, '5.6.0') >= 0)
-		{
-			$streamOptions['ssl']['verify_peer_name'] = true;
-		}
-
-		// Create the stream context for the request.
-		$context = stream_context_create($streamOptions);
-
-		// Authentication, if needed
+		// Authentification, if needed
 		if ($this->options->get('userauth') && $this->options->get('passwordauth'))
 		{
 			$uri->setUser($this->options->get('userauth'));

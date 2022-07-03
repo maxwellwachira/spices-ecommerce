@@ -1,71 +1,46 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
 class K2HelperStats
 {
+
 	public static function getScripts()
 	{
 		$data = self::getData();
 		$token = version_compare(JVERSION, '2.5', 'ge') ? JSession::getFormToken() : JUtility::getToken();
+		return "
 
-		if (version_compare(JVERSION, '1.6.0', 'ge'))
-		{
-			JHtml::_('behavior.framework');
-		}
-		else
-		{
-			JHTML::_('behavior.mootools');
-		}
-		if (version_compare(JVERSION, '3.0.0', 'ge'))
-		{
-			JHtml::_('jquery.framework');
-		}
-
-		$document = JFactory::getDocument();
-		
-		// For IE8/9 only (to be removed in K2 v3.x)
-		$document->addScript('https://cdn.jsdelivr.net/npm/jquery-ajax-transport-xdomainrequest@1.0.4/jquery.xdomainrequest.min.js');
-		
-		$document->addScriptDeclaration("
-	    	/* K2 - Metrics */
-	        (function(\$){
-				function K2LogResult(xhr) {
-					\$.ajax({
-						type: 'POST',
-						url: 'index.php',
-						data: {
-							'option': 'com_k2',
-							'view': 'items',
-							'task': 'logStats',
-							'".$token."': '1',
-							'status': xhr.status,
-							'response': xhr.responseText
-						}
-					});
-				}
-		        \$(document).ready(function(){
-					\$.ajax({
-						crossDomain: true,
-						type: 'POST',
-						url: 'https://metrics.getk2.org/gather.php',
-						data: ".$data."
-					}).done(function(response, result, xhr) {
-						K2LogResult(xhr);
-					}).fail(function(xhr, result, response) {
-						K2LogResult(xhr);
-					});
+		<script src=\"//cdnjs.cloudflare.com/ajax/libs/jquery-ajaxtransport-xdomainrequest/1.0.3/jquery.xdomainrequest.min.js\" type=\"text/javascript\"></script>
+		<script type=\"text/javascript\">
+			function K2LogResult(xhr) {
+				\$K2.ajax({
+					type : 'POST',
+					url : 'index.php',
+					data : { 'option' : 'com_k2', 'view' : 'items', 'task': 'logStats', '".$token."': '1', 'status' : xhr.status, 'response' : xhr.responseText }
 				});
-			})(jQuery);
-		");
+			}
+			\$K2.ajax({
+				crossDomain: true,
+				type : 'POST',
+				url : 'https://metrics.getk2.org/gather.php',
+				data : ".$data."
+			}).done(function(response, result, xhr) {
+				K2LogResult(xhr);
+			}).fail(function(xhr, result, response) {
+				K2LogResult(xhr);
+			});
+		</script>
+
+		";
 	}
 
 	public static function getData()
@@ -82,7 +57,17 @@ class K2HelperStats
 		$data->extensionVersion = self::getExtensionVersion();
 		$data->caching = self::getCaching();
 		$data->cachingDriver = self::getCachingDriver();
-		return json_encode($data);
+		if (function_exists('json_encode'))
+		{
+			return json_encode($data);
+		}
+		else
+		{
+			require_once JPATH_COMPONENT_ADMINISTRATOR.DS.'lib'.DS.'JSON.php';
+			$json = new Services_JSON;
+			return $json->encode($data);
+		}
+
 	}
 
 	public static function getIdentifier()
@@ -139,7 +124,7 @@ class K2HelperStats
 
 	public static function getExtensionVersion()
 	{
-		return K2_CURRENT_VERSION;
+		return '2.7.0';
 	}
 
 	public static function getCaching()
@@ -170,6 +155,8 @@ class K2HelperStats
 		{
 			return true;
 		}
+
 		return false;
 	}
+
 }

@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_content
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -16,14 +16,10 @@ $info    = $this->item->params->get('info_block_position', 0);
 
 // Check if associations are implemented. If they are, define the parameter.
 $assocParam = (JLanguageAssociations::isEnabled() && $params->get('show_associations'));
-
-$currentDate       = JFactory::getDate()->format('Y-m-d H:i:s');
-$isExpired         = $this->item->publish_down < $currentDate && $this->item->publish_down !== JFactory::getDbo()->getNullDate();
-$isNotPublishedYet = $this->item->publish_up > $currentDate;
-$isUnpublished     = $this->item->state == 0 || $isNotPublishedYet || $isExpired;
-
 ?>
-<?php if ($isUnpublished) : ?>
+
+<?php if ($this->item->state == 0 || strtotime($this->item->publish_up) > strtotime(JFactory::getDate())
+	|| ((strtotime($this->item->publish_down) < strtotime(JFactory::getDate())) && $this->item->publish_down != JFactory::getDbo()->getNullDate())) : ?>
 	<div class="system-unpublished">
 <?php endif; ?>
 
@@ -42,10 +38,10 @@ $isUnpublished     = $this->item->state == 0 || $isNotPublishedYet || $isExpired
 <?php if ($this->item->state == 0) : ?>
 	<span class="label label-warning"><?php echo JText::_('JUNPUBLISHED'); ?></span>
 <?php endif; ?>
-<?php if ($isNotPublishedYet) : ?>
+<?php if (strtotime($this->item->publish_up) > strtotime(JFactory::getDate())) : ?>
 	<span class="label label-warning"><?php echo JText::_('JNOTPUBLISHEDYET'); ?></span>
 <?php endif; ?>
-<?php if ($isExpired) : ?>
+<?php if ((strtotime($this->item->publish_down) < strtotime(JFactory::getDate())) && $this->item->publish_down != JFactory::getDbo()->getNullDate()) : ?>
 	<span class="label label-warning"><?php echo JText::_('JEXPIRED'); ?></span>
 <?php endif; ?>
 
@@ -100,7 +96,8 @@ $isUnpublished     = $this->item->state == 0 || $isNotPublishedYet || $isExpired
 
 <?php endif; ?>
 
-<?php if ($isUnpublished) : ?>
+<?php if ($this->item->state == 0 || strtotime($this->item->publish_up) > strtotime(JFactory::getDate())
+	|| ((strtotime($this->item->publish_down) < strtotime(JFactory::getDate())) && $this->item->publish_down != $this->db->getNullDate() )) : ?>
 	</div>
 <?php endif; ?>
 

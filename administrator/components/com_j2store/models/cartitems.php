@@ -22,17 +22,17 @@ class J2StoreModelCartitems extends F0FModel {
 		
 		if (!empty($filter_cart))
 		{
-			$query->where('tbl.cart_id= '.$this->_db->q((int) $filter_cart));
+			$query->where('tbl.cart_id= '.(int) $filter_cart);
 		}
 		
 		if (!empty($filter_product))
 		{
-			$query->where('tbl.product_id = '.$this->_db->q((int) $filter_product));
+			$query->where('tbl.product_id = '.(int) $filter_product);
 		}
 	
 		if (!empty($filter_variant))
 		{
-			$query->where('tbl.variant_id = '.$this->_db->q((int) $filter_variant));
+			$query->where('tbl.variant_id = '.(int) $filter_variant);
 		}
 	
 		if (strlen($filter_name))

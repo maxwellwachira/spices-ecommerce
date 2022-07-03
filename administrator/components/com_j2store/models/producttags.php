@@ -100,11 +100,11 @@ class J2StoreModelProducttags extends F0FModel {
 		}else {
 			$this->addBehavior('simple');
 		}
-        $ref_model = $this;
+
 		try
 		{
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onBeforeGetProduct', array(&$ref_model, &$product));
+			$result = $this->modelDispatcher->trigger('onBeforeGetProduct', array(&$this, &$product));
 		}
 		catch (Exception $e)
 		{
@@ -115,7 +115,7 @@ class J2StoreModelProducttags extends F0FModel {
 		try
 		{
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onAfterGetProduct', array(&$ref_model, &$product));
+			$result = $this->modelDispatcher->trigger('onAfterGetProduct', array(&$this, &$product));
 
 		}
 		catch (Exception $e)
@@ -149,11 +149,11 @@ class J2StoreModelProducttags extends F0FModel {
 		}else {
 			$this->addBehavior('simple');
 		}
-        $ref_model = $this;
+
 		try
 		{
 			// Call the behaviors
-			$data = $this->modelDispatcher->trigger('onUpdateProduct', array(&$ref_model, &$product));
+			$data = $this->modelDispatcher->trigger('onUpdateProduct', array(&$this, &$product));
 			if(count($data)) {
 				$result = $data[0];
 			}
@@ -166,7 +166,7 @@ class J2StoreModelProducttags extends F0FModel {
 		}
 		//plugin trigger
 		$result['afterDisplayPrice'] = J2Store::plugin()->eventWithHtml('AfterUpdateProduct', array($data));
-		J2Store::plugin()->event('UpdateProductResponse',array(&$result,$ref_model,$product));
+		J2Store::plugin()->event('UpdateProductResponse',array(&$result,$this,$product));
 		return $result;
 
 	}
@@ -314,7 +314,6 @@ class J2StoreModelProducttags extends F0FModel {
 		if($vendor_ids){
 			$query->where('v.j2store_vendor_id IN ('.$vendor_ids.') ');
 		}
-        $query->order('v.ordering ASC');
 		$db->setQuery($query);
 		return  $db->loadObjectList();
 	}
@@ -499,7 +498,7 @@ class J2StoreModelProducttags extends F0FModel {
 
 		$published = 1;
 		// Use article state if badcats.id is null, otherwise, force 0 for unpublished
-		$query->where($publishedWhere . ' = ' . $db->q((int) $published));
+		$query->where($publishedWhere . ' = ' . (int) $published);
 
 
 		$this->_sfBuildQueryJoins($query);
@@ -523,7 +522,7 @@ class J2StoreModelProducttags extends F0FModel {
 		$query->select('#__j2store_variants.availability');
 		$query->join('INNER', '#__j2store_variants ON #__j2store_products.j2store_product_id=#__j2store_variants.product_id');
 
-        $query->select('#__j2store_productimages.thumb_image, #__j2store_productimages.main_image, #__j2store_productimages.additional_images,#__j2store_productimages.thumb_image_alt,#__j2store_productimages.main_image_alt,#__j2store_productimages.additional_images_alt');
+		$query->select('#__j2store_productimages.thumb_image, #__j2store_productimages.main_image, #__j2store_productimages.additional_images');
 		$query->join('LEFT OUTER', '#__j2store_productimages ON #__j2store_products.j2store_product_id=#__j2store_productimages.product_id');
 
 		$query->select($this->_db->qn('#__j2store_productquantities').'.j2store_productquantity_id ')
@@ -589,7 +588,7 @@ class J2StoreModelProducttags extends F0FModel {
 					->select('sub.id')
 					->from('#__tags as sub')
 					->join('INNER', '#__tags as this ON sub.lft > this.lft AND sub.rgt < this.rgt')
-					->where('this.id = ' . $db->q((int) $tagid));
+					->where('this.id = ' . (int) $tagid);
 
 				if ($levels >= 0)
 				{
@@ -749,7 +748,7 @@ class J2StoreModelProducttags extends F0FModel {
 				$count_ids = 0;
 				$filter_all_ids = array ();
 				foreach ( $filter_ids as $k => $ids ) {
-                    if (!empty($ids)) {
+					if (count ( $ids ) > 0) {
 						$arr_ids = explode ( ',', $ids );
 						$filter_all_ids = array_merge ( $arr_ids, $filter_all_ids );
 					}
@@ -997,7 +996,7 @@ class J2StoreModelProducttags extends F0FModel {
 		$item->event->afterDisplayContent = trim(implode("\n", $results));
 	}
 
-	public function runPrepareEventOnDescription($description, $id,$params, $context) {
+	public function runPrepareEventOnDescription($description, $id, $params=null, $context) {
 
 		$app = JFactory::getApplication();
 		JPluginHelper::importPlugin('content');
@@ -1099,11 +1098,7 @@ class J2StoreModelProducttags extends F0FModel {
 	 * Method to return list of all manufacturers
 	 */
 	public function getManufacturers(){
-        $model = F0FModel::getTmpInstance('Manufacturers','J2StoreModel');
-        $model->setState('filter_enabled',1);
-        $model->setState('filter_order','ordering');
-        $model->setState('filter_order_Dir','asc');
-        return $model->getList();
+		return F0FModel::getTmpInstance('Manufacturers','J2StoreModel')->enabled(1)->getList();
 	}
 
 	/**

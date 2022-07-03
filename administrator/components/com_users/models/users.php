@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,6 @@ use Joomla\Utilities\ArrayHelper;
  */
 class UsersModelUsers extends JModelList
 {
-	/**
-	 * A blacklist of filter variables to not merge into the model's state
-	 *
-	 * @var    array
-	 */
-	protected $filterBlacklist = array('groups', 'excluded');
-
 	/**
 	 * Constructor.
 	 *
@@ -503,18 +496,18 @@ class UsersModelUsers extends JModelList
 	/**
 	 * SQL server change
 	 *
-	 * @param   integer  $userId  User identifier
+	 * @param   integer  $user_id  User identifier
 	 *
 	 * @return  string   Groups titles imploded :$
 	 */
-	protected function _getUserDisplayedGroups($userId)
+	protected function _getUserDisplayedGroups($user_id)
 	{
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true)
 			->select($db->qn('title'))
 			->from($db->qn('#__usergroups', 'ug'))
 			->join('LEFT', $db->qn('#__user_usergroup_map', 'map') . ' ON (ug.id = map.group_id)')
-			->where($db->qn('map.user_id') . ' = ' . (int) $userId);
+			->where($db->qn('map.user_id') . ' = ' . (int) $user_id);
 
 		try
 		{

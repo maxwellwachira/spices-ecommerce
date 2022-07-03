@@ -1,20 +1,20 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Driver;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Driver\Query\Mysql as QueryMysql;
 use Akeeba\Engine\Factory;
-use Exception;
-use RuntimeException;
 
 /**
  * MySQL classic driver for Akeeba Engine
@@ -92,13 +92,13 @@ class Mysql extends Base
 		// Init
 		$this->nameQuote = '`';
 
-		$host     = array_key_exists('host', $options) ? $options['host'] : 'localhost';
-		$port     = array_key_exists('port', $options) ? $options['port'] : '';
-		$user     = array_key_exists('user', $options) ? $options['user'] : '';
+		$host = array_key_exists('host', $options) ? $options['host'] : 'localhost';
+		$port = array_key_exists('port', $options) ? $options['port'] : '';
+		$user = array_key_exists('user', $options) ? $options['user'] : '';
 		$password = array_key_exists('password', $options) ? $options['password'] : '';
 		$database = array_key_exists('database', $options) ? $options['database'] : '';
-		$prefix   = array_key_exists('prefix', $options) ? $options['prefix'] : '';
-		$select   = array_key_exists('select', $options) ? $options['select'] : true;
+		$prefix = array_key_exists('prefix', $options) ? $options['prefix'] : '';
+		$select = array_key_exists('select', $options) ? $options['select'] : true;
 
 		if (!empty($port))
 		{
@@ -139,28 +139,6 @@ class Mysql extends Base
 		{
 			$this->open();
 		}
-	}
-
-	/**
-	 * Test to see if the MySQL connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 */
-	public static function test()
-	{
-		return (function_exists('mysql_connect'));
-	}
-
-	/**
-	 * Test to see if the MySQL connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 * @since   12.1
-	 */
-	public static function isSupported()
-	{
-		return (function_exists('mysql_connect'));
 	}
 
 	public function open()
@@ -228,8 +206,8 @@ class Mysql extends Base
 	/**
 	 * Method to escape a string for usage in an SQL statement.
 	 *
-	 * @param   string   $text   The string to be escaped.
-	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
+	 * @param   string  $text  The string to be escaped.
+	 * @param   boolean $extra Optional parameter to provide extra escaping.
 	 *
 	 * @return  string  The escaped string.
 	 */
@@ -237,28 +215,34 @@ class Mysql extends Base
 	{
 		$result = @mysql_real_escape_string($text, $this->getConnection());
 
-		if ($result === false)
-		{
-			// Attempt to reconnect.
-			try
-			{
-				$this->connection = null;
-				$this->open();
-
-				$result = @mysql_real_escape_string($text, $this->getConnection());
-			}
-			catch (RuntimeException $e)
-			{
-				$result = $this->unsafe_escape($text);
-			}
-		}
-
 		if ($extra)
 		{
 			$result = addcslashes($result, '%_');
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Test to see if the MySQL connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 */
+	public static function test()
+	{
+		return (function_exists('mysql_connect'));
+	}
+
+	/**
+	 * Test to see if the MySQL connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 * @since   12.1
+	 */
+	public static function isSupported()
+	{
+		return (function_exists('mysql_connect'));
 	}
 
 	/**
@@ -270,7 +254,7 @@ class Mysql extends Base
 	{
 		if (is_resource($this->connection))
 		{
-			return @mysql_ping($this->connection);
+			return mysql_ping($this->connection);
 		}
 
 		return false;
@@ -279,8 +263,8 @@ class Mysql extends Base
 	/**
 	 * Drops a table from the database.
 	 *
-	 * @param   string   $tableName  The name of the database table to drop.
-	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
+	 * @param   string  $tableName The name of the database table to drop.
+	 * @param   boolean $ifExists  Optionally specify that the table must exist before it is dropped.
 	 *
 	 * @return  Mysql  Returns this object to support chaining.
 	 */
@@ -321,19 +305,19 @@ class Mysql extends Base
 	/**
 	 * Get the number of returned rows for the previous executed SQL statement.
 	 *
-	 * @param   resource  $cursor  An optional database cursor resource to extract the row count from.
+	 * @param   resource $cursor An optional database cursor resource to extract the row count from.
 	 *
 	 * @return  integer   The number of returned rows.
 	 */
 	public function getNumRows($cursor = null)
 	{
-		return mysql_num_rows($cursor ?: $this->cursor);
+		return mysql_num_rows($cursor ? $cursor : $this->cursor);
 	}
 
 	/**
 	 * Get the current or query, or new JDatabaseQuery object.
 	 *
-	 * @param   boolean  $new  False to return the last query set, True to return a new JDatabaseQuery object.
+	 * @param   boolean $new False to return the last query set, True to return a new JDatabaseQuery object.
 	 *
 	 * @return  mixed  The current value of the internal SQL variable or a new JDatabaseQuery object.
 	 */
@@ -352,17 +336,17 @@ class Mysql extends Base
 	/**
 	 * Shows the table CREATE statement that creates the given tables.
 	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
+	 * @param   mixed $tables A table name or a list of table names.
 	 *
 	 * @return  array  A list of the create SQL for the tables.
 	 */
 	public function getTableCreate($tables)
 	{
 		// Initialise variables.
-		$result = [];
+		$result = array();
 
 		// Sanitize input to an array and iterate over the list.
-		$tables = (array) $tables;
+		settype($tables, 'array');
 		foreach ($tables as $table)
 		{
 			// Set the query to get the table CREATE statement.
@@ -379,14 +363,14 @@ class Mysql extends Base
 	/**
 	 * Retrieves field information about a given table.
 	 *
-	 * @param   string   $table     The name of the database table.
-	 * @param   boolean  $typeOnly  True to only return field types.
+	 * @param   string  $table    The name of the database table.
+	 * @param   boolean $typeOnly True to only return field types.
 	 *
 	 * @return  array  An array of fields for the database table.
 	 */
 	public function getTableColumns($table, $typeOnly = true)
 	{
-		$result = [];
+		$result = array();
 
 		// Set the query to get the table fields statement.
 		$this->setQuery('SHOW FULL COLUMNS FROM ' . $this->quoteName($this->escape($table)));
@@ -415,7 +399,7 @@ class Mysql extends Base
 	/**
 	 * Get the details list of keys for a table.
 	 *
-	 * @param   string  $table  The name of the table.
+	 * @param   string $table The name of the table.
 	 *
 	 * @return  array  An array of the column specification for the table.
 	 */
@@ -461,7 +445,7 @@ class Mysql extends Base
 	{
 		$verParts = explode('.', $this->getVersion());
 
-		return ($verParts[0] == 5 || ($verParts[0] == 4 && $verParts[1] == 1 && (int) $verParts[2] >= 2));
+		return ($verParts[0] == 5 || ($verParts[0] == 4 && $verParts[1] == 1 && (int)$verParts[2] >= 2));
 	}
 
 	/**
@@ -477,7 +461,7 @@ class Mysql extends Base
 	/**
 	 * Locks a table in the database.
 	 *
-	 * @param   string  $table  The name of the table to unlock.
+	 * @param   string $table The name of the table to unlock.
 	 *
 	 * @return  Mysql  Returns this object to support chaining.
 	 */
@@ -499,11 +483,11 @@ class Mysql extends Base
 
 		if (!is_resource($this->connection))
 		{
-			throw new RuntimeException($this->errorMsg, $this->errorNum);
+			throw new \RuntimeException($this->errorMsg, $this->errorNum);
 		}
 
 		// Take a local copy so that we don't modify the original query and cause issues later
-		$query = $this->replacePrefix((string) $this->sql);
+		$query = $this->replacePrefix((string)$this->sql);
 		if ($this->limit > 0 || $this->offset > 0)
 		{
 			$query .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
@@ -540,19 +524,19 @@ class Mysql extends Base
 					$this->connection = null;
 					$this->open();
 				}
-					// If connect fails, ignore that exception and throw the normal exception.
-				catch (RuntimeException $e)
+				// If connect fails, ignore that exception and throw the normal exception.
+				catch (\RuntimeException $e)
 				{
 					// Get the error number and message.
-					$this->errorNum = (int) mysql_errno($this->connection);
-					$this->errorMsg = (string) mysql_error($this->connection) . ' SQL=' . $query;
+					$this->errorNum = (int)mysql_errno($this->connection);
+					$this->errorMsg = (string)mysql_error($this->connection) . ' SQL=' . $query;
 
 					// Throw the normal query exception.
-					throw new RuntimeException($this->errorMsg, $this->errorNum);
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
 				}
 
 				// Since we were able to reconnect, run the query again.
-				$result         = $this->query();
+				$result = $this->query();
 				$isReconnecting = false;
 
 				return $result;
@@ -561,13 +545,13 @@ class Mysql extends Base
 			else
 			{
 				// Get the error number and message.
-				$this->errorNum = (int) mysql_errno($this->connection);
-				$this->errorMsg = (string) mysql_error($this->connection) . ' SQL=' . $query;
+				$this->errorNum = (int)mysql_errno($this->connection);
+				$this->errorMsg = (string)mysql_error($this->connection) . ' SQL=' . $query;
 
 				// Throw the normal query exception.
 				if ($this->errorNum != 0)
 				{
-					throw new RuntimeException($this->errorMsg, $this->errorNum);
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
 				}
 			}
 		}
@@ -578,10 +562,10 @@ class Mysql extends Base
 	/**
 	 * Renames a table in the database.
 	 *
-	 * @param   string  $oldTable  The name of the table to be renamed
-	 * @param   string  $newTable  The new name for the table.
-	 * @param   string  $backup    Not used by MySQL.
-	 * @param   string  $prefix    Not used by MySQL.
+	 * @param   string $oldTable The name of the table to be renamed
+	 * @param   string $newTable The new name for the table.
+	 * @param   string $backup   Not used by MySQL.
+	 * @param   string $prefix   Not used by MySQL.
 	 *
 	 * @return  Mysql  Returns this object to support chaining.
 	 */
@@ -595,7 +579,7 @@ class Mysql extends Base
 	/**
 	 * Select a database for use.
 	 *
-	 * @param   string  $database  The name of the database to select for use.
+	 * @param   string $database The name of the database to select for use.
 	 *
 	 * @return  boolean  True if the database was successfully selected.
 	 */
@@ -608,7 +592,7 @@ class Mysql extends Base
 
 		if (!mysql_select_db($database, $this->connection))
 		{
-			throw new RuntimeException('Could not connect to database');
+			throw new \RuntimeException('Could not connect to database');
 		}
 
 		return true;
@@ -670,27 +654,52 @@ class Mysql extends Base
 	}
 
 	/**
+	 * Method to fetch a row from the result set cursor as an array.
+	 *
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
+	 *
+	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
+	 */
+	protected function fetchArray($cursor = null)
+	{
+		return mysql_fetch_row($cursor ? $cursor : $this->cursor);
+	}
+
+	/**
 	 * Method to fetch a row from the result set cursor as an associative array.
 	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
 	 *
 	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
 	 */
 	public function fetchAssoc($cursor = null)
 	{
-		return mysql_fetch_assoc($cursor ?: $this->cursor);
+		return mysql_fetch_assoc($cursor ? $cursor : $this->cursor);
+	}
+
+	/**
+	 * Method to fetch a row from the result set cursor as an object.
+	 *
+	 * @param   mixed  $cursor The optional result set cursor from which to fetch the row.
+	 * @param   string $class  The class name to use for the returned row object.
+	 *
+	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
+	 */
+	protected function fetchObject($cursor = null, $class = 'stdClass')
+	{
+		return mysql_fetch_object($cursor ? $cursor : $this->cursor, $class);
 	}
 
 	/**
 	 * Method to free up the memory used for the result set.
 	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
 	 *
 	 * @return  void
 	 */
 	public function freeResult($cursor = null)
 	{
-		mysql_free_result($cursor ?: $this->cursor);
+		mysql_free_result($cursor ? $cursor : $this->cursor);
 	}
 
 	/**
@@ -698,8 +707,8 @@ class Mysql extends Base
 	 *
 	 * @return  Mysql  Returns this object to support chaining.
 	 *
-	 * @throws  Exception
 	 * @since   11.4
+	 * @throws  \Exception
 	 */
 	public function unlockTables()
 	{
@@ -716,13 +725,13 @@ class Mysql extends Base
 	 * set up as temporary, black hole or federated tables. These two types should never,
 	 * ever, have their data dumped in the SQL dump file.
 	 *
-	 * @param   bool  $abstract  Return abstract or normal names? Defaults to true (abstract names)
+	 * @param bool $abstract Return abstract or normal names? Defaults to true (abstract names)
 	 *
 	 * @return array
 	 */
 	public function getTables($abstract = true)
 	{
-		static $tables = [];
+		static $tables = array();
 
 		if (!empty($tables))
 		{
@@ -748,9 +757,9 @@ class Mysql extends Base
 			// Loop all metadatas
 			foreach ($all_tables as $table_metadata)
 			{
-				$table_name     = $table_metadata;
+				$table_name = $table_metadata;
 				$table_abstract = $this->getAbstract($table_metadata);
-				$type           = 'table';
+				$type = 'table';
 
 				if ($abstract)
 				{
@@ -763,8 +772,8 @@ class Mysql extends Base
 
 				if ($type == 'table')
 				{
-					$engine      = 'MyISAM'; // So that even with MySQL 4 hosts we don't screw this up
-					$engine_keys = ['ENGINE=', 'TYPE='];
+					$engine = 'MyISAM'; // So that even with MySQL 4 hosts we don't screw this up
+					$engine_keys = array('ENGINE=', 'TYPE=');
 					foreach ($engine_keys as $engine_key)
 					{
 						$start_pos = strrpos($create, $engine_key);
@@ -818,7 +827,7 @@ class Mysql extends Base
 
 		// If we have MySQL > 5.0 add the list of stored procedures, stored functions
 		// and triggers
-		$registry        = Factory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$enable_entities = $registry->get('engine.dump.native.advanced_entitites', true);
 		if ($enable_entities)
 		{
@@ -830,12 +839,12 @@ class Mysql extends Base
 			{
 				$all_entries = $this->loadAssocList();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
-				$all_entries = [];
+				$all_entries = array();
 			}
 
-			if (is_array($all_entries) || $all_entries instanceof \Countable ? count($all_entries) : 0)
+			if (count($all_entries))
 			{
 				foreach ($all_entries as $entry)
 				{
@@ -856,9 +865,9 @@ class Mysql extends Base
 			{
 				$all_entries = $this->loadColumn(1);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
-				$all_entries = [];
+				$all_entries = array();
 			}
 
 			// If we have filters, make sure the tables pass the filtering
@@ -885,9 +894,9 @@ class Mysql extends Base
 			{
 				$all_entries = $this->loadColumn();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
-				$all_entries = [];
+				$all_entries = array();
 			}
 
 			// If we have filters, make sure the tables pass the filtering
@@ -912,36 +921,11 @@ class Mysql extends Base
 	}
 
 	/**
-	 * Method to fetch a row from the result set cursor as an array.
-	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
-	 *
-	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
-	 */
-	protected function fetchArray($cursor = null)
-	{
-		return mysql_fetch_row($cursor ?: $this->cursor);
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an object.
-	 *
-	 * @param   mixed   $cursor  The optional result set cursor from which to fetch the row.
-	 * @param   string  $class   The class name to use for the returned row object.
-	 *
-	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
-	 */
-	protected function fetchObject($cursor = null, $class = 'stdClass')
-	{
-		return mysql_fetch_object($cursor ?: $this->cursor, $class);
-	}
-
-	/**
 	 * Gets the CREATE TABLE command for a given table/view
 	 *
-	 * @param   string  $table_abstract  The abstracted name of the entity
-	 * @param   string  $table_name      The name of the table
-	 * @param   string  $type            The type of the entity to scan. If it's found to differ, the correct type is returned.
+	 * @param string $table_abstract The abstracted name of the entity
+	 * @param string $table_name     The name of the table
+	 * @param string $type           The type of the entity to scan. If it's found to differ, the correct type is returned.
 	 *
 	 * @return string The CREATE command, w/out newlines
 	 */
@@ -949,16 +933,16 @@ class Mysql extends Base
 	{
 		$sql = "SHOW CREATE TABLE `$table_abstract`";
 		$this->setQuery($sql);
-		$temp      = $this->loadRowList();
+		$temp = $this->loadRowList();
 		$table_sql = $temp[0][1];
 		unset($temp);
 
 		// Smart table type detection
-		if (in_array($type, ['table', 'merge', 'view']))
+		if (in_array($type, array('table', 'merge', 'view')))
 		{
 			// Check for CREATE VIEW
 			$pattern = '/^CREATE(.*) VIEW (.*)/i';
-			$result  = preg_match($pattern, $table_sql);
+			$result = preg_match($pattern, $table_sql);
 			if ($result === 1)
 			{
 				// This is a view.
@@ -998,7 +982,7 @@ class Mysql extends Base
 				$algo_start = strpos($propstring, 'ALGORITHM=');
 				if ($algo_start !== false)
 				{
-					$algo_end   = strpos($propstring, ' ', $algo_start);
+					$algo_end = strpos($propstring, ' ', $algo_start);
 					$algostring = substr($propstring, $algo_start, $algo_end - $algo_start + 1);
 				}
 				// Create our modified create statement
@@ -1032,14 +1016,5 @@ class Mysql extends Base
 		{
 			return version_compare($client_version, '5.5.3', '>=');
 		}
-	}
-
-	protected function unsafe_escape($string)
-	{
-		if (function_exists('mb_ereg_replace')) {
-			return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]', '\\\0', $string);
-		}
-
-		return preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', $string);
 	}
 }

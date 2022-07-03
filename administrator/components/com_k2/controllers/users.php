@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,48 +14,56 @@ jimport('joomla.application.component.controller');
 
 class K2ControllerUsers extends K2Controller
 {
+
     public function display($cachable = false, $urlparams = array())
     {
         JRequest::setVar('view', 'users');
         parent::display();
     }
 
-    public function edit()
+    function edit()
     {
-        $app = JFactory::getApplication();
+        $mainframe = JFactory::getApplication();
         $cid = JRequest::getVar('cid');
-        $app->redirect('index.php?option=com_k2&view=user&cid='.$cid[0]);
+        $mainframe->redirect('index.php?option=com_k2&view=user&cid='.$cid[0]);
     }
 
-    public function remove()
+    function remove()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('users');
         $model->remove();
     }
 
-    public function enable()
+    function element()
+    {
+        JRequest::setVar('view', 'users');
+        JRequest::setVar('layout', 'element');
+        parent::display();
+    }
+
+    function enable()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('users');
         $model->enable();
     }
 
-    public function disable()
+    function disable()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('users');
         $model->disable();
     }
 
-    public function delete()
+    function delete()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('users');
         $model->delete();
     }
 
-    public function move()
+    function move()
     {
         $view = $this->getView('users', 'html');
         $view->setLayout('move');
@@ -64,40 +72,41 @@ class K2ControllerUsers extends K2Controller
         $view->move();
     }
 
-    public function saveMove()
+    function saveMove()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('users');
         $model->saveMove();
     }
 
-    public function cancelMove()
-    {
-        JRequest::checkToken() or jexit('Invalid Token');
-        $app = JFactory::getApplication();
-        $app->redirect('index.php?option=com_k2&view=users');
-    }
-
-    public function import()
+    function import()
     {
         $model = $this->getModel('users');
         $model->import();
     }
-
-    public function search()
-    {
-        $app = JFactory::getApplication();
-        $db = JFactory::getDbo();
+	
+	function search()
+	{
+		$mainframe = JFactory::getApplication();
+        $db = JFactory::getDBO();
         $word = JRequest::getString('q', null);
-        if (K2_JVERSION == '15') {
+        if (K2_JVERSION == '15')
+        {
             $word = $db->Quote($db->getEscaped($word, true).'%', false);
-        } else {
+        }
+        else
+        {
             $word = $db->Quote($db->escape($word, true).'%', false);
         }
-        $query = "SELECT id,name FROM #__users WHERE name LIKE ".$word." OR username LIKE ".$word." OR email LIKE ".$word;
+		
+		$query = "SELECT id,name FROM #__users WHERE name LIKE ".$word." OR username LIKE ".$word." OR email LIKE ".$word;
         $db->setQuery($query);
         $result = $db->loadObjectList();
-        echo json_encode($result);
-        $app->close();
-    }
+		
+        require_once (JPATH_COMPONENT_ADMINISTRATOR.DS.'lib'.DS.'JSON.php');
+        $json = new Services_JSON;
+        echo $json->encode($result);
+        $mainframe->close();
+	}
+
 }

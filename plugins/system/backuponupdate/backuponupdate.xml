@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
@@ -9,16 +9,17 @@
 	<name>PLG_SYSTEM_BACKUPONUPDATE</name>
 	<author>Nicholas K. Dionysopoulos</author>
 	<authorEmail>nicholas@dionysopoulos.me</authorEmail>
-	<authorUrl>https://www.akeeba.com</authorUrl>
-	<copyright>Copyright (c)2006-2021 Nicholas K. Dionysopoulos</copyright>
+	<authorUrl>http://www.akeebabackup.com</authorUrl>
+	<copyright>Copyright (c)2006-2019 Nicholas K. Dionysopoulos</copyright>
 	<license>GNU General Public License version 3, or later</license>
-	<creationDate>2021-05-24</creationDate>
-	<version>8.0.6</version>
+	<creationDate>2019-03-18</creationDate>
+	<version>6.4.2.1</version>
 	<description>PLG_SYSTEM_BACKUPONUPDATE_XML_DESCRIPTION</description>
 	<files>
 		<filename plugin="backuponupdate">backuponupdate.php</filename>
 		<filename>.htaccess</filename>
 		<filename>web.config</filename>
+		<folder>tmpl</folder>
 	</files>
 	<languages folder="language">
 		<language tag="en-GB">en-GB/en-GB.plg_system_backuponupdate.ini</language>
@@ -31,12 +32,7 @@
                        label="PLG_SYSTEM_BACKUPONUPDATE_PROFILE_LABEL"
                        description="PLG_SYSTEM_BACKUPONUPDATE_PROFILE_DESC"
                 />
-
-				<field name="description" type="text" default="" size="30"
-					   label="COM_AKEEBA_CONFIG_DESCRIPTION_LABEL"
-					   description="COM_AKEEBA_CONFIG_DESCRIPTION_DESC"/>
-
-			</fieldset>
+            </fieldset>
         </fields>
     </config>
 

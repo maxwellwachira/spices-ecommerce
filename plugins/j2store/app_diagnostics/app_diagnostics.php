@@ -164,7 +164,7 @@ class plgJ2StoreApp_diagnostics extends J2StoreAppPlugin
 
         if ( count($old_cart_items_exists) > 0 ) {
             $cart_ids = array();
-            foreach ($old_cart_items_exists as $cart_id){
+            foreach ($cart_ids as $cart_id){
                 $cart_ids[] = $cart_id->j2store_cart_id;
             }
             //clear cart details

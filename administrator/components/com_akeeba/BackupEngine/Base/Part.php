@@ -1,45 +1,57 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Base;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
-use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Factory;
-use Exception;
 use Psr\Log\LogLevel;
-use Throwable;
 
 /**
- * Base class for all Akeeba Engine parts.
- *
- * Parts are objects which perform a specific function during the backup process, e.g. backing up files or dumping
- * database contents. They have a fully defined and controlled lifecycle, from initialization to finalization. The
- * transition between lifecycle phases is handled by the `tick()` method which is essentially the only public interface
- * to interacting with an engine part.
+ * The superclass of all Akeeba Engine parts. The "parts" are intelligent stateful
+ * classes which perform a single procedure and have preparation, running and
+ * finalization phases. The transition between phases is handled automatically by
+ * this superclass' tick() final public method, which should be the ONLY public API
+ * exposed to the rest of the Akeeba Engine.
  */
-abstract class Part
+abstract class Part extends BaseObject
 {
-	public const STATE_INIT = 0;
-	public const STATE_PREPARED = 1;
-	public const STATE_RUNNING = 2;
-	public const STATE_POSTRUN = 3;
-	public const STATE_FINISHED = 4;
-	public const STATE_ERROR = 99;
+	/**
+	 * Indicates whether this part has finished its initialisation cycle
+	 *
+	 * @var boolean
+	 */
+	protected $isPrepared = false;
 
 	/**
-	 * The current state of this part; see the constants at the top of this class
+	 * Indicates whether this part has more work to do (it's in running state)
 	 *
-	 * @var int
+	 * @var boolean
 	 */
-	protected $currentState = self::STATE_INIT;
+	protected $isRunning = false;
+
+	/**
+	 * Indicates whether this part has finished its finalization cycle
+	 *
+	 * @var boolean
+	 */
+	protected $isFinished = false;
+
+	/**
+	 * Indicates whether this part has finished its run cycle
+	 *
+	 * @var boolean
+	 */
+	protected $hasRan = false;
 
 	/**
 	 * The name of the engine part (a.k.a. Domain), used in return table
@@ -47,7 +59,7 @@ abstract class Part
 	 *
 	 * @var string
 	 */
-	protected $activeDomain = "";
+	protected $active_domain = "";
 
 	/**
 	 * The step this engine part is in. Used verbatim in return table and
@@ -55,7 +67,7 @@ abstract class Part
 	 *
 	 * @var string
 	 */
-	protected $activeStep = "";
+	protected $active_step = "";
 
 	/**
 	 * A more detailed description of the step this engine part is in. Used
@@ -64,401 +76,87 @@ abstract class Part
 	 *
 	 * @var string
 	 */
-	protected $activeSubstep = "";
+	protected $active_substep = "";
 
 	/**
 	 * Any configuration variables, in the form of an array.
 	 *
 	 * @var array
 	 */
-	protected $_parametersArray = [];
+	protected $_parametersArray = array();
 
-	/**
-	 * The database root key
-	 *
-	 * @var  string
-	 */
-	protected $databaseRoot = [];
+	/** @var  string  The database root key */
+	protected $databaseRoot = array();
 
-	/**
-	 * Should we log the step nesting?
-	 *
-	 * @var  bool
-	 */
+	/** @var  int  Last reported warning's position in array */
+	private $warnings_pointer = -1;
+
+	/** @var  bool  Should we log the step nesting? */
 	protected $nest_logging = false;
 
-	/**
-	 * Embedded installer preferences
-	 *
-	 * @var  object
-	 */
+	/** @var  object  Embedded installer preferences */
 	protected $installerSettings;
 
-	/**
-	 * How much milliseconds should we wait to reach the min exec time
-	 *
-	 * @var  int
-	 */
+	/** @var  int  How much milliseconds should we wait to reach the min exec time */
 	protected $waitTimeMsec = 0;
 
-	/**
-	 * Should I ignore the minimum execution time altogether?
-	 *
-	 * @var  bool
-	 */
+	/** @var  bool  Should I ignore the minimum execution time altogether? */
 	protected $ignoreMinimumExecutionTime = false;
-
-	/**
-	 * The last exception thrown during the tick() method's execution.
-	 *
-	 * @var null|Exception
-	 */
-	protected $lastException = null;
 
 	/**
 	 * Public constructor
 	 *
-	 * @return  void
+	 * @return  Part
 	 */
 	public function __construct()
 	{
 		// Fetch the installer settings
-		$this->installerSettings = (object) [
+		$this->installerSettings = (object)array(
 			'installerroot' => 'installation',
 			'sqlroot'       => 'installation/sql',
 			'databasesini'  => 1,
 			'readme'        => 1,
 			'extrainfo'     => 1,
 			'password'      => 0,
-		];
+		);
 
-		$config               = Factory::getConfiguration();
-		$installerKey         = $config->get('akeeba.advanced.embedded_installer');
+		$config = Factory::getConfiguration();
+		$installerKey = $config->get('akeeba.advanced.embedded_installer');
 		$installerDescriptors = Factory::getEngineParamsProvider()->getInstallerList();
-
-		// Fall back to default ANGIE installer if the selected installer is not found
-		if (!array_key_exists($installerKey, $installerDescriptors))
-		{
-			$installerKey = 'angie';
-		}
 
 		if (array_key_exists($installerKey, $installerDescriptors))
 		{
-			$this->installerSettings = (object) $installerDescriptors[$installerKey];
+			// The selected installer exists, use it
+			$this->installerSettings = (object)$installerDescriptors[$installerKey];
 		}
-	}
-
-	/**
-	 * Nested logging of exceptions
-	 *
-	 * The message is logged using the specified log level. The detailed information of the Throwable and its trace are
-	 * logged using the DEBUG level.
-	 *
-	 * If the Throwable is nested, its parents are logged recursively. This should create a thorough trace leading to
-	 * the root cause of an error.
-	 *
-	 * @param   Exception|Throwable  $exception  The Exception or Throwable to log
-	 * @param   string               $logLevel   The log level to use, default ERROR
-	 */
-	protected static function logErrorsFromException($exception, $logLevel = LogLevel::ERROR)
-	{
-		$logger = Factory::getLog();
-
-		$logger->log($logLevel, $exception->getMessage());
-
-		$logger->debug(sprintf('[%s] %s(%u) – #%u ‹%s›', get_class($exception), $exception->getFile(), $exception->getLine(), $exception->getCode(), $exception->getMessage()));
-
-		foreach (explode("\n", $exception->getTraceAsString()) as $line)
+		elseif (array_key_exists('angie', $installerDescriptors))
 		{
-			$logger->debug(rtrim($line));
-		}
-
-		$previous = $exception->getPrevious();
-
-		if (!is_null($previous))
-		{
-			self::logErrorsFromException($previous, $logLevel);
+			// The selected installer doesn't exist, but ANGIE exists; use that instead
+			$this->installerSettings = (object)$installerDescriptors['angie'];
 		}
 	}
 
 	/**
-	 * The public interface to an engine part. This method takes care for
-	 * calling the correct method in order to perform the initialisation -
-	 * run - finalisation cycle of operation and return a proper response array.
-	 *
-	 * @param   int  $nesting
-	 *
-	 * @return  array  A response array
-	 */
-	public function tick($nesting = 0)
-	{
-		$configuration       = Factory::getConfiguration();
-		$timer               = Factory::getTimer();
-		$this->waitTimeMsec  = 0;
-		$this->lastException = null;
-
-		/**
-		 * Call the right action method, depending on engine part state.
-		 *
-		 * The action method may throw an exception to signal failure, hence the try-catch. If there is an exception we
-		 * will set the part's state to STATE_ERROR and store the last exception.
-		 */
-		try
-		{
-			switch ($this->getState())
-			{
-				case self::STATE_INIT:
-					$this->_prepare();
-					break;
-
-				case self::STATE_PREPARED:
-				case self::STATE_RUNNING:
-					$this->_run();
-					break;
-
-				case self::STATE_POSTRUN:
-					$this->_finalize();
-					break;
-			}
-		}
-		catch (Exception $e)
-		{
-			$this->lastException = $e;
-			$this->setState(self::STATE_ERROR);
-		}
-
-		// If there is still time, we are not finished and there is no break flag set, re-run the tick()
-		// method.
-		$breakFlag = $configuration->get('volatile.breakflag', false);
-
-		if (
-			!in_array($this->getState(), [self::STATE_FINISHED, self::STATE_ERROR]) &&
-			($timer->getTimeLeft() > 0) &&
-			!$breakFlag &&
-			($nesting < 20) &&
-			($this->nest_logging)
-		)
-		{
-			// Nesting is only applied if $this->nest_logging == true (currently only Kettenrad has this)
-			$nesting++;
-
-			if ($this->nest_logging)
-			{
-				Factory::getLog()->debug("*** Batching successive steps (nesting level $nesting)");
-			}
-
-			return $this->tick($nesting);
-		}
-
-		// Return the output array
-		$out = $this->makeReturnTable();
-
-		// If it's not a nest-logged part (basically, anything other than Kettenrad) return the output array.
-		if (!$this->nest_logging)
-		{
-			return $out;
-		}
-
-		// From here on: things to do for nest-logged parts (i.e. Kettenrad)
-		if ($breakFlag)
-		{
-			Factory::getLog()->debug("*** Engine steps batching: Break flag detected.");
-		}
-
-		// Reset the break flag
-		$configuration->set('volatile.breakflag', false);
-
-		// Log that we're breaking the step
-		Factory::getLog()->debug("*** Batching of engine steps finished. I will now return control to the caller.");
-
-		// Detect whether I need server-side sleep
-		$serverSideSleep = $this->needsServerSideSleep();
-
-		// Enforce minimum execution time
-		if (!$this->ignoreMinimumExecutionTime)
-		{
-			$timer              = Factory::getTimer();
-			$this->waitTimeMsec = (int) $timer->enforce_min_exec_time(true, $serverSideSleep);
-		}
-
-		// Send a Return Table back to the caller
-		return $out;
-	}
-
-	/**
-	 * Returns a copy of the class's status array
-	 *
-	 * @return  array  The response array
-	 */
-	public function getStatusArray()
-	{
-		return $this->makeReturnTable();
-	}
-
-	/**
-	 * Sends any kind of setup information to the engine part. Using this,
-	 * we avoid passing parameters to the constructor of the class. These
-	 * parameters should be passed as an indexed array and should be taken
-	 * into account during the preparation process only. This function will
-	 * set the error flag if it's called after the engine part is prepared.
-	 *
-	 * @param   array  $parametersArray  The parameters to be passed to the engine part.
-	 *
-	 * @return  void
-	 */
-	public function setup($parametersArray)
-	{
-		if ($this->currentState == self::STATE_PREPARED)
-		{
-			$this->setState(self::STATE_ERROR);
-
-			throw new ErrorException(__CLASS__ . ":: Can't modify configuration after the preparation of " . $this->activeDomain);
-		}
-
-		$this->_parametersArray = $parametersArray;
-
-		if (array_key_exists('root', $parametersArray))
-		{
-			$this->databaseRoot = $parametersArray['root'];
-		}
-	}
-
-	/**
-	 * Returns the state of this engine part.
-	 *
-	 * @return  int  The state of this engine part.
-	 */
-	public function getState()
-	{
-		if (!is_null($this->lastException))
-		{
-			$this->currentState = self::STATE_ERROR;
-		}
-
-		return $this->currentState;
-	}
-
-	/**
-	 * Translate the integer state to a string, used by consumers of the public Engine API.
-	 *
-	 * @param   int  $state  The part state to translate to string
-	 *
-	 * @return  string
-	 */
-	public function stateToString($state)
-	{
-		switch ($state)
-		{
-			case self::STATE_ERROR:
-				return 'error';
-				break;
-
-			case self::STATE_INIT:
-				return 'init';
-				break;
-
-			case self::STATE_PREPARED:
-				return 'prepared';
-				break;
-
-			case self::STATE_RUNNING:
-				return 'running';
-				break;
-
-			case self::STATE_POSTRUN:
-				return 'postrun';
-				break;
-
-			case self::STATE_FINISHED:
-				return 'finished';
-				break;
-		}
-
-		return 'init';
-	}
-
-	/**
-	 * Get the current domain of the engine
-	 *
-	 * @return  string  The current domain
-	 */
-	public function getDomain()
-	{
-		return $this->activeDomain;
-	}
-
-	/**
-	 * Get the current step of the engine
-	 *
-	 * @return  string  The current step
-	 */
-	public function getStep()
-	{
-		return $this->activeStep;
-	}
-
-	/**
-	 * Get the current sub-step of the engine
-	 *
-	 * @return  string  The current sub-step
-	 */
-	public function getSubstep()
-	{
-		return $this->activeSubstep;
-	}
-
-	/**
-	 * Implement this if your Engine Part can return the percentage of its work already complete
-	 *
-	 * @return  float  A number from 0 (nothing done) to 1 (all done)
-	 */
-	public function getProgress()
-	{
-		return 0;
-	}
-
-	/**
-	 * Get the value of the minimum execution time ignore flag.
-	 *
-	 * DO NOT REMOVE. It is used by the Engine consumers.
-	 *
-	 * @return boolean
-	 */
-	public function isIgnoreMinimumExecutionTime()
-	{
-		return $this->ignoreMinimumExecutionTime;
-	}
-
-	/**
-	 * Set the value of the minimum execution time ignore flag. When set, the nested logging parts (basically,
-	 * Kettenrad) will ignore the minimum execution time parameter.
-	 *
-	 * DO NOT REMOVE. It is used by the Engine consumers.
-	 *
-	 * @param   boolean  $ignoreMinimumExecutionTime
-	 */
-	public function setIgnoreMinimumExecutionTime($ignoreMinimumExecutionTime)
-	{
-		$this->ignoreMinimumExecutionTime = $ignoreMinimumExecutionTime;
-	}
-
-	/**
-	 * Runs any initialization code. Must set the state to STATE_PREPARED.
+	 * Runs the preparation for this part. Should set _isPrepared
+	 * to true
 	 *
 	 * @return  void
 	 */
 	abstract protected function _prepare();
 
 	/**
-	 * Runs any finalisation code. Must set the state to STATE_FINISHED.
+	 * Runs the finalisation process for this part. Should set
+	 * _isFinished to true.
 	 *
 	 * @return  void
 	 */
 	abstract protected function _finalize();
 
 	/**
-	 * Performs the main objective of this part. While still processing the state must be set to STATE_RUNNING. When the
-	 * main objective is complete and we're ready to proceed to finalization the state must be set to STATE_POSTRUN.
+	 * Runs the main functionality loop for this part. Upon calling,
+	 * should set the _isRunning to true. When it finished, should set
+	 * the _hasRan to true. If an error is encountered, setError should
+	 * be used.
 	 *
 	 * @return  void
 	 */
@@ -479,13 +177,235 @@ abstract class Part
 	/**
 	 * Sets the engine part's internal state, in an easy to use manner
 	 *
-	 * @param   int  $state  The part state to set
+	 * @param   string  $state         One of init, prepared, running, postrun, finished, error
+	 * @param   string  $errorMessage  The reported error message, should the state be set to error
 	 *
 	 * @return  void
 	 */
-	protected function setState($state = self::STATE_INIT)
+	protected function setState($state = 'init', $errorMessage = 'Invalid setState argument')
 	{
-		$this->currentState = $state;
+		switch ($state)
+		{
+			case 'init':
+				$this->isPrepared = false;
+				$this->isRunning = false;
+				$this->isFinished = false;
+				$this->hasRan = false;
+				break;
+
+			case 'prepared':
+				$this->isPrepared = true;
+				$this->isRunning = false;
+				$this->isFinished = false;
+				$this->hasRan = false;
+				break;
+
+			case 'running':
+				$this->isPrepared = true;
+				$this->isRunning = true;
+				$this->isFinished = false;
+				$this->hasRan = false;
+				break;
+
+			case 'postrun':
+				$this->isPrepared = true;
+				$this->isRunning = false;
+				$this->isFinished = false;
+				$this->hasRan = true;
+				break;
+
+			case 'finished':
+				$this->isPrepared = true;
+				$this->isRunning = false;
+				$this->isFinished = true;
+				$this->hasRan = false;
+				break;
+
+			case 'error':
+			default:
+				$this->setError($errorMessage);
+				break;
+		}
+	}
+
+	/**
+	 * The public interface to an engine part. This method takes care for
+	 * calling the correct method in order to perform the initialisation -
+	 * run - finalisation cycle of operation and return a proper response array.
+	 *
+	 * @param   int  $nesting
+	 *
+	 * @return  array  A response array
+	 */
+	public function tick($nesting = 0)
+	{
+		$this->waitTimeMsec = 0;
+		$configuration = Factory::getConfiguration();
+		$timer = Factory::getTimer();
+
+		// Call the right action method, depending on engine part state
+		switch ($this->getState())
+		{
+			case "init":
+				$this->_prepare();
+				break;
+
+			case "prepared":
+				$this->_run();
+				break;
+
+			case "running":
+				$this->_run();
+				break;
+
+			case "postrun":
+				$this->_finalize();
+				break;
+		}
+
+		// If there is still time, we are not finished and there is no break flag set, re-run the tick()
+		// method.
+		$breakFlag = $configuration->get('volatile.breakflag', false);
+
+		if (
+			!in_array($this->getState(), array('finished', 'error')) &&
+			($timer->getTimeLeft() > 0) &&
+			!$breakFlag &&
+			($nesting < 20) &&
+			($this->nest_logging)
+		)
+		{
+			// Nesting is only applied if $this->nest_logging == true (currently only Kettenrad has this)
+			$nesting++;
+
+			if ($this->nest_logging)
+			{
+				Factory::getLog()->log(LogLevel::DEBUG, "*** Batching successive steps (nesting level $nesting)");
+			}
+
+			$out = $this->tick($nesting);
+		}
+		else
+		{
+			// Return the output array
+			$out = $this->_makeReturnTable();
+
+			// Things to do for nest-logged parts (currently, only Kettenrad is)
+			if ($this->nest_logging)
+			{
+				if ($breakFlag)
+				{
+					Factory::getLog()->log(LogLevel::DEBUG, "*** Engine steps batching: Break flag detected.");
+				}
+
+				// Reset the break flag
+				$configuration->set('volatile.breakflag', false);
+
+				// Log that we're breaking the step
+				Factory::getLog()->log(LogLevel::DEBUG, "*** Batching of engine steps finished. I will now return control to the caller.");
+
+				// Do I need client-side sleep?
+				$serverSideSleep = true;
+
+				if (method_exists($this, 'getTag'))
+				{
+					$tag = $this->getTag();
+					$clientSideSleep = Factory::getConfiguration()->get('akeeba.basic.clientsidewait', 0);
+
+					if (in_array($tag, array('backend', 'restorepoint')) && $clientSideSleep)
+					{
+						$serverSideSleep = false;
+					}
+				}
+
+				// Enforce minimum execution time
+				if (!$this->ignoreMinimumExecutionTime)
+				{
+					$timer = Factory::getTimer();
+					$this->waitTimeMsec = (int)$timer->enforce_min_exec_time(true, $serverSideSleep);
+				}
+			}
+		}
+
+		// Send a Return Table back to the caller
+		return $out;
+	}
+
+	/**
+	 * Returns a copy of the class's status array
+	 *
+	 * @return  array  The response array
+	 */
+	public function getStatusArray()
+	{
+		return $this->_makeReturnTable();
+	}
+
+	/**
+	 * Sends any kind of setup information to the engine part. Using this,
+	 * we avoid passing parameters to the constructor of the class. These
+	 * parameters should be passed as an indexed array and should be taken
+	 * into account during the preparation process only. This function will
+	 * set the error flag if it's called after the engine part is prepared.
+	 *
+	 * @param   array  $parametersArray  The parameters to be passed to the engine part.
+	 *
+	 * @return  void
+	 */
+	public function setup($parametersArray)
+	{
+		if ($this->isPrepared)
+		{
+			$this->setState('error', get_class($this) . ":: Can't modify configuration after the preparation of " . $this->active_domain);
+		}
+		else
+		{
+			$this->_parametersArray = $parametersArray;
+
+			if (array_key_exists('root', $parametersArray))
+			{
+				$this->databaseRoot = $parametersArray['root'];
+			}
+		}
+	}
+
+	/**
+	 * Returns the state of this engine part.
+	 *
+	 * @return  string  The state of this engine part. It can be one of error, init, prepared, running, postrun,
+	 *                  finished.
+	 */
+	public function getState()
+	{
+		if ($this->getError())
+		{
+			return "error";
+		}
+
+		if (!($this->isPrepared))
+		{
+			return "init";
+		}
+
+		if (!($this->isFinished) && !($this->isRunning) && !($this->hasRan) && ($this->isPrepared))
+		{
+			return "prepared";
+		}
+
+		if (!($this->isFinished) && $this->isRunning && !($this->hasRan))
+		{
+			return "running";
+		}
+
+		if (!($this->isFinished) && !($this->isRunning) && $this->hasRan)
+		{
+			return "postrun";
+		}
+
+		if ($this->isFinished)
+		{
+			return "finished";
+		}
 	}
 
 	/**
@@ -493,26 +413,35 @@ abstract class Part
 	 *
 	 * @return  array  The Response Array for the current state
 	 */
-	protected function makeReturnTable()
+	protected function _makeReturnTable()
 	{
-		$errors = [];
-		$e      = $this->lastException;
+		// Get a list of warnings
+		$warnings = $this->getWarnings();
 
-		while (!empty($e))
+		// Report only new warnings if there is no warnings queue size
+		if ($this->_warnings_queue_size == 0)
 		{
-			$errors[] = $e->getMessage();
-			$e        = $e->getPrevious();
+			if (($this->warnings_pointer > 0) && ($this->warnings_pointer < (count($warnings))))
+			{
+				$warnings = array_slice($warnings, $this->warnings_pointer + 1);
+				$this->warnings_pointer += count($warnings);
+			}
+			else
+			{
+				$this->warnings_pointer = count($warnings);
+			}
 		}
 
-		return [
-			'HasRun'         => $this->currentState != self::STATE_FINISHED,
-			'Domain'         => $this->activeDomain,
-			'Step'           => $this->activeStep,
-			'Substep'        => $this->activeSubstep,
-			'Error'          => implode("\n", $errors),
-			'Warnings'       => [],
-			'ErrorException' => $this->lastException,
-		];
+		$out = array(
+			'HasRun'   => (!($this->isFinished)),
+			'Domain'   => $this->active_domain,
+			'Step'     => $this->active_step,
+			'Substep'  => $this->active_substep,
+			'Error'    => $this->getError(),
+			'Warnings' => $warnings
+		);
+
+		return $out;
 	}
 
 	/**
@@ -524,7 +453,17 @@ abstract class Part
 	 */
 	protected function setDomain($new_domain)
 	{
-		$this->activeDomain = $new_domain;
+		$this->active_domain = $new_domain;
+	}
+
+	/**
+	 * Get the current domain of the engine
+	 *
+	 * @return  string  The current domain
+	 */
+	public function getDomain()
+	{
+		return $this->active_domain;
 	}
 
 	/**
@@ -536,7 +475,17 @@ abstract class Part
 	 */
 	protected function setStep($new_step)
 	{
-		$this->activeStep = $new_step;
+		$this->active_step = $new_step;
+	}
+
+	/**
+	 * Get the current step of the engine
+	 *
+	 * @return  string  The current step
+	 */
+	public function getStep()
+	{
+		return $this->active_step;
 	}
 
 	/**
@@ -548,36 +497,42 @@ abstract class Part
 	 */
 	protected function setSubstep($new_substep)
 	{
-		$this->activeSubstep = $new_substep;
+		$this->active_substep = $new_substep;
 	}
 
 	/**
-	 * Do I need to apply server-side sleep for the time difference between the elapsed time and the minimum execution
-	 * time?
+	 * Get the current sub-step of the engine
 	 *
-	 * @return bool
+	 * @return  string  The current sub-step
 	 */
-	private function needsServerSideSleep()
+	public function getSubstep()
 	{
-		/**
-		 * If the part doesn't support tagging, i.e. I can't determine if this is a backend backup or not, I will always
-		 * use server-side sleep.
-		 */
-		if (!method_exists($this, 'getTag'))
-		{
-			return true;
-		}
+		return $this->active_substep;
+	}
 
-		/**
-		 * If this is not a backend backup I will always use server-side sleep. That is to say that legacy front-end,
-		 * remote JSON API and CLI backups must always use server-side sleep since they do not support client-side
-		 * sleep.
-		 */
-		if (!in_array($this->getTag(), ['backend']))
-		{
-			return true;
-		}
+	/**
+	 * Implement this if your Engine Part can return the percentage of its work already complete
+	 *
+	 * @return  float  A number from 0 (nothing done) to 1 (all done)
+	 */
+	public function getProgress()
+	{
+		return 0;
+	}
 
-		return Factory::getConfiguration()->get('akeeba.basic.clientsidewait', 0) == 0;
+	/**
+	 * @return boolean
+	 */
+	public function isIgnoreMinimumExecutionTime()
+	{
+		return $this->ignoreMinimumExecutionTime;
+	}
+
+	/**
+	 * @param boolean $ignoreMinimumExecutionTime
+	 */
+	public function setIgnoreMinimumExecutionTime($ignoreMinimumExecutionTime)
+	{
+		$this->ignoreMinimumExecutionTime = $ignoreMinimumExecutionTime;
 	}
 }

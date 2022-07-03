@@ -1,25 +1,29 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Core;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
+use Akeeba\Engine\Base\BaseObject;
 use Akeeba\Engine\Factory;
+use Psr\Log\LogLevel;
 
 /**
  * Timer class
  */
-class Timer
+class Timer extends BaseObject
 {
 
-	/** @var float Maximum execution time allowance per step */
+	/** @var int Maximum execution time allowance per step */
 	private $max_exec_time = null;
 
 	/** @var int Timestamp of execution start */
@@ -28,24 +32,19 @@ class Timer
 	/**
 	 * Public constructor, creates the timer object and calculates the execution time limits
 	 *
-	 * @param   int|null  $maxExecTime  Maximum execution time, in seconds (minimum 1 second)
-	 * @param   int|null  $bias         Execution time bias, in percentage points (10-100)
+	 * @return Timer
 	 */
-	public function __construct(?int $maxExecTime = null, ?int $bias = null)
+	public function __construct()
 	{
 		// Initialize start time
 		$this->start_time = $this->microtime_float();
 
-		// Make sure we have max execution time and execution time bias or use the ones configured in the backup profile
-		$configuration = Factory::getConfiguration();
-		$maxExecTime   = $maxExecTime ?? (int) $configuration->get('akeeba.tuning.max_exec_time', 14);
-		$bias          = $bias ?? (int) $configuration->get('akeeba.tuning.run_time_bias', 75);
+		// Get configured max time per step and bias
+		$configuration        = Factory::getConfiguration();
+		$config_max_exec_time = $configuration->get('akeeba.tuning.max_exec_time', 14);
+		$bias                 = $configuration->get('akeeba.tuning.run_time_bias', 75) / 100;
 
-		// Make sure both max exec time and bias are positive integers within the allowed range of values
-		$maxExecTime = max(1, $maxExecTime);
-		$bias        = min(100, max(10, $bias));
-
-		$this->max_exec_time = $maxExecTime * $bias / 100;
+		$this->max_exec_time = $config_max_exec_time * $bias;
 	}
 
 	/**
@@ -60,7 +59,7 @@ class Timer
 	/**
 	 * Gets the number of seconds left, before we hit the "must break" threshold
 	 *
-	 * @return  float
+	 * @return float
 	 */
 	public function getTimeLeft()
 	{
@@ -79,11 +78,20 @@ class Timer
 	}
 
 	/**
+	 * Returns the current timestamp in decimal seconds
+	 */
+	protected function microtime_float()
+	{
+		list($usec, $sec) = explode(" ", microtime());
+
+		return ((float)$usec + (float)$sec);
+	}
+
+	/**
 	 * Enforce the minimum execution time
 	 *
-	 * @param   bool  $log              Should I log what I'm doing? Default is true.
-	 * @param   bool  $serverSideSleep  Should I sleep on the server side? If false we return the amount of time to
-	 *                                  wait in msec
+	 * @param    bool $log             Should I log what I'm doing? Default is true.
+	 * @param    bool $serverSideSleep Should I sleep on the server side? If false we return the amount of time to wait in msec
 	 *
 	 * @return  int Wait time to reach min_execution_time in msec
 	 */
@@ -109,7 +117,7 @@ class Timer
 
 		// Get the "minimum execution time per step" Akeeba Backup configuration variable
 		$configuration = Factory::getConfiguration();
-		$minexectime   = $configuration->get('akeeba.tuning.min_exec_time', 0);
+		$minexectime = $configuration->get('akeeba.tuning.min_exec_time', 0);
 		if (!is_numeric($minexectime))
 		{
 			$minexectime = 0;
@@ -133,14 +141,14 @@ class Timer
 
 			if (!$serverSideSleep)
 			{
-				Factory::getLog()->debug("Asking client to sleep for $sleep_msec msec");
+				Factory::getLog()->log(LogLevel::DEBUG, "Asking client to sleep for $sleep_msec msec");
 				$clientSideSleep = $sleep_msec;
 			}
 			elseif (function_exists('usleep'))
 			{
 				if ($log)
 				{
-					Factory::getLog()->debug("Sleeping for $sleep_msec msec, using usleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using usleep()");
 				}
 				usleep(1000 * $sleep_msec);
 			}
@@ -148,9 +156,9 @@ class Timer
 			{
 				if ($log)
 				{
-					Factory::getLog()->debug("Sleeping for $sleep_msec msec, using time_nanosleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using time_nanosleep()");
 				}
-				$sleep_sec  = floor($sleep_msec / 1000);
+				$sleep_sec = floor($sleep_msec / 1000);
 				$sleep_nsec = 1000000 * ($sleep_msec - ($sleep_sec * 1000));
 				time_nanosleep($sleep_sec, $sleep_nsec);
 			}
@@ -158,7 +166,7 @@ class Timer
 			{
 				if ($log)
 				{
-					Factory::getLog()->debug("Sleeping for $sleep_msec msec, using time_sleep_until()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_msec msec, using time_sleep_until()");
 				}
 				$until_timestamp = time() + $sleep_msec / 1000;
 				time_sleep_until($until_timestamp);
@@ -168,7 +176,7 @@ class Timer
 				$sleep_sec = ceil($sleep_msec / 1000);
 				if ($log)
 				{
-					Factory::getLog()->debug("Sleeping for $sleep_sec seconds, using sleep()");
+					Factory::getLog()->log(LogLevel::DEBUG, "Sleeping for $sleep_sec seconds, using sleep()");
 				}
 				sleep($sleep_sec);
 			}
@@ -178,7 +186,7 @@ class Timer
 			// No sleep required, even if user configured us to be able to do so.
 			if ($log)
 			{
-				Factory::getLog()->debug("No need to sleep; execution time: $elapsed_time msec; min. exec. time: $minexectime msec");
+				Factory::getLog()->log(LogLevel::DEBUG, "No need to sleep; execution time: $elapsed_time msec; min. exec. time: $minexectime msec");
 			}
 		}
 
@@ -191,15 +199,5 @@ class Timer
 	public function resetTime()
 	{
 		$this->start_time = $this->microtime_float();
-	}
-
-	/**
-	 * Returns the current timestamp in decimal seconds
-	 */
-	protected function microtime_float()
-	{
-		[$usec, $sec] = explode(" ", microtime());
-
-		return ((float) $usec + (float) $sec);
 	}
 }

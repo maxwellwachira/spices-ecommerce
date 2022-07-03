@@ -1,0 +1,393 @@
+
+/*-------------- News Pro GK4 Module ---------------*/
+/* ====================  start  =================== */
+.nspMain {overflow: hidden;}
+
+/* target IE8 only to fix floating issue*/
+@media \0screen {
+}
+
+
+/* Pagination */
+.nspBotInterface,
+.nspTopInterface {
+	margin: 0;
+	overflow: hidden;
+	right: 0;
+	position:absolute;
+}
+
+/*
+	Interface - for different looking Top and Bottom interface use the following classes:
+	.nspTopInterface
+	.nspBotInterface (e.g.: .nspTopInterface .nspPagination li ...)
+*/
+.nspPagination {
+	list-style-type: none!important;
+	margin: 5px 0 0 0!important;
+	padding: 0!important;
+}
+.nspPagination li {
+	background: #bbb;
+	-webkit-border-radius: 50%;
+	   -moz-border-radius: 50%;
+	        border-radius: 50%;
+	cursor:pointer;
+	height: 8px;
+	text-indent:-999em;
+	width: 8px;
+}
+.nspPagination li:hover,
+.nspPagination li.active {
+	background-color: #666;
+}
+.nspNext,
+.nspPrev {
+	background: url('../images/nsp_interface.png') no-repeat -39px -8px;
+	cursor: pointer;
+	float: left;
+	height: 15px;
+	margin: 0 0 0 4px;
+	text-indent: -999em;
+	width: 15px;
+	border: 1px solid #666;
+}
+.nspPrev {
+	background-position: -8px -8px;
+}
+.nspNext:hover,
+.nspPrev:hover {
+	border: 1px solid #999;
+}
+
+/* Articles layout */
+.nspArts {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	padding: 0;
+}
+.nspArtPage {
+	float: left;
+}
+.nspArt {
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+	float:left;
+}
+.nspArt div {
+	overflow: hidden;
+}
+.nspArt h4.nspHeader a {
+	text-decoration: none;
+}
+.nspArt h4.nspHeader a:hover { }
+.nspArt img.nspImage {
+	border: none;
+	display: block;
+}
+.nspArt .nspImageWrapper {
+	display: block;
+}
+.nspArt p.nspText {
+	display: block!important;
+}
+.nspArt p.nspText a { }
+.nspArt p.nspText a:hover { }
+.nspArt p.nspInfo {
+	display: inline-block!important;
+}
+.nspArt p.nspInfo a {padding-left:3px; padding-right:3px; }
+.nspArt p.nspInfo a:hover { }
+.nspArt .tleft {
+	text-align: left;
+}
+.nspArt .tright {
+	text-align: right;
+}
+.nspArt .tcenter {
+	text-align: center;
+}
+.nspArt .tjustify {
+	text-align: justify;
+}
+.nspArt .fleft {
+	float: left;
+}
+.nspArt .fright {
+	float: right;
+}
+.nspArt .fnone {
+	clear: both;
+	float: none;
+	width: 100%;
+}
+.readon.left,
+.readon.right,
+.readon.center {
+	clear: both;
+}
+.readon.left {
+	float: left;
+}
+.readon.right {
+	float: right;
+}
+.readon.center {
+	display: inline;
+	float: none;
+}
+.nspAvatar { }
+
+/* Links layout */
+.nspLinks {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.nspList {
+	float: left;
+}
+.nspLinks ul {
+	list-style-type: none!important;
+	padding: 0!important;
+}
+.nspLinks .nspLinkScroll1 ul li:first-child {}
+.nspLinks ul li:hover { }
+.nspLinks ul li h4 { }
+.nspLinks ul li h4 a {
+	text-decoration: none;
+}
+.nspLinks ul li h4 a:hover { }
+.nspLinks ul li p { }
+
+/* positioning */
+.nspArts.left {
+	float: right;
+}
+.nspLinksWrap.left {
+	float: left;
+}
+.nspArts.right {
+	float: left;
+}
+.nspLinksWrap.right {
+	float: right;
+}
+
+/* make element unvisible */
+.nspMain .unvisible {
+	left: -9999px;
+	position: absolute;
+	top: auto;
+}
+
+/* Responsive layout */
+.gkResponsive img.nspImage,
+img.nspImage.gkResponsive {
+	height: auto;
+	width: 100%!important;
+}
+.nspArt img.nspImage {
+	max-width: 100%;
+}
+.nspArtScroll1,
+.nspLinkScroll1 {
+	width: 100%;
+}
+.nspPages1 { width: 100%; }
+.nspPages2 { width: 200%; }
+.nspPages3 { width: 300%; }
+.nspPages4 { width: 400%; }
+.nspPages5 { width: 500%; }
+.nspPages6 { width: 600%; }
+.nspPages7 { width: 700%; }
+.nspPages8 { width: 800%; }
+.nspPages9 { width: 900%; }
+.nspPages10 { width: 1000%; }
+.nspCol1 { width: 100%; }
+.nspCol2 { width: 50%; }
+.nspCol3 { width: 33.3%; }
+.nspCol4 { width: 25%; }
+.nspCol5 { width: 20%; }
+.nspCol6 { width: 16.66%; }
+.nspCol7 { width: 14.285%; }
+.nspCol8 { width: 12.5%; }
+.nspCol9 { width: 11.1%; }
+.nspCol10 { width: 10%; }
+.nspCol11 { width: 9.09%; }
+.nspCol12 { width: 8.33%; }
+.nspCol13 { width: 7.69%; }
+.nspCol14 { width: 7.14%; }
+.nspCol15 { width: 6.66%; }
+.nspCol16 { width: 6.25%; }
+.nspCol17 { width: 5.88%; }
+.nspCol18 { width: 5.55%; }
+.nspCol19 { width: 5.26%; }
+.nspCol20 { width: 5%; }
+
+/* Animation */
+.nspList,
+.nspArtPage {
+	opacity: 0;
+	-webkit-transition: opacity 0.5s ease-out;
+	   -moz-transition: opacity 0.5s ease-out;
+	    -ms-transition: opacity 0.5s ease-out;
+      	 -o-transition: opacity 0.5s ease-out;
+	        transition: opacity 0.5s ease-out;
+}
+.nspList.active,
+.nspArtPage.active {
+	opacity: 1;
+}
+
+/* Suffix neutral */
+.neutral {
+	color: #999;
+	font-size: 13px;
+}
+.neutral a {
+	color: #333;
+	text-decoration: none;
+}
+.neutral a:active,
+.neutral a:focus,
+.neutral a:hover {
+	color: #777;
+}
+.neutral .nspHeader{
+	font-size: 18px;
+	font-weight: 400;
+}
+.neutral .nspInfo a {
+	padding-right: 5px;
+}
+.neutral .readon {
+	background: #333;
+	-webkit-border-radius: 3px;
+	   -moz-border-radius: 3px;
+	        border-radius: 3px;
+	color: #fff;
+	padding: 6px 10px;
+}
+.neutral .readon:active,
+.neutral .readon:focus,
+.neutral .readon:hover {
+	background: #999;
+	color: #fff;
+}
+.neutral .nspLinks ul li h4 {
+	font-size: 15px;
+	margin: 0 0 10px 0;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+	.nspArts,
+	.nspLinksWrap {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+		overflow: hidden;
+		/*position: relative;*/
+	}
+	.nspArt p.nspInfo {
+		font-size: 10px;
+	}
+
+	.nspPagination {
+		display: none;
+	}
+}
+
+@media (max-width: 600px) {
+	.nspArt {
+		width: 100%;
+	}
+}
+
+/* ====================  End  =================== */
+
+
+
+/* --------------  Tabs GK5 - style 3  -------------*/
+/* ==================  Edit Tabs  ================= */
+.gkTabsWrap.vertical ol {z-index:9; }
+.gkTabsWrap.vertical ol li, .gkTabsWrap.horizontal ol li {/* Old browsers */}
+.gkTabsWrap.vertical ol li:hover,
+.gkTabsWrap.vertical ol li.active,
+.gkTabsWrap.horizontal ol li:hover,
+.gkTabsWrap.horizontal ol li.active {}
+.gkTabsContainer + ol {}
+.gkTabsButtonNext, .gkTabsButtonPrev {background: #ddd;}
+.gkTabsButtonNext:hover, .gkTabsButtonPrev:hover {background: #eee;}
+.gkTabsWrap.horizontal > ol {background: #fff;}
+/* ==================  End  ===================== */
+
+/* VERTICAL mode */
+.gkTabsGK5 {position: relative; /*overflow: hidden;*/}
+.gkTabsWrap {margin: 0;}
+/* tabs */
+.gkTabsWrap.vertical ol li, .gkTabsWrap.horizontal ol li {
+	cursor: pointer;
+	display:inline-block;
+	list-style-type: none;
+	position: relative;
+	font-weight: normal;
+}
+/* bottom tabs */
+.gkTabsContainer + ol {border-bottom: none!important;}
+.gkTabsContainer + ol li {border-radius: 0 0 2px 2px!important;}
+
+/* containers */
+.gkTabsContainer {clear: both; overflow: hidden;	position: relative;}
+.gkTabsItem.active {left: 0;	position: relative;	z-index: 2;}
+
+/* buttons prev/next */
+.gkTabsButtonNext,
+.gkTabsButtonPrev {
+	border-radius: 50%;
+	cursor: pointer;
+	height: 18px;
+	position: absolute;
+	right: 0;
+	font: 0/0px a;
+	top: 43%;
+	width: 18px;
+	z-index: 3;
+}
+.gkTabsButtonPrev {left: 0;	right: inherit;}
+.gkTabsButtonNext:before, .gkTabsButtonPrev:before {
+	content: "›";
+	display: block;
+	font-size: 14px;
+	font-weight: bold;
+	height: 18px;
+	line-height: 17px;
+	text-align: center;
+	width: 18px;
+}
+.gkTabsButtonPrev:before {
+	content: "‹";
+}
+
+/*  HORIZONTAL mode  */
+.gkTabsWrap.horizontal {-webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; display: table; width: 100%;}
+.gkTabsWrap.horizontal > ol, .gkTabsWrap.horizontal > .gkTabsContainer {display: table-cell; vertical-align: top;}
+.gkTabsWrap.horizontal > ol {position: relative; z-index: 5;}
+
+/* tabs */
+.gkTabsWrap.horizontal ol li {cursor: pointer;	float: right; border-radius: 2px; margin: 0 0 3px!important;}
+.gkTabsWrap.horizontal ol li:hover, .gkTabsWrap.horizontal ol li.active {/* line 45 */}
+.gkTabsWrap.horizontal .gkTabsItem {padding: 2px 20px}
+
+/* right tabs */
+.gkTabsWrap.horizontal .gkTabsContainer + ol {border: none !important}
+.gkTabsWrap.horizontal .gkTabsContainer + ol li {border-radius: 2px !important;	float: left;}
+
+
+/* -------- Acymailing Newsletter Modules ----------*/
+/* ====================  start  =================== */
+
+/* ====================  end  =================== */

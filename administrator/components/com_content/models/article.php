@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_content
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -46,7 +46,7 @@ class ContentModelArticle extends JModelAdmin
 	protected $associationsContext = 'com_content.item';
 
 	/**
-	 * Function that can be overridden to do any data cleanup after batch copying data
+	 * Function that can be overriden to do any data cleanup after batch copying data
 	 *
 	 * @param   \JTableInterface  $table  The table object containing the newly created item
 	 * @param   integer           $newId  The id of the new item
@@ -213,12 +213,17 @@ class ContentModelArticle extends JModelAdmin
 	 */
 	protected function canDelete($record)
 	{
-		if (empty($record->id) || $record->state != -2)
+		if (!empty($record->id))
 		{
-			return false;
+			if ($record->state != -2)
+			{
+				return false;
+			}
+
+			return JFactory::getUser()->authorise('core.delete', 'com_content.article.' . (int) $record->id);
 		}
 
-		return JFactory::getUser()->authorise('core.delete', 'com_content.article.' . (int) $record->id);
+		return false;
 	}
 
 	/**
@@ -382,11 +387,13 @@ class ContentModelArticle extends JModelAdmin
 		 * The front end calls this model and uses a_id to avoid id clashes so we need to check for that first.
 		 * The back end uses id so we use that the rest of the time and set it to 0 by default.
 		 */
-		$id = (int) $jinput->get('a_id', $jinput->get('id', 0));
+		$id = $jinput->get('a_id', $jinput->get('id', 0));
 
 		// Determine correct permissions to check.
-		if ($id = $this->getState('article.id', $id))
+		if ($this->getState('article.id'))
 		{
+			$id = $this->getState('article.id');
+
 			// Existing record. Can only edit in selected categories.
 			$form->setFieldAttribute('catid', 'action', 'core.edit');
 
@@ -402,7 +409,6 @@ class ContentModelArticle extends JModelAdmin
 					|| ($id == 0 && !$user->authorise('core.edit.state', 'com_content')))
 				{
 					$form->setFieldAttribute('catid', 'readonly', 'true');
-					$form->setFieldAttribute('catid', 'required', 'false');
 					$form->setFieldAttribute('catid', 'filter', 'unset');
 				}
 			}
@@ -413,33 +419,10 @@ class ContentModelArticle extends JModelAdmin
 			$form->setFieldAttribute('catid', 'action', 'core.create');
 		}
 
-		// Object uses for checking edit state permission of article
-		$record = new stdClass;
-		$record->id = $id;
-
-		// Get the category which the article is being added to
-		if (!empty($data['catid']))
-		{
-			$catId = (int) $data['catid'];
-		}
-		else
-		{
-			$catIds  = $form->getValue('catid');
-
-			$catId = is_array($catIds)
-				? (int) reset($catIds)
-				: (int) $catIds;
-
-			if (!$catId)
-			{
-				$catId = (int) $form->getFieldAttribute('catid', 'default', 0);
-			}
-		}
-
-		$record->catid = $catId;
-
+		// Check for existing article.
 		// Modify the form based on Edit State access controls.
-		if (!$this->canEditState($record))
+		if ($id != 0 && (!$user->authorise('core.edit.state', 'com_content.article.' . (int) $id))
+			|| ($id == 0 && !$user->authorise('core.edit.state', 'com_content')))
 		{
 			// Disable fields for display.
 			$form->setFieldAttribute('featured', 'disabled', 'true');
@@ -541,19 +524,16 @@ class ContentModelArticle extends JModelAdmin
 	public function validate($form, $data, $group = null)
 	{
 		// Don't allow to change the users if not allowed to access com_users.
-		if (!JFactory::getUser()->authorise('core.manage', 'com_users'))
+		if (JFactory::getApplication()->isClient('administrator') && !JFactory::getUser()->authorise('core.manage', 'com_users'))
 		{
 			if (isset($data['created_by']))
 			{
 				unset($data['created_by']);
 			}
-		}
 
-		if (!JFactory::getUser()->authorise('core.admin', 'com_content'))
-		{
-			if (isset($data['rules']))
+			if (isset($data['modified_by']))
 			{
-				unset($data['rules']);
+				unset($data['modified_by']);
 			}
 		}
 
@@ -593,22 +573,20 @@ class ContentModelArticle extends JModelAdmin
 
 		JLoader::register('CategoriesHelper', JPATH_ADMINISTRATOR . '/components/com_categories/helpers/categories.php');
 
-		// Create new category, if needed.
-		$createCategory = true;
+		// Cast catid to integer for comparison
+		$catid = (int) $data['catid'];
 
-		// If category ID is provided, check if it's valid.
-		if (is_numeric($data['catid']) && $data['catid'])
+		// Check if New Category exists
+		if ($catid > 0)
 		{
-			$createCategory = !CategoriesHelper::validateCategoryId($data['catid'], 'com_content');
+			$catid = CategoriesHelper::validateCategoryId($data['catid'], 'com_content');
 		}
 
 		// Save New Category
-		if ($createCategory && $this->canCreateCategory())
+		if ($catid == 0 && $this->canCreateCategory())
 		{
 			$table = array();
-
-			// Remove #new# prefix, if exists.
-			$table['title'] = strpos($data['catid'], '#new#') === 0 ? substr($data['catid'], 5) : $data['catid'];
+			$table['title'] = $data['catid'];
 			$table['parent_id'] = 1;
 			$table['extension'] = 'com_content';
 			$table['language'] = $data['language'];
@@ -832,9 +810,6 @@ class ContentModelArticle extends JModelAdmin
 		if ($this->canCreateCategory())
 		{
 			$form->setFieldAttribute('catid', 'allowAdd', 'true');
-
-			// Add a prefix for categories created on the fly.
-			$form->setFieldAttribute('catid', 'customPrefix', '#new#');
 		}
 
 		// Association content items
@@ -875,14 +850,14 @@ class ContentModelArticle extends JModelAdmin
 	/**
 	 * Custom clean the cache of com_content and content modules
 	 *
-	 * @param   string   $group     The cache group
-	 * @param   integer  $clientId  The ID of the client
+	 * @param   string   $group      The cache group
+	 * @param   integer  $client_id  The ID of the client
 	 *
 	 * @return  void
 	 *
 	 * @since   1.6
 	 */
-	protected function cleanCache($group = null, $clientId = 0)
+	protected function cleanCache($group = null, $client_id = 0)
 	{
 		parent::cleanCache('com_content');
 		parent::cleanCache('mod_articles_archive');

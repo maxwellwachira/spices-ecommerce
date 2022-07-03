@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util\Transfer;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * An interface for Transfer adapters which support remote resources, allowing us to efficient read from / write to
@@ -31,7 +33,7 @@ interface RemoteResourceInterface
 	/**
 	 * Return the raw server listing for the requested folder.
 	 *
-	 * @param   string  $folder  The path name to list
+	 * @param   string  $folder        The path name to list
 	 *
 	 * @return  string
 	 */

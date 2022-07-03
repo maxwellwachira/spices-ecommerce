@@ -27,14 +27,14 @@ defined('_JEXEC') or die;
                 <?php if(isset($this->product_filters) && count($this->product_filters)): ?>
                     <?php foreach($this->product_filters as $group_id=>$filters):?>
                         <tr>
-                            <td colspan="2"><h4><?php echo $this->escape($filters['group_name']); ?></h4></td>
+                            <td colspan="2"><h4><?php echo $filters['group_name']; ?></h4></td>
                         </tr>
                         <?php foreach($filters['filters'] as $filter):
                             ?>
                             <tr
                                 id="product_filter_current_option_<?php echo $filter->filter_id;?>">
                                 <td class="addedFilter">
-                                    <?php echo $this->escape($filter->filter_name) ;?>
+                                    <?php echo $filter->filter_name ;?>
                                 </td>
                                 <td><span class="filterRemove"
                                           onclick="removeFilter(<?php echo $filter->filter_id; ?>, <?php echo $this->item->j2store_product_id; ?>);">x</span>

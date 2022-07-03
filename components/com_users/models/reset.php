@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -22,7 +22,7 @@ class UsersModelReset extends JModelForm
 	 * The base form is loaded from XML and then an event is fired
 	 * for users plugins to extend the form with extra fields.
 	 *
-	 * @param   array    $data      An optional array of data for the form to interrogate.
+	 * @param   array    $data      An optional array of data for the form to interogate.
 	 * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
 	 *
 	 * @return  JForm  A JForm object on success, false on failure
@@ -208,15 +208,10 @@ class UsersModelReset extends JModelForm
 			return false;
 		}
 
-		// Prepare user data.
-		$data['password']   = $data['password1'];
-		$data['activation'] = '';
-
 		// Update the user object.
-		if (!$user->bind($data))
-		{
-			return new \Exception($user->getError(), 500);
-		}
+		$user->password = JUserHelper::hashPassword($data['password1']);
+		$user->activation = '';
+		$user->password_clear = $data['password1'];
 
 		// Save the user to the database.
 		if (!$user->save(true))
@@ -384,7 +379,7 @@ class UsersModelReset extends JModelForm
 		$query = $db->getQuery(true)
 			->select('id')
 			->from($db->quoteName('#__users'))
-			->where('LOWER(' . $db->quoteName('email') . ') = LOWER(' . $db->quote($data['email']) . ')');
+			->where($db->quoteName('email') . ' = ' . $db->quote($data['email']));
 
 		// Get the user object.
 		$db->setQuery($query);

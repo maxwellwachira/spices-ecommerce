@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,6 +14,7 @@ jimport('joomla.application.component.controller');
 
 class K2ControllerExtraFieldsGroups extends K2Controller
 {
+
     public function display($cachable = false, $urlparams = array())
     {
         JRequest::setVar('view', 'extrafieldsgroups');
@@ -23,23 +24,24 @@ class K2ControllerExtraFieldsGroups extends K2Controller
         parent::display();
     }
 
-    public function add()
+    function add()
     {
-        $app = JFactory::getApplication();
-        $app->redirect('index.php?option=com_k2&view=extrafieldsgroup');
+        $mainframe = JFactory::getApplication();
+        $mainframe->redirect('index.php?option=com_k2&view=extrafieldsgroup');
     }
 
-    public function edit()
+    function edit()
     {
-        $app = JFactory::getApplication();
+        $mainframe = JFactory::getApplication();
         $cid = JRequest::getVar('cid');
-        $app->redirect('index.php?option=com_k2&view=extrafieldsgroup&cid='.$cid[0]);
+        $mainframe->redirect('index.php?option=com_k2&view=extrafieldsgroup&cid='.$cid[0]);
     }
 
-    public function remove()
+    function remove()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('extraFields');
         $model->removeGroups();
     }
+
 }

@@ -25,7 +25,7 @@ $options = $this->product->options;
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b><?php echo JText::_($option['option_name']); ?>:</b><br />
           <select name="product_option[<?php echo $option['productoption_id']; ?>]"
          	 onChange="doAjaxPrice(
          	 			<?php echo $this->product->j2store_product_id?>,
@@ -51,7 +51,7 @@ $options = $this->product->options;
           <?php if ($option['required']) { ?>
           <span class="required">*</span>
           <?php } ?>
-          <b ><?php echo $this->escape(JText::_($option['option_name'])); ?>:</b><br />
+          <b ><?php echo JText::_($option['option_name']); ?>:</b><br />
           <?php foreach ($option['optionvalue'] as $option_value) { ?>
           	<?php $checked = ''; if($option_value['product_optionvalue_default']) $checked = 'checked="checked"'; ?>
           <input <?php echo $checked; ?> type="radio" name="product_option[<?php echo $option['productoption_id']; ?>]"

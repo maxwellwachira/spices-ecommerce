@@ -329,7 +329,6 @@ class J2Utilities {
             'SEK' => 'Sweden Krona',
             'SRD' => 'Suriname Dollar',
             'SYP' => 'Syria Pound',
-            'SDG' => 'Sudanese Pound',
             'TWD' => 'Taiwan New Dollar',
             'THB' => 'Thailand Baht',
             'TTD' => 'Trinidad and Tobago Dollar',
@@ -346,104 +345,5 @@ class J2Utilities {
             'ZWD' => 'Zimbabwe Dollar'
         );
 	}
-
-	/**
-     * Remove unwanted content
-     * @param $str - un-process content
-     * @return string
-	*/
-	function text_sanitize($str){
-        $str = $this->remove_unwanted_text($str);
-        return $str;
-    }
-
-	function remove_unwanted_text($str, $keep_newlines = true){
-        $filtered = $this->convert_utf8( $str );
-        if ( strpos( $filtered, '<' ) !== false ) {
-            // This will strip extra whitespace for us.
-            $filtered = $this->strip_all_tags( $filtered, false );
-
-            // Use html entities in a special case to make sure no later
-            // newline stripping stage could lead to a functional tag
-            $filtered = str_replace( "<\n", "&lt;\n", $filtered );
-        }
-
-        if ( ! $keep_newlines ) {
-            $filtered = preg_replace( '/[\r\n\t ]+/', ' ', $filtered );
-        }
-        $filtered = trim( $filtered );
-
-        $found = false;
-        while ( preg_match( '/%[a-f0-9]{2}/i', $filtered, $match ) ) {
-            $filtered = str_replace( $match[0], '', $filtered );
-            $found    = true;
-        }
-
-        if ( $found ) {
-            // Strip out the whitespace that may now exist after removing the octets.
-            $filtered = trim( preg_replace( '/ +/', ' ', $filtered ) );
-        }
-
-        return $filtered;
-    }
-
-    function convert_utf8($string, $strip = false){
-        // Check for support for utf8 in the installed PCRE library once and store the result in a static
-        static $utf8_pcre = null;
-        if ( ! isset( $utf8_pcre ) ) {
-            $utf8_pcre = @preg_match( '/^./u', 'a' );
-        }
-        // We can't demand utf8 in the PCRE installation, so just return the string in those cases
-        if ( ! $utf8_pcre ) {
-            return $string;
-        }
-
-        // preg_match fails when it encounters invalid UTF8 in $string
-        if ( 1 === @preg_match( '/^./us', $string ) ) {
-            return $string;
-        }
-
-        // Attempt to strip the bad chars if requested (not recommended)
-        if ( $strip && function_exists( 'iconv' ) ) {
-            return iconv( 'utf-8', 'utf-8', $string );
-        }
-        return '';
-    }
-
-
-    function strip_all_tags( $string, $remove_breaks = false ) {
-        $string = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $string );
-        $string = strip_tags( $string );
-
-        if ( $remove_breaks ) {
-            $string = preg_replace( '/[\r\n\t ]+/', ' ', $string );
-        }
-
-        return trim( $string );
-    }
-
-    function convert_utc_current($date,$format = 'Y-m-d H:i:s'){
-        $nullDate =  JFactory::getDbo()->getNullDate();
-        if(empty($date) || $date == $nullDate){
-            return $nullDate;
-        }
-        $from_date = JFactory::getDate($date,'UTC');
-        $tz = JFactory::getConfig()->get('offset');
-        $timezone = new DateTimeZone($tz);
-        $from_date->setTimezone($timezone);
-        return $from_date->format($format,true);
-    }
-
-    function convert_current_to_utc($date,$format = 'Y-m-d H:i:s'){
-        $nullDate =  JFactory::getDbo()->getNullDate();
-        if(empty($date) || $date == $nullDate){
-            return $nullDate;
-        }
-        $tz = JFactory::getConfig()->get('offset');
-        $from_date = JFactory::getDate($date,$tz);
-        $timezone = new DateTimeZone('UTC');
-        $from_date->setTimezone($timezone);
-        return $from_date->format($format);
-    }
 }
 

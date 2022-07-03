@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_media
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -38,14 +38,7 @@ if (substr(strtolower($view), 0, 6) == 'images' || $popup_upload == 1)
 	$path = 'image_path';
 }
 
-$mediaBaseDir = JPATH_ROOT . '/' . $params->get($path, 'images');
-
-if (!is_dir($mediaBaseDir))
-{
-	throw new \InvalidArgumentException(JText::_('JERROR_AN_ERROR_HAS_OCCURRED'), 500);
-}
-
-define('COM_MEDIA_BASE', $mediaBaseDir);
+define('COM_MEDIA_BASE', JPATH_ROOT . '/' . $params->get($path, 'images'));
 define('COM_MEDIA_BASEURL', JUri::root() . $params->get($path, 'images'));
 
 $controller = JControllerLegacy::getInstance('Media', array('base_path' => JPATH_COMPONENT_ADMINISTRATOR));

@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -331,11 +331,14 @@ class FormHelper
 		// Add the new paths to the stack if not already there.
 		foreach ($new as $path)
 		{
-			$path = trim($path);
-
 			if (!in_array($path, $paths))
 			{
-				array_unshift($paths, $path);
+				array_unshift($paths, trim($path));
+			}
+
+			if (!is_dir($path))
+			{
+				array_unshift($paths, trim($path));
 			}
 		}
 
@@ -479,31 +482,21 @@ class FormHelper
 			$compareEqual     = strpos($showOnPart, '!:') === false;
 			$showOnPartBlocks = explode(($compareEqual ? ':' : '!:'), $showOnPart, 2);
 
-			$dotPos = strpos($showOnPartBlocks[0], '.');
-
-			if ($dotPos === false)
+			if (strpos($showOnPartBlocks[0], '.') !== false)
 			{
-				$field = $formPath ? $formPath . '[' . $showOnPartBlocks[0] . ']' : $showOnPartBlocks[0];
-			}
-			else
-			{
-				if ($dotPos === 0)
+				if ($formControl)
 				{
-					$fieldName = substr($showOnPartBlocks[0], 1);
-					$field     = $formControl ? $formControl . '[' . $fieldName . ']' : $fieldName;
+					$field = $formControl . ('[' . str_replace('.', '][', $showOnPartBlocks[0]) . ']');
 				}
 				else
 				{
-					if ($formControl)
-					{
-						$field = $formControl . ('[' . str_replace('.', '][', $showOnPartBlocks[0]) . ']');
-					}
-					else
-					{
-						$groupParts = explode('.', $showOnPartBlocks[0]);
-						$field      = array_shift($groupParts) . '[' . join('][', $groupParts) . ']';
-					}
+					$groupParts = explode('.', $showOnPartBlocks[0]);
+					$field      = array_shift($groupParts) . '[' . join('][', $groupParts) . ']';
 				}
+			}
+			else
+			{
+				$field = $formPath ? $formPath . '[' . $showOnPartBlocks[0] . ']' : $showOnPartBlocks[0];
 			}
 
 			$showOnData[] = array(

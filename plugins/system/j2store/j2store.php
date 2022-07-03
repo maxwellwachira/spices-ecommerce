@@ -76,7 +76,7 @@ class plgSystemJ2Store extends JPlugin {
 
 	function onAfterRoute() {
 
-        $app = JFactory::getApplication();
+		$mainframe = JFactory::getApplication();
 		$document =JFactory::getDocument();
 		$baseURL = JURI::root();
 		$script = "
@@ -84,24 +84,10 @@ class plgSystemJ2Store extends JPlugin {
 		";
 		$document->addScriptDeclaration($script);
 
-		if($app->isSite()) {
+		if($mainframe->isSite()) {
 			//$this->_addCartJS();
-            $coupon = $app->input->getString('coupon','');
-            if(!empty($coupon)){
-                F0FModel::getTmpInstance ( 'Coupons', 'J2StoreModel' )->set_coupon($coupon);
-            }
 		}
-        $post = $app->input->getArray($_REQUEST);
-		$is_change_filter_input = $this->params->get('is_change_filter_input',1);
-        if($is_change_filter_input && $app->isClient('administrator') && isset($post['option']) && $post['option'] == 'com_j2store'){
-            $script = "
-            jQuery(document).on('ready',function(){
-                jQuery('#adminForm input[name=\"filter_order\"').attr('name','sort_order');
-                jQuery('#adminForm input[name=\"filter_order_Dir\"').attr('name','sort_order_Dir');
-            });
-           ";
-            $document->addScriptDeclaration($script);
-        }
+
 	}
 
 	public function onUserLogin($user, $options = array())
@@ -147,18 +133,6 @@ class plgSystemJ2Store extends JPlugin {
 	 */
 	public function onAfterInitialise()
 	{
-        $app = JFactory::getApplication();
-        $post = $app->input->getArray($_REQUEST);
-        $is_change_filter_input = $this->params->get('is_change_filter_input',1);
-        if($is_change_filter_input && $app->isClient('administrator') && isset($post['option']) && $post['option'] == 'com_j2store'){
-            foreach ($post as $key => $value){
-                if($key == 'sort_order' || $key == 'sort_order_Dir'){
-                    $new_key = str_replace('sort','filter',$key);
-                    $app->input->set($new_key,$value);
-                }
-            }
-        }
-
 		// Check if we need to run
 	 	if (!$this->doIHaveToRun())
 		{

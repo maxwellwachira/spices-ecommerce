@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -12,61 +12,70 @@ defined('_JEXEC') or die;
 
 jimport('joomla.application.component.model');
 
-JTable::addIncludePath(JPATH_COMPONENT.'/tables');
+JTable::addIncludePath(JPATH_COMPONENT.DS.'tables');
 
 class K2ModelUser extends K2Model
 {
-    public function getData()
+
+    function getData()
     {
         $cid = JRequest::getInt('cid');
-        $db = JFactory::getDbo();
+        $db = JFactory::getDBO();
         $query = "SELECT * FROM #__k2_users WHERE userID = ".$cid;
         $db->setQuery($query);
         $row = $db->loadObject();
-        if (!$row) {
+        if (!$row)
+        {
             $row = JTable::getInstance('K2User', 'Table');
         }
         return $row;
     }
 
-    public function save()
+    function save()
     {
-        $app = JFactory::getApplication();
+
+        $mainframe = JFactory::getApplication();
         jimport('joomla.filesystem.file');
-        require_once(JPATH_SITE.'/media/k2/assets/vendors/verot/class.upload.php/src/class.upload.php');
+        require_once (JPATH_COMPONENT.DS.'lib'.DS.'class.upload.php');
         $row = JTable::getInstance('K2User', 'Table');
         $params = JComponentHelper::getParams('com_k2');
 
-        if (!$row->bind(JRequest::get('post'))) {
-            $app->enqueueMessage($row->getError(), 'error');
-            $app->redirect('index.php?option=com_k2&view=users');
+        if (!$row->bind(JRequest::get('post')))
+        {
+        	$mainframe->enqueueMessage($row->getError(), 'error');
+            $mainframe->redirect('index.php?option=com_k2&view=users');
         }
 
         $row->description = JRequest::getVar('description', '', 'post', 'string', 2);
-        if ($params->get('xssFiltering')) {
-            $filter = new JFilterInput(array(), array(), 1, 1, 0);
+        if ($params->get('xssFiltering'))
+        {
+            $filter = new JFilterInput( array(), array(), 1, 1, 0);
             $row->description = $filter->clean($row->description);
         }
         $jUser = JFactory::getUser($row->userID);
         $row->userName = $jUser->name;
 
-        if (!$row->store()) {
-            $app->enqueueMessage($row->getError(), 'error');
-            $app->redirect('index.php?option=com_k2&view=users');
+        if (!$row->store())
+        {
+        	$mainframe->enqueueMessage($row->getError(), 'error');
+            $mainframe->redirect('index.php?option=com_k2&view=users');
         }
 
-        // Image
-        if ((int)$params->get('imageMemoryLimit')) {
+        //Image
+        if ((int)$params->get('imageMemoryLimit'))
+        {
             ini_set('memory_limit', (int)$params->get('imageMemoryLimit').'M');
         }
 
         $file = JRequest::get('files');
 
-        $savepath = JPATH_ROOT.'/media/k2/users/';
+        $savepath = JPATH_ROOT.DS.'media'.DS.'k2'.DS.'users'.DS;
 
-        if ($file['image']['error'] == 0 && !JRequest::getBool('del_image')) {
+        if ($file['image']['error'] == 0 && !JRequest::getBool('del_image'))
+        {
             $handle = new Upload($file['image']);
-            if ($handle->uploaded) {
+            if ($handle->uploaded)
+            {
                 $handle->file_auto_rename = false;
                 $handle->file_overwrite = true;
                 $handle->file_new_name_body = $row->id;
@@ -75,91 +84,103 @@ class K2ModelUser extends K2Model
                 $handle->image_x = $params->get('userImageWidth', '100');
                 $handle->Process($savepath);
                 $handle->Clean();
-            } else {
-                $app->enqueueMessage($handle->error, 'error');
-                $app->redirect('index.php?option=com_k2&view=users');
+            }
+            else
+            {
+            	$mainframe->enqueueMessage($handle->error, 'error');
+                $mainframe->redirect('index.php?option=com_k2&view=users');
             }
             $row->image = $handle->file_dst_name;
         }
 
-        if (JRequest::getBool('del_image')) {
+        if (JRequest::getBool('del_image'))
+        {
+
             $current = JTable::getInstance('K2User', 'Table');
             $current->load($row->id);
-            if (JFile::exists(JPATH_ROOT.'/media/k2/users/'.$current->image)) {
-                JFile::delete(JPATH_ROOT.'/media/k2/users/'.$current->image);
+            if (JFile::exists(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'users'.DS.$current->image))
+            {
+                JFile::delete(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'users'.DS.$current->image);
             }
             $row->image = '';
         }
 
-        if (!$row->check()) {
-            $app->enqueueMessage($row->getError(), 'error');
-            $app->redirect('index.php?option=com_k2&view=user&cid='.$row->id);
+        if (!$row->check())
+        {
+        	$mainframe->enqueueMessage($row->getError(), 'error');
+            $mainframe->redirect('index.php?option=com_k2&view=user&cid='.$row->id);
         }
 
-        if (!$row->store()) {
-            $app->enqueueMessage($row->getError(), 'error');
-            $app->redirect('index.php?option=com_k2&view=users');
+        if (!$row->store())
+        {
+        	$mainframe->enqueueMessage($row->getError(), 'error');
+            $mainframe->redirect('index.php?option=com_k2&view=users');
         }
 
         $cache = JFactory::getCache('com_k2');
         $cache->clean();
 
-        switch (JRequest::getCmd('task')) {
-            case 'apply':
+        switch(JRequest::getCmd('task'))
+        {
+            case 'apply' :
                 $msg = JText::_('K2_CHANGES_TO_USER_SAVED');
                 $link = 'index.php?option=com_k2&view=user&cid='.$row->userID;
                 break;
-            case 'save':
-            default:
+            case 'save' :
+            default :
                 $msg = JText::_('K2_USER_SAVED');
                 $link = 'index.php?option=com_k2&view=users';
                 break;
         }
-        $app->enqueueMessage($msg);
-        $app->redirect($link);
+		$mainframe->enqueueMessage($msg);
+        $mainframe->redirect($link);
     }
 
-    public function getUserGroups()
+    function getUserGroups()
     {
-        $db = JFactory::getDbo();
+
+        $db = JFactory::getDBO();
         $query = "SELECT * FROM #__k2_user_groups";
         $db->setQuery($query);
         $rows = $db->loadObjectList();
         return $rows;
     }
 
-    public function reportSpammer()
+    function reportSpammer()
     {
-        $app = JFactory::getApplication();
+        $mainframe = JFactory::getApplication();
         $params = JComponentHelper::getParams('com_k2');
         $id = (int)$this->getState('id');
-        if (!$id) {
+        if (!$id)
+        {
             return false;
         }
         $user = JFactory::getUser();
-        if ($user->id == $id) {
-            $app->enqueueMessage(JText::_('K2_YOU_CANNOT_REPORT_YOURSELF'), 'error');
+        if ($user->id == $id)
+        {
+            $mainframe->enqueueMessage(JText::_('K2_YOU_CANNOT_REPORT_YOURSELF'), 'error');
             return false;
         }
-        $db = JFactory::getDbo();
+        $db = JFactory::getDBO();
 
         // Unpublish user comments
         $db->setQuery("UPDATE #__k2_comments SET published = 0 WHERE userID = ".$id);
         $db->query();
-        $app->enqueueMessage(JText::_('K2_USER_COMMENTS_UNPUBLISHED'));
+        $mainframe->enqueueMessage(JText::_('K2_USER_COMMENTS_UNPUBLISHED'));
 
         // Unpublish user items
         $db->setQuery("UPDATE #__k2_items SET published = 0 WHERE created_by = ".$id);
         $db->query();
-        $app->enqueueMessage(JText::_('K2_USER_ITEMS_UNPUBLISHED'));
+        $mainframe->enqueueMessage(JText::_('K2_USER_ITEMS_UNPUBLISHED'));
 
-        // Report the user to stopforumspam.com
+        // Report the user to http://www.stopforumspam.com/
         // We need the IP for this, so the user has to be a registered K2 user
         $spammer = JFactory::getUser($id);
         $db->setQuery("SELECT ip FROM #__k2_users WHERE userID=".$id, 0, 1);
         $ip = $db->loadResult();
         $stopForumSpamApiKey = trim($params->get('stopForumSpamApiKey'));
-        if ($ip && function_exists('fsockopen') && $stopForumSpamApiKey) {
+        if ($ip && function_exists('fsockopen') && $stopForumSpamApiKey)
+        {
             $data = "username=".$spammer->username."&ip_addr=".$ip."&email=".$spammer->email."&api_key=".$stopForumSpamApiKey;
             $fp = fsockopen("www.stopforumspam.com", 80);
             fputs($fp, "POST /add.php HTTP/1.1\n");
@@ -169,13 +190,14 @@ class K2ModelUser extends K2Model
             fputs($fp, "Connection: close\n\n");
             fputs($fp, $data);
             fclose($fp);
-            $app->enqueueMessage(JText::_('K2_USER_DATA_SUBMITTED_TO_STOPFORUMSPAM'));
+            $mainframe->enqueueMessage(JText::_('K2_USER_DATA_SUBMITTED_TO_STOPFORUMSPAM'));
         }
 
         // Finally block the user
         $db->setQuery("UPDATE #__users SET block = 1 WHERE id=".$id);
         $db->query();
-        $app->enqueueMessage(JText::_('K2_USER_BLOCKED'));
+        $mainframe->enqueueMessage(JText::_('K2_USER_BLOCKED'));
         return true;
     }
+
 }

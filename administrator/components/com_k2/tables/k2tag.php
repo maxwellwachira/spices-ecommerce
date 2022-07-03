@@ -1,25 +1,27 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
 require_once JPATH_ADMINISTRATOR.'/components/com_k2/tables/table.php';
 
 class TableK2Tag extends K2Table
 {
+
 	var $id = null;
 	var $name = null;
 	var $published = null;
 
 	function __construct(&$db)
 	{
+
 		parent::__construct('#__k2_tags', 'id', $db);
 	}
 
@@ -83,7 +85,7 @@ class TableK2Tag extends K2Table
 			return false;
 		}
 
-		// Check if a tag exists already before adding a new one
+		// Check if tag exists already for new tags
 		if (!$this->id)
 		{
 			$this->_db->setQuery("SELECT id FROM #__k2_tags WHERE name = ".$this->_db->Quote($this->name));
@@ -96,4 +98,5 @@ class TableK2Tag extends K2Table
 
 		return true;
 	}
+
 }

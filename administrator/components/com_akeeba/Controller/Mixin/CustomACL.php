@@ -1,17 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Controller\Mixin;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use RuntimeException;
-use Joomla\CMS\Language\Text;
+use JText;
 
 trait CustomACL
 {
@@ -68,7 +68,7 @@ trait CustomACL
 
 		if (!$this->container->platform->authorise($privilege, 'com_akeeba'))
 		{
-			throw new RuntimeException(\Joomla\CMS\Language\Text::_('JERROR_ALERTNOAUTHOR'), 403);
+			throw new RuntimeException(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 		}
 	}
 }

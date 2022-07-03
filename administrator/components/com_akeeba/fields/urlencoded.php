@@ -1,20 +1,18 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
-defined('_JEXEC') || die();
-
-use Joomla\CMS\Form\FormHelper;
+defined('_JEXEC') or die();
 
 if (class_exists('JFormFieldUrlencoded'))
 {
 	return;
 }
 
-FormHelper::loadFieldClass('text');
+JFormHelper::loadFieldClass('text');
 
 class JFormFieldUrlencoded extends JFormFieldText
 {

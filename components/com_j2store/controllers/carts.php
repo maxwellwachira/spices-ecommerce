@@ -269,13 +269,7 @@ class J2StoreControllerCarts extends F0FController
 			F0FModel::getTmpInstance ( 'Vouchers', 'J2StoreModel' )->set_voucher($voucher);
 		}
 
-        //check if we have a redirect
-        $redirect = JFactory::getApplication()->input->getBase64('redirect', '');
-        if(!empty($redirect)) {
-            $url = JRoute::_(base64_decode($redirect));
-        }else {
-            $url = $model->getCartUrl();
-        }
+		$url = $model->getCartUrl();
 		$this->setRedirect($url);
 	}
 
@@ -405,18 +399,14 @@ class J2StoreControllerCarts extends F0FController
             $json = array();
             if ($country_info) {
 
-                $db = JFactory::getDbo();
-                $query = $db->getQuery(true);
-                $query->select('a.*')->from('#__j2store_zones AS a');
-                $query->where('a.enabled=1')
-                    ->order('a.zone_name ASC');
-                $query->where('a.country_id='.$db->q($country_id));
-                $db->setQuery($query);
-                try {
-                    $zones = $db->loadObjectList();
-                } catch (Exception $e) {
-                    $zones = array();
-                }
+                $model = F0FModel::getTmpInstance('Zones', 'J2StoreModel')
+                    ->enabled(1)
+                    ->country_id($country_id);
+
+                $model->setState('filter_order', "zone_name");
+                $model->setState('filter_order_Dir', "ASC");
+                $zones = $model->getList();
+
             }
 
             foreach ($zones as &$zone) {

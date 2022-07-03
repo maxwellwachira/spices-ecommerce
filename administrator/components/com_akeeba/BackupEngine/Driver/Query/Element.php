@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Driver\Query;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * Query Element Class.
@@ -36,15 +38,15 @@ class Element
 	/**
 	 * Constructor.
 	 *
-	 * @param   string  $name      The name of the element.
-	 * @param   mixed   $elements  String or array.
-	 * @param   string  $glue      The glue for elements.
+	 * @param   string $name     The name of the element.
+	 * @param   mixed  $elements String or array.
+	 * @param   string $glue     The glue for elements.
 	 */
 	public function __construct($name, $elements, $glue = ',')
 	{
-		$this->elements = [];
-		$this->name     = $name;
-		$this->glue     = $glue;
+		$this->elements = array();
+		$this->name = $name;
+		$this->glue = $glue;
 
 		$this->append($elements);
 	}
@@ -69,7 +71,7 @@ class Element
 	/**
 	 * Appends element parts to the internal list.
 	 *
-	 * @param   mixed  $elements  String or array.
+	 * @param   mixed $elements String or array.
 	 *
 	 * @return  void
 	 */
@@ -81,7 +83,7 @@ class Element
 		}
 		else
 		{
-			$this->elements = array_merge($this->elements, [$elements]);
+			$this->elements = array_merge($this->elements, array($elements));
 		}
 	}
 

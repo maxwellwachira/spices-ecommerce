@@ -13,9 +13,9 @@ $limit = $global_config->get('list_limit',20);
     <input type="hidden" name="flexi_product_id" value="<?php echo $this->item->j2store_product_id;?>"/>
     <?php foreach ($this->item->product_options as $product_option): ?>
         <select name="varient_combin[<?php echo $product_option->j2store_productoption_id;?>]">
-            <option value="0"><?php echo substr(JText::_('J2STORE_ANY').' '.$this->escape($product_option->option_name),0,10).'...';?></option>
+            <option value="0"><?php echo substr(JText::_('JALL').' '.$product_option->option_name,0,10).'...';?></option>
             <?php foreach ($product_option->option_values as $option_value): ?>
-                <option value="<?php echo $option_value->j2store_optionvalue_id;?>"><?php echo $this->escape($option_value->optionvalue_name);?></option>
+                <option value="<?php echo $option_value->j2store_optionvalue_id;?>"><?php echo $option_value->optionvalue_name;?></option>
             <?php endforeach; ?>
         </select>
     <?php endforeach; ?>
@@ -43,15 +43,15 @@ $limit = $global_config->get('list_limit',20);
 
 <script type="text/javascript">
     var currentPage = <?php echo $this->item->variant_pagination->pagesCurrent;?>;
-    var total_flexivariants =<?php echo $this->item->variant_pagination->total;?>;
-    var flexi_limit  = <?php echo $limit;?>;
+    var total_variants =<?php echo $this->item->variant_pagination->total;?>;
+    var limit  = <?php echo $limit;?>;
     var product_id = <?php echo $this->item->j2store_product_id;?>;
 
     (function($) {
         /**  on load will create footer list **/
         $(document).ready(function(){
             $('#accordion').after('<div id="nav" class="pagination pagination-toolbar"><ul class="pagination-list"></ul></div>');
-            var numPages = total_flexivariants / flexi_limit;
+            var numPages = total_variants / limit;
             // now convert the numPages to int
             numPages = Math.ceil(numPages);
             if(numPages > 1 ){
@@ -74,7 +74,7 @@ $limit = $global_config->get('list_limit',20);
             var limitstart = 0;
             for(i = 0;i < numPages;i++) {
                 var pageNum = i + 1;
-                limitstart = i * flexi_limit;
+                limitstart = i * limit;
                 $('#nav .pagination-list').append('<li><a data-get_limitstart="'+limitstart +'" data-get_page="'+i+'"  onclick="getVariantList(this);" href="javascript:void(0);" rel="'+i+'">'+pageNum+'</a></li> ');
             }
             $('#nav .pagination-list li:first').addClass('active');
@@ -128,8 +128,7 @@ $limit = $global_config->get('list_limit',20);
             });
             j2Ajax.done(function(json) {
                 if(json['html']){
-                    window.location.reload();
-                    //$('#variant_display_block').html(json['html']);
+                    $('#variant_display_block').html(json['html'])
                 }
 
             }).fail(function( jqXHR, textStatus, errorThrown) {

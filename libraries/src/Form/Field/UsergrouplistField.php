@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -72,15 +72,17 @@ class UsergrouplistField extends \JFormFieldList
 	 */
 	protected function getOptions()
 	{
-		$options        = parent::getOptions();
-		$checkSuperUser = (int) $this->getAttribute('checksuperusergroup', 0);
+		// Hash for caching
+		$hash = md5($this->element);
 
-		// Cache user groups base on checksuperusergroup attribute value
-		if (!isset(static::$options[$checkSuperUser]))
+		if (!isset(static::$options[$hash]))
 		{
-			$groups       = UserGroupsHelper::getInstance()->getAll();
-			$isSuperUser  = Factory::getUser()->authorise('core.admin');
-			$cacheOptions = array();
+			static::$options[$hash] = parent::getOptions();
+
+			$groups         = UserGroupsHelper::getInstance()->getAll();
+			$checkSuperUser = (int) $this->getAttribute('checksuperusergroup', 0);
+			$isSuperUser    = Factory::getUser()->authorise('core.admin');
+			$options        = array();
 
 			foreach ($groups as $group)
 			{
@@ -90,16 +92,16 @@ class UsergrouplistField extends \JFormFieldList
 					continue;
 				}
 
-				$cacheOptions[] = (object) array(
+				$options[] = (object) array(
 					'text'  => str_repeat('- ', $group->level) . $group->title,
 					'value' => $group->id,
-					'level' => $group->level,
+					'level' => $group->level
 				);
 			}
 
-			static::$options[$checkSuperUser] = $cacheOptions;
+			static::$options[$hash] = array_merge(static::$options[$hash], $options);
 		}
 
-		return array_merge($options, static::$options[$checkSuperUser]);
+		return static::$options[$hash];
 	}
 }

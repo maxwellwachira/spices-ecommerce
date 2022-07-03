@@ -1,23 +1,21 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Driver;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Driver\Query\Base as QueryBase;
 use Akeeba\Engine\Driver\Query\Limitable;
 use Akeeba\Engine\Driver\Query\Preparable;
-use PDO;
-use PDOException;
-use PDOStatement;
-use RuntimeException;
 use SQLite3;
 
 /**
@@ -29,7 +27,6 @@ use SQLite3;
 class Sqlite extends Base
 {
 
-	public static $dbtech = 'sqlite';
 	/**
 	 * The name of the database driver.
 	 *
@@ -37,6 +34,9 @@ class Sqlite extends Base
 	 * @since  1.0
 	 */
 	public $name = 'sqlite';
+
+	public static $dbtech = 'sqlite';
+
 	/**
 	 * The character(s) used to quote SQL statement names such as table names or field names,
 	 * etc. The child classes should define this as necessary.  If a single character string the
@@ -48,40 +48,28 @@ class Sqlite extends Base
 	 */
 	protected $nameQuote = '`';
 
-	/** @var PDOStatement The database connection cursor from the last query. */
-	protected $cursor;
+    /** @var \PDOStatement The database connection cursor from the last query. */
+    protected $cursor;
 
-	/** @var resource   The prepared statement. */
-	protected $prepared;
+    /** @var resource   The prepared statement. */
+    protected $prepared;
 
-	/** @var array   Contains the current query execution status */
-	protected $executed = false;
+    /** @var array   Contains the current query execution status */
+    protected $executed = false;
 
-	public function __construct(array $options)
-	{
-		$this->driverType = 'sqlite';
+    public function __construct(array $options)
+    {
+	    $this->driverType = 'sqlite';
+	    
+        parent::__construct($options);
 
-		parent::__construct($options);
+        if (!is_object($this->connection))
+        {
+            $this->open();
+        }
+    }
 
-		if (!is_object($this->connection))
-		{
-			$this->open();
-		}
-	}
-
-	/**
-	 * Test to see if the PDO ODBC connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 * @since   1.0
-	 */
-	public static function isSupported()
-	{
-		return class_exists('\\PDO') && in_array('sqlite', PDO::getAvailableDrivers());
-	}
-
-	/**
+    /**
 	 * Destructor.
 	 *
 	 * @since   1.0
@@ -108,8 +96,8 @@ class Sqlite extends Base
 	/**
 	 * Drops a table from the database.
 	 *
-	 * @param   string   $tableName  The name of the database table to drop.
-	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
+	 * @param   string  $tableName The name of the database table to drop.
+	 * @param   boolean $ifExists  Optionally specify that the table must exist before it is dropped.
 	 *
 	 * @return  Sqlite  Returns this object to support chaining.
 	 *
@@ -133,8 +121,8 @@ class Sqlite extends Base
 	 *
 	 * Note: Using query objects with bound variables is preferable to the below.
 	 *
-	 * @param   string   $text   The string to be escaped.
-	 * @param   boolean  $extra  Unused optional parameter to provide extra escaping.
+	 * @param   string  $text  The string to be escaped.
+	 * @param   boolean $extra Unused optional parameter to provide extra escaping.
 	 *
 	 * @return  string  The escaped string.
 	 *
@@ -167,19 +155,19 @@ class Sqlite extends Base
 	 *
 	 * Note: Doesn't appear to have support in SQLite
 	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
+	 * @param   mixed $tables A table name or a list of table names.
 	 *
 	 * @return  array  A list of the create SQL for the tables.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function getTableCreate($tables)
 	{
 		$this->open();
 
 		// Sanitize input to an array and iterate over the list.
-		$tables = (array) $tables;
+		settype($tables, 'array');
 
 		return $tables;
 	}
@@ -187,24 +175,24 @@ class Sqlite extends Base
 	/**
 	 * Retrieves field information about a given table.
 	 *
-	 * @param   string   $table     The name of the database table.
-	 * @param   boolean  $typeOnly  True to only return field types.
+	 * @param   string  $table    The name of the database table.
+	 * @param   boolean $typeOnly True to only return field types.
 	 *
 	 * @return  array  An array of fields for the database table.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function getTableColumns($table, $typeOnly = true)
 	{
 		$this->open();
 
-		$columns = [];
-		$query   = $this->getQuery(true);
+		$columns = array();
+		$query = $this->getQuery(true);
 
-		$fieldCasing = $this->getOption(PDO::ATTR_CASE);
+		$fieldCasing = $this->getOption(\PDO::ATTR_CASE);
 
-		$this->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
+		$this->setOption(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
 
 		$table = strtoupper($table);
 
@@ -225,17 +213,17 @@ class Sqlite extends Base
 			foreach ($fields as $field)
 			{
 				// Do some dirty translation to MySQL output.
-				$columns[$field->NAME] = (object) [
+				$columns[$field->NAME] = (object)array(
 					'Field'   => $field->NAME,
 					'Type'    => $field->TYPE,
 					'Null'    => ($field->NOTNULL == '1' ? 'NO' : 'YES'),
 					'Default' => $field->DFLT_VALUE,
-					'Key'     => ($field->PK == '1' ? 'PRI' : ''),
-				];
+					'Key'     => ($field->PK == '1' ? 'PRI' : '')
+				);
 			}
 		}
 
-		$this->setOption(PDO::ATTR_CASE, $fieldCasing);
+		$this->setOption(\PDO::ATTR_CASE, $fieldCasing);
 
 		return $columns;
 	}
@@ -243,23 +231,23 @@ class Sqlite extends Base
 	/**
 	 * Get the details list of keys for a table.
 	 *
-	 * @param   string  $table  The name of the table.
+	 * @param   string $table The name of the table.
 	 *
 	 * @return  array  An array of the column specification for the table.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function getTableKeys($table)
 	{
 		$this->open();
 
-		$keys  = [];
+		$keys = array();
 		$query = $this->getQuery(true);
 
-		$fieldCasing = $this->getOption(PDO::ATTR_CASE);
+		$fieldCasing = $this->getOption(\PDO::ATTR_CASE);
 
-		$this->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
+		$this->setOption(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
 
 		$table = strtoupper($table);
 		$query->setQuery('pragma table_info( ' . $table . ')');
@@ -277,7 +265,7 @@ class Sqlite extends Base
 			}
 		}
 
-		$this->setOption(PDO::ATTR_CASE, $fieldCasing);
+		$this->setOption(\PDO::ATTR_CASE, $fieldCasing);
 
 		return $keys;
 	}
@@ -287,8 +275,8 @@ class Sqlite extends Base
 	 *
 	 * @return  array   An array of all the tables in the database.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function getTableList()
 	{
@@ -312,20 +300,19 @@ class Sqlite extends Base
 		return $tables;
 	}
 
-	/**
-	 * There's no point on return "a list of tables" inside a SQLite database: we are simple going to
-	 * copy the whole database file in the new location
-	 *
-	 * @param   bool  $abstract
-	 *
-	 * @return array
-	 */
-	public function getTables($abstract = true)
-	{
-		return [];
-	}
+    /**
+     * There's no point on return "a list of tables" inside a SQLite database: we are simple going to
+     * copy the whole database file in the new location
+     *
+     * @param bool $abstract
+     * @return array
+     */
+    public function getTables($abstract = true)
+    {
+        return array();
+    }
 
-	/**
+    /**
 	 * Get the version of the database connector.
 	 *
 	 * @return  string  The database connector version.
@@ -344,12 +331,12 @@ class Sqlite extends Base
 	/**
 	 * Select a database for use.
 	 *
-	 * @param   string  $database  The name of the database to select for use.
+	 * @param   string $database The name of the database to select for use.
 	 *
 	 * @return  boolean  True if the database was successfully selected.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function select($database)
 	{
@@ -381,12 +368,12 @@ class Sqlite extends Base
 	/**
 	 * Locks a table in the database.
 	 *
-	 * @param   string  $table  The name of the table to unlock.
+	 * @param   string $table The name of the table to unlock.
 	 *
 	 * @return  Sqlite Returns this object to support chaining.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function lockTable($table)
 	{
@@ -396,15 +383,15 @@ class Sqlite extends Base
 	/**
 	 * Renames a table in the database.
 	 *
-	 * @param   string  $oldTable  The name of the table to be renamed
-	 * @param   string  $newTable  The new name for the table.
-	 * @param   string  $backup    Not used by Sqlite.
-	 * @param   string  $prefix    Not used by Sqlite.
+	 * @param   string $oldTable The name of the table to be renamed
+	 * @param   string $newTable The new name for the table.
+	 * @param   string $backup   Not used by Sqlite.
+	 * @param   string $prefix   Not used by Sqlite.
 	 *
 	 * @return  Sqlite Returns this object to support chaining.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function renameTable($oldTable, $newTable, $backup = null, $prefix = null)
 	{
@@ -418,8 +405,8 @@ class Sqlite extends Base
 	 *
 	 * @return  Sqlite Returns this object to support chaining.
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function unlockTables()
 	{
@@ -427,24 +414,36 @@ class Sqlite extends Base
 	}
 
 	/**
-	 * Determines if the connection to the server is active.
+	 * Test to see if the PDO ODBC connector is available.
 	 *
-	 * @return  boolean  True if connected to the database engine.
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 * @since   1.0
 	 */
-	public function connected()
+	public static function isSupported()
 	{
-		return !empty($this->connection);
+		return class_exists('\\PDO') && in_array('sqlite', \PDO::getAvailableDrivers());
 	}
+
+    /**
+     * Determines if the connection to the server is active.
+     *
+     * @return  boolean  True if connected to the database engine.
+     */
+    public function connected()
+    {
+        return !empty($this->connection);
+    }
 
 	/**
 	 * Method to commit a transaction.
 	 *
-	 * @param   boolean  $toSavepoint  If true, commit to the last savepoint.
+	 * @param   boolean $toSavepoint If true, commit to the last savepoint.
 	 *
 	 * @return  void
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function transactionCommit($toSavepoint = false)
 	{
@@ -452,14 +451,14 @@ class Sqlite extends Base
 
 		if (!$toSavepoint || $this->transactionDepth <= 1)
 		{
-			$this->open();
+            $this->open();
 
-			if (!$toSavepoint || $this->transactionDepth == 1)
-			{
-				$this->connection->commit();
-			}
+            if (!$toSavepoint || $this->transactionDepth == 1)
+            {
+                $this->connection->commit();
+            }
 
-			$this->transactionDepth--;
+            $this->transactionDepth--;
 		}
 		else
 		{
@@ -470,12 +469,12 @@ class Sqlite extends Base
 	/**
 	 * Method to roll back a transaction.
 	 *
-	 * @param   boolean  $toSavepoint  If true, rollback to the last savepoint.
+	 * @param   boolean $toSavepoint If true, rollback to the last savepoint.
 	 *
 	 * @return  void
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function transactionRollback($toSavepoint = false)
 	{
@@ -483,14 +482,14 @@ class Sqlite extends Base
 
 		if (!$toSavepoint || $this->transactionDepth <= 1)
 		{
-			$this->open();
+            $this->open();
 
-			if (!$toSavepoint || $this->transactionDepth == 1)
-			{
-				$this->connection->rollBack();
-			}
+            if (!$toSavepoint || $this->transactionDepth == 1)
+            {
+                $this->connection->rollBack();
+            }
 
-			$this->transactionDepth--;
+            $this->transactionDepth--;
 		}
 		else
 		{
@@ -507,12 +506,12 @@ class Sqlite extends Base
 	/**
 	 * Method to initialize a transaction.
 	 *
-	 * @param   boolean  $asSavepoint  If true and a transaction is already active, a savepoint will be created.
+	 * @param   boolean $asSavepoint If true and a transaction is already active, a savepoint will be created.
 	 *
 	 * @return  void
 	 *
-	 * @throws  RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	public function transactionStart($asSavepoint = false)
 	{
@@ -520,14 +519,14 @@ class Sqlite extends Base
 
 		if (!$asSavepoint || !$this->transactionDepth)
 		{
-			$this->open();
+            $this->open();
 
-			if (!$asSavepoint || !$this->transactionDepth)
-			{
-				$this->connection->beginTransaction();
-			}
+            if (!$asSavepoint || !$this->transactionDepth)
+            {
+                $this->connection->beginTransaction();
+            }
 
-			$this->transactionDepth++;
+            $this->transactionDepth++;
 		}
 		else
 		{
@@ -541,361 +540,361 @@ class Sqlite extends Base
 		}
 	}
 
-	/**
-	 * Get the current query object or a new Query object.
-	 * We have to override the parent method since it will always return a PDO query, while we have a
-	 * specialized class for SQLite
-	 *
-	 * @param   boolean  $new  False to return the current query object, True to return a new Query object.
-	 *
-	 * @return  QueryBase  The current query object or a new object extending the Query class.
-	 *
-	 * @throws  RuntimeException
-	 */
-	public function getQuery($new = false)
-	{
-		if ($new)
-		{
-			return new Query\Sqlite($this);
-		}
+    /**
+     * Get the current query object or a new Query object.
+     * We have to override the parent method since it will always return a PDO query, while we have a
+     * specialized class for SQLite
+     *
+     * @param   boolean  $new  False to return the current query object, True to return a new Query object.
+     *
+     * @return  QueryBase  The current query object or a new object extending the Query class.
+     *
+     * @throws  \RuntimeException
+     */
+    public function getQuery($new = false)
+    {
+        if ($new)
+        {
+            $class = '\\Akeeba\\Engine\\Driver\\Query\\Sqlite';
 
-		return $this->sql;
-	}
+            return new $class($this);
+        }
+        else
+        {
+            return $this->sql;
+        }
+    }
 
-	public function open()
-	{
-		if ($this->connected())
-		{
-			return;
-		}
-		else
-		{
-			$this->close();
-		}
+    public function open()
+    {
+        if ($this->connected())
+        {
+            return;
+        }
+        else
+        {
+            $this->close();
+        }
 
-		if (isset($this->options['version']) && $this->options['version'] == 2)
-		{
-			$format = 'sqlite2:#DBNAME#';
-		}
-		else
-		{
-			$format = 'sqlite:#DBNAME#';
-		}
+        if (isset($this->options['version']) && $this->options['version'] == 2)
+        {
+            $format = 'sqlite2:#DBNAME#';
+        }
+        else
+        {
+            $format = 'sqlite:#DBNAME#';
+        }
 
-		$replace = ['#DBNAME#'];
-		$with    = [$this->options['database']];
+        $replace = array('#DBNAME#');
+        $with = array($this->options['database']);
 
-		// Create the connection string:
-		$connectionString = str_replace($replace, $with, $format);
+        // Create the connection string:
+        $connectionString = str_replace($replace, $with, $format);
 
-		try
-		{
-			$this->connection = new PDO(
-				$connectionString,
-				$this->options['user'],
-				$this->options['password']
-			);
-		}
-		catch (PDOException $e)
-		{
-			throw new RuntimeException('Could not connect to PDO' . ': ' . $e->getMessage(), 2, $e);
-		}
-	}
+        try
+        {
+            $this->connection = new \PDO(
+                $connectionString,
+                $this->options['user'],
+                $this->options['password']
+            );
+        }
+        catch (\PDOException $e)
+        {
+            throw new \RuntimeException('Could not connect to PDO' . ': ' . $e->getMessage(), 2, $e);
+        }
+    }
 
-	public function close()
-	{
-		$return = false;
+    public function close()
+    {
+        $return = false;
 
-		if (is_object($this->cursor))
-		{
-			$this->cursor->closeCursor();
-		}
+        if (is_object($this->cursor))
+        {
+            $this->cursor->closeCursor();
+        }
 
-		$this->connection = null;
+        $this->connection = null;
 
-		return $return;
-	}
+        return $return;
+    }
 
-	public function fetchAssoc($cursor = null)
-	{
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
-		{
-			return $cursor->fetch(PDO::FETCH_ASSOC);
-		}
+    protected function fetchArray($cursor = NULL)
+    {
+        if (!empty($cursor) && $cursor instanceof \PDOStatement)
+        {
+            return $cursor->fetch(\PDO::FETCH_NUM);
+        }
 
-		if ($this->prepared instanceof PDOStatement)
-		{
-			return $this->prepared->fetch(PDO::FETCH_ASSOC);
-		}
-	}
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            return $this->prepared->fetch(\PDO::FETCH_NUM);
+        }
+    }
 
-	public function freeResult($cursor = null)
-	{
-		$this->executed = false;
+    public function fetchAssoc($cursor = NULL)
+    {
+        if (!empty($cursor) && $cursor instanceof \PDOStatement)
+        {
+            return $cursor->fetch(\PDO::FETCH_ASSOC);
+        }
 
-		if ($cursor instanceof PDOStatement)
-		{
-			$cursor->closeCursor();
-			$cursor = null;
-		}
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            return $this->prepared->fetch(\PDO::FETCH_ASSOC);
+        }
+    }
 
-		if ($this->prepared instanceof PDOStatement)
-		{
-			$this->prepared->closeCursor();
-			$this->prepared = null;
-		}
-	}
+    protected function fetchObject($cursor = NULL, $class = 'stdClass')
+    {
+        if (!empty($cursor) && $cursor instanceof \PDOStatement)
+        {
+            return $cursor->fetchObject($class);
+        }
 
-	public function getAffectedRows()
-	{
-		$this->open();
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            return $this->prepared->fetchObject($class);
+        }
+    }
 
-		if ($this->prepared instanceof PDOStatement)
-		{
-			return $this->prepared->rowCount();
-		}
-		else
-		{
-			return 0;
-		}
-	}
+    public function freeResult($cursor = NULL)
+    {
+        $this->executed = false;
 
-	public function getNumRows($cursor = null)
-	{
-		$this->open();
+        if ($cursor instanceof \PDOStatement)
+        {
+            $cursor->closeCursor();
+            $cursor = null;
+        }
 
-		if ($cursor instanceof PDOStatement)
-		{
-			return $cursor->rowCount();
-		}
-		elseif ($this->prepared instanceof PDOStatement)
-		{
-			return $this->prepared->rowCount();
-		}
-		else
-		{
-			return 0;
-		}
-	}
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            $this->prepared->closeCursor();
+            $this->prepared = null;
+        }
+    }
 
-	public function insertid()
-	{
-		$this->open();
+    public function getAffectedRows()
+    {
+        $this->open();
 
-		// Error suppress this to prevent PDO warning us that the driver doesn't support this operation.
-		return @$this->connection->lastInsertId();
-	}
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            return $this->prepared->rowCount();
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
-	public function query()
-	{
-		static $isReconnecting = false;
+    public function getNumRows($cursor = NULL)
+    {
+        $this->open();
 
-		$this->open();
+        if ($cursor instanceof \PDOStatement)
+        {
+            return $cursor->rowCount();
+        }
+        elseif ($this->prepared instanceof \PDOStatement)
+        {
+            return $this->prepared->rowCount();
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
-		if (!is_object($this->connection))
-		{
-			throw new RuntimeException($this->errorMsg, $this->errorNum);
-		}
+    public function insertid()
+    {
+        $this->open();
 
-		// Take a local copy so that we don't modify the original query and cause issues later
-		$sql = $this->replacePrefix((string) $this->sql);
+        // Error suppress this to prevent PDO warning us that the driver doesn't support this operation.
+        return @$this->connection->lastInsertId();
+    }
 
-		if ($this->limit > 0 || $this->offset > 0)
-		{
-			$sql .= ' LIMIT ' . $this->limit;
+    public function query()
+    {
+        static $isReconnecting = false;
 
-			if ($this->offset > 0)
-			{
-				$sql .= ' OFFSET ' . $this->offset;
-			}
-		}
+        $this->open();
 
-		// Increment the query counter.
-		$this->count++;
+        if (!is_object($this->connection))
+        {
+            throw new \RuntimeException($this->errorMsg, $this->errorNum);
+        }
 
-		// If debugging is enabled then let's log the query.
-		if ($this->debug)
-		{
-			// Add the query to the object queue.
-			$this->log[] = $sql;
-		}
+        // Take a local copy so that we don't modify the original query and cause issues later
+        $sql = $this->replacePrefix((string) $this->sql);
 
-		// Reset the error values.
-		$this->errorNum = 0;
-		$this->errorMsg = '';
+        if ($this->limit > 0 || $this->offset > 0)
+        {
+            // @TODO
+            $sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
+        }
 
-		// Execute the query.
-		$this->executed = false;
+        // Increment the query counter.
+        $this->count++;
 
-		if ($this->prepared instanceof PDOStatement)
-		{
-			// Bind the variables:
-			if ($this->sql instanceof Preparable)
-			{
-				$bounded =& $this->sql->getBounded();
+        // If debugging is enabled then let's log the query.
+        if ($this->debug)
+        {
+            // Add the query to the object queue.
+            $this->log[] = $sql;
+        }
 
-				foreach ($bounded as $key => $obj)
-				{
-					$this->prepared->bindParam($key, $obj->value, $obj->dataType, $obj->length, $obj->driverOptions);
-				}
-			}
+        // Reset the error values.
+        $this->errorNum = 0;
+        $this->errorMsg = '';
 
-			$this->executed = $this->prepared->execute();
-		}
+        // Execute the query.
+        $this->executed = false;
 
-		// If an error occurred handle it.
-		if (!$this->executed)
-		{
-			// Get the error number and message before we execute any more queries.
-			$errorNum = (int) $this->connection->errorCode();
-			$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
+        if ($this->prepared instanceof \PDOStatement)
+        {
+            // Bind the variables:
+            if ($this->sql instanceof Preparable)
+            {
+                $bounded =& $this->sql->getBounded();
 
-			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
-			{
-				$isReconnecting = true;
+                foreach ($bounded as $key => $obj)
+                {
+                    $this->prepared->bindParam($key, $obj->value, $obj->dataType, $obj->length, $obj->driverOptions);
+                }
+            }
 
-				try
-				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->open();
-				}
-				catch (RuntimeException $e)
-					// If connect fails, ignore that exception and throw the normal exception.
-				{
-					// Get the error number and message.
-					$this->errorNum = (int) $this->connection->errorCode();
-					$this->errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
+            $this->executed = $this->prepared->execute();
+        }
 
-					// Throw the normal query exception.
-					throw new RuntimeException($this->errorMsg, $this->errorNum);
-				}
+        // If an error occurred handle it.
+        if (!$this->executed)
+        {
+            // Get the error number and message before we execute any more queries.
+            $errorNum = (int) $this->connection->errorCode();
+            $errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
 
-				// Since we were able to reconnect, run the query again.
-				$result         = $this->query();
-				$isReconnecting = false;
+            // Check if the server was disconnected.
+            if (!$this->connected() && !$isReconnecting)
+            {
+                $isReconnecting = true;
 
-				return $result;
-			}
-			else
-				// The server was not disconnected.
-			{
-				// Get the error number and message from before we tried to reconnect.
-				$this->errorNum = $errorNum;
-				$this->errorMsg = $errorMsg;
+                try
+                {
+                    // Attempt to reconnect.
+                    $this->connection = null;
+                    $this->open();
+                }
+                catch (\RuntimeException $e)
+                    // If connect fails, ignore that exception and throw the normal exception.
+                {
+                    // Get the error number and message.
+                    $this->errorNum = (int) $this->connection->errorCode();
+                    $this->errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
 
-				// Throw the normal query exception.
-				throw new RuntimeException($this->errorMsg, $this->errorNum);
-			}
-		}
+                    // Throw the normal query exception.
+                    throw new \RuntimeException($this->errorMsg, $this->errorNum);
+                }
 
-		return $this->prepared;
-	}
+                // Since we were able to reconnect, run the query again.
+                $result = $this->query();
+                $isReconnecting = false;
 
-	/**
-	 * Retrieve a PDO database connection attribute
-	 * http://www.php.net/manual/en/pdo.getattribute.php
-	 *
-	 * Usage: $db->getOption(PDO::ATTR_CASE);
-	 *
-	 * @param   mixed  $key  One of the PDO::ATTR_* Constants
-	 *
-	 * @return  mixed
-	 *
-	 * @since   1.0
-	 */
-	public function getOption($key)
-	{
-		$this->open();
+                return $result;
+            }
+            else
+                // The server was not disconnected.
+            {
+                // Get the error number and message from before we tried to reconnect.
+                $this->errorNum = $errorNum;
+                $this->errorMsg = $errorMsg;
 
-		return $this->connection->getAttribute($key);
-	}
+                // Throw the normal query exception.
+                throw new \RuntimeException($this->errorMsg, $this->errorNum);
+            }
+        }
 
-	/**
-	 * Sets an attribute on the PDO database handle.
-	 * http://www.php.net/manual/en/pdo.setattribute.php
-	 *
-	 * Usage: $db->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
-	 *
-	 * @param   integer  $key    One of the PDO::ATTR_* Constants
-	 * @param   mixed    $value  One of the associated PDO Constants
-	 *                           related to the particular attribute
-	 *                           key.
-	 *
-	 * @return boolean
-	 *
-	 * @since  1.0
-	 */
-	public function setOption($key, $value)
-	{
-		$this->open();
+        return $this->prepared;
+    }
 
-		return $this->connection->setAttribute($key, $value);
-	}
+    /**
+     * Retrieve a PDO database connection attribute
+     * http://www.php.net/manual/en/pdo.getattribute.php
+     *
+     * Usage: $db->getOption(PDO::ATTR_CASE);
+     *
+     * @param   mixed  $key  One of the PDO::ATTR_* Constants
+     *
+     * @return  mixed
+     *
+     * @since   1.0
+     */
+    public function getOption($key)
+    {
+        $this->open();
 
-	/**
-	 * Sets the SQL statement string for later execution.
-	 *
-	 * @param   mixed    $query          The SQL statement to set either as a JDatabaseQuery object or a string.
-	 * @param   integer  $offset         The affected row offset to set.
-	 * @param   integer  $limit          The maximum affected rows to set.
-	 * @param   array    $driverOptions  The optional PDO driver options
-	 *
-	 * @return  Base  This object to support method chaining.
-	 *
-	 * @since   1.0
-	 */
-	public function setQuery($query, $offset = null, $limit = null, $driverOptions = [])
-	{
-		$this->open();
+        return $this->connection->getAttribute($key);
+    }
 
-		$this->freeResult();
+    /**
+     * Sets an attribute on the PDO database handle.
+     * http://www.php.net/manual/en/pdo.setattribute.php
+     *
+     * Usage: $db->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
+     *
+     * @param   integer  $key    One of the PDO::ATTR_* Constants
+     * @param   mixed    $value  One of the associated PDO Constants
+     *                           related to the particular attribute
+     *                           key.
+     *
+     * @return boolean
+     *
+     * @since  1.0
+     */
+    public function setOption($key, $value)
+    {
+        $this->open();
 
-		if (is_string($query))
-		{
-			// Allows taking advantage of bound variables in a direct query:
-			$query = $this->getQuery(true)->setQuery($query);
-		}
+        return $this->connection->setAttribute($key, $value);
+    }
 
-		if ($query instanceof Limitable && !is_null($offset) && !is_null($limit))
-		{
-			$query->setLimit($limit, $offset);
-		}
+    /**
+     * Sets the SQL statement string for later execution.
+     *
+     * @param   mixed    $query          The SQL statement to set either as a JDatabaseQuery object or a string.
+     * @param   integer  $offset         The affected row offset to set.
+     * @param   integer  $limit          The maximum affected rows to set.
+     * @param   array    $driverOptions  The optional PDO driver options
+     *
+     * @return  Base  This object to support method chaining.
+     *
+     * @since   1.0
+     */
+    public function setQuery($query, $offset = null, $limit = null, $driverOptions = array())
+    {
+        $this->open();
 
-		$sql = $this->replacePrefix((string) $query);
+        $this->freeResult();
 
-		$this->prepared = $this->connection->prepare($sql, $driverOptions);
+        if (is_string($query))
+        {
+            // Allows taking advantage of bound variables in a direct query:
+            $query = $this->getQuery(true)->setQuery($query);
+        }
 
-		// Store reference to the DatabaseQuery instance:
-		parent::setQuery($query, $offset, $limit);
+        if ($query instanceof Limitable && !is_null($offset) && !is_null($limit))
+        {
+            $query->setLimit($limit, $offset);
+        }
 
-		return $this;
-	}
+        $sql = $this->replacePrefix((string) $query);
 
-	protected function fetchArray($cursor = null)
-	{
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
-		{
-			return $cursor->fetch(PDO::FETCH_NUM);
-		}
+        $this->prepared = $this->connection->prepare($sql, $driverOptions);
 
-		if ($this->prepared instanceof PDOStatement)
-		{
-			return $this->prepared->fetch(PDO::FETCH_NUM);
-		}
-	}
+        // Store reference to the DatabaseQuery instance:
+        parent::setQuery($query, $offset, $limit);
 
-	protected function fetchObject($cursor = null, $class = 'stdClass')
-	{
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
-		{
-			return $cursor->fetchObject($class);
-		}
-
-		if ($this->prepared instanceof PDOStatement)
-		{
-			return $this->prepared->fetchObject($class);
-		}
-	}
+        return $this;
+    }
 }

@@ -133,9 +133,9 @@ class J2User
 		$instance->set('email'          , $details['email']);  // Result should contain an email (check)
 		$instance->set('usertype'       , 'deprecated');
 		$instance->set('groups'     , array($defaultUserGroup));
-        $useractivation = 0;
+
 		//If autoregister is set let's register the user
-		$autoregister = isset($details['autoregister']) ? $details['autoregister'] :  $config->get('autoregister', 1);
+		$autoregister = isset($options['autoregister']) ? $options['autoregister'] :  $config->get('autoregister', 1);
 		J2Store::plugin ()->event ( 'BeforeRegisterUserSave', array(&$instance,&$details) );
 		if ($autoregister) {
 			if (!$instance->save()) {
@@ -147,63 +147,13 @@ class J2User
 			$instance->set('tmp_user', true);
 		}
 
-		//$useractivation = $config->get('useractivation',0);
+		$useractivation='0';
 
 		// Send registration confirmation mail
 		$this->_sendMail( $instance, $details, $useractivation );
 
 		return $instance;
 	}
-    /**
-     * Save joomla privacy consent
-     * */
-	function savePrivacyConsent(){
-	    $app = JFactory::getApplication();
-        $privacy_plugin = $app->input->post->get('privacyconsent',0);
-        $user = JFactory::getUser();
-        if($privacy_plugin && $user->id){
-            $db = JFactory::getDBo();
-            // Get the user's IP address
-            $ip = $_SERVER['REMOTE_ADDR'];
-
-            // Get the user agent string
-            $userAgent = $_SERVER['HTTP_USER_AGENT'];
-
-            // Create the user note
-            $userNote = (object) array(
-                'user_id' => $user->id,
-                'subject' => 'PLG_SYSTEM_PRIVACYCONSENT_SUBJECT',
-                'body'    => JText::sprintf('PLG_SYSTEM_PRIVACYCONSENT_BODY', $ip, $userAgent),
-                'created' => JFactory::getDate()->toSql(),
-            );
-
-            try
-            {
-                $db->insertObject('#__privacy_consents', $userNote);
-            }
-            catch (Exception $e)
-            {
-                // Do nothing if the save fails
-            }
-
-
-            $message = array(
-                'action'      => 'consent',
-                'id'          => $user->id,
-                'title'       => $user->name,
-                'itemlink'    => 'index.php?option=com_users&task=user.edit&id=' . $user->id,
-                'userid'      => $user->id,
-                'username'    => $user->username,
-                'accountlink' => 'index.php?option=com_users&task=user.edit&id=' . $user->id,
-            );
-
-            JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_actionlogs/models', 'ActionlogsModel');
-            /* @var ActionlogsModelActionlog $model */
-            $model = JModelLegacy::getInstance('Actionlog', 'ActionlogsModel');
-            $model->addLog(array($message), 'PLG_SYSTEM_PRIVACYCONSENT_CONSENT', 'plg_system_privacyconsent', $user->id);
-        }
-    }
-
 
 	/**
 	 * Returns yes/no
@@ -319,7 +269,7 @@ class J2User
 		$send_password = $usersConfig->get('sendpassword', 0);
 
 		if ( $useractivation == 1 ){
-			$message = JText::sprintf( 'J2STORE_SEND_MSG_ACTIVATE', $name, $sitename, $siteURL."index.php?option=com_users&task=registration.activate&token=".$activation, $siteURL, $email, $password);
+			$message = JText::sprintf( 'J2STORE_SEND_MSG_ACTIVATE', $name, $sitename, $siteURL."index.php?option=com_users&task=activate&activation=".$activation, $siteURL, $email, $password);
 		} else {
 			if($send_password) {
 				$message = JText::sprintf('J2STORE_SEND_MSG', $name, $sitename, $siteURL, $email, $password );
@@ -374,7 +324,7 @@ class J2User
 		$minimumIntegers  =  0;
 		$minimumSymbols   =  0;
 		$minimumUppercase =  0;
-		$is_joomla_validate = $config->get('allow_password_validation',1);
+		$is_joomla_validate = $config->get('allow_password_validation',0);
 		if($is_joomla_validate){
 			$params = JComponentHelper::getParams('com_users');
 			if (!empty($params))

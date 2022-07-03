@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_postinstall
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -25,9 +25,6 @@ class PostinstallControllerMessage extends FOFController
 	 */
 	public function reset()
 	{
-		// CSRF prevention.
-		$this->_csrfProtection();
-
 		/** @var PostinstallModelMessages $model */
 		$model = $this->getThisModel();
 
@@ -52,9 +49,6 @@ class PostinstallControllerMessage extends FOFController
 	 */
 	public function hideAll()
 	{
-		// CSRF prevention.
-		$this->_csrfProtection();
-
 		/** @var PostinstallModelMessages $model */
 		$model = $this->getThisModel();
 
@@ -80,7 +74,10 @@ class PostinstallControllerMessage extends FOFController
 	public function action()
 	{
 		// CSRF prevention.
-		$this->_csrfProtection();
+		if ($this->csrfProtection)
+		{
+			$this->_csrfProtection();
+		}
 
 		$model = $this->getThisModel();
 

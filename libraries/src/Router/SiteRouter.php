@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -12,7 +12,6 @@ defined('JPATH_PLATFORM') or die;
 
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Component\Router\RouterBase;
 use Joomla\CMS\Component\Router\RouterInterface;
 use Joomla\CMS\Component\Router\RouterLegacy;
 use Joomla\String\StringHelper;
@@ -289,7 +288,7 @@ class SiteRouter extends Router
 		// Handle an empty URL (special case)
 		if (empty($route))
 		{
-			// If route is empty AND option is set in the query, assume it's non-sef url, and parse appropriately
+			// If route is empty AND option is set in the query, assume it's non-sef url, and parse apropriately
 			if (isset($vars['option']) || isset($vars['Itemid']))
 			{
 				return $this->parseRawRoute($uri);
@@ -478,12 +477,9 @@ class SiteRouter extends Router
 
 		$component = preg_replace('/[^A-Z0-9_\.-]/i', '', $query['option']);
 		$crouter   = $this->getComponentRouter($component);
+		$query     = $crouter->preprocess($query);
 
-		if ($crouter instanceof RouterBase === false)
-		{
-			$query = $crouter->preprocess($query);
-			$uri->setQuery($query);
-		}
+		$uri->setQuery($query);
 	}
 
 	/**

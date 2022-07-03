@@ -25,7 +25,7 @@ $cross_image_width = $this->params->get('item_product_cross_image_width', '100')
 						} else {
 							$cart_text = JText::_('J2STORE_ADD_TO_CART');
 						}
-						$cross_product_name = $this->escape($cross_sell_product->product_name);
+						
 					?>
 					
 					<?php $rowcount = ((int) $counter % (int) $columns) + 1; ?>
@@ -44,25 +44,21 @@ $cross_image_width = $this->params->get('item_product_cross_image_width', '100')
 
 	      				?>
 		   				<?php if(isset($thumb_image) &&  JFile::exists(JPATH::clean(JPATH_SITE.'/'.$thumb_image))):?>
-                            <a href="<?php echo $cross_sell_product->product_link; ?>">
-                                <img title="<?php echo $cross_product_name ;?>" alt="<?php echo $cross_product_name ;?>" class="j2store-product-thumb-image-<?php echo $cross_sell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" width="<?php echo intval ( $cross_image_width );?>" />
-					   	    </a>
-                        <?php endif; ?>
+		   					<img title="<?php echo $cross_sell_product->product_name ;?>" alt="<?php echo $cross_sell_product->product_name ;?>" class="j2store-product-thumb-image-<?php echo $cross_sell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" width="<?php echo intval ( $cross_image_width );?>" />
+					   	<?php endif; ?>
 
 						</span>
 						<h3 class="cross-sell-product-title">
 							<a href="<?php echo $cross_sell_product->product_link; ?>">
-								<?php echo $cross_product_name; ?>
+								<?php echo $cross_sell_product->product_name; ?>
 							</a>
 						</h3>
 
-                        <?php if( J2Store::product()->canShowprice($this->params) ): ?>
 						<?php
 						$this->singleton_product = $cross_sell_product;
 						$this->singleton_params = $this->params;
 						echo $this->loadAnyTemplate('site:com_j2store/products/price');
 						?>
-                        <?php endif; ?>
 
 						<?php if( J2Store::product()->canShowCart($this->params) ): ?>
 						<?php if(count($cross_sell_product->options) || $cross_sell_product->product_type == 'variable'): ?>
@@ -74,7 +70,7 @@ $cross_image_width = $this->params->get('item_product_cross_image_width', '100')
 						<?php
 							$this->singleton_product = $cross_sell_product;
 							$this->singleton_params = $this->params;
-							$this->singleton_cartext = $this->escape($cart_text);;
+							$this->singleton_cartext = $cart_text;
 							echo $this->loadAnyTemplate('site:com_j2store/products/cart');
 						?>
 						<?php endif; ?>

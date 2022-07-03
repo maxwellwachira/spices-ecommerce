@@ -1,17 +1,18 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\ConfigurationWizard;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-use FOF40\View\DataView\Html as BaseView;
-use Joomla\CMS\Language\Text;
+use Akeeba\Engine\Platform;
+use FOF30\View\DataView\Html as BaseView;
+use JText;
 
 class Html extends BaseView
 {
@@ -19,27 +20,36 @@ class Html extends BaseView
 	{
 		// Push translations
 		// -- Wizard
-		Text::script('COM_AKEEBA_CONFWIZ_UI_MINEXECTRY');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTSAVEMINEXEC');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_SAVEMINEXEC');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTDETERMINEMINEXEC');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTFIXDIRECTORIES');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTDBOPT');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_EXECTOOLOW');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_SAVINGMAXEXEC');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTSAVEMAXEXEC');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_CANTDETERMINEPARTSIZE');
-		Text::script('COM_AKEEBA_CONFWIZ_UI_PARTSIZE');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_TRYAJAX');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_TRYIFRAME');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTUSEAJAX');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_MINEXECTRY');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTSAVEMINEXEC');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_SAVEMINEXEC');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTDETERMINEMINEXEC');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTFIXDIRECTORIES');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTDBOPT');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_EXECTOOLOW');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_SAVINGMAXEXEC');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTSAVEMAXEXEC');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_CANTDETERMINEPARTSIZE');
+		JText::script('COM_AKEEBA_CONFWIZ_UI_PARTSIZE');
 
 		// -- Backup
-		Text::script('COM_AKEEBA_BACKUP_TEXT_LASTRESPONSE', true);
+		JText::script('COM_AKEEBA_BACKUP_TEXT_LASTRESPONSE', true);
+
+		// Set up the head Javascript
+		$js = <<< JS
+akeeba.System.documentReady(function() {
+    akeeba.System.params.AjaxURL = 'index.php?option=com_akeeba&view=ConfigurationWizard&task=ajax';
+	akeeba.Wizard.boot();
+});
+JS;
 
 		// Load the Configuration Wizard Javascript file
-		$this->container->template->addJS('media://com_akeeba/js/Backup.min.js', true, false, $this->container->mediaVersion);
-		$this->container->template->addJS('media://com_akeeba/js/ConfigurationWizard.min.js', true, false, $this->container->mediaVersion);
-
-		$platform = $this->container->platform;
-		$platform->addScriptOptions('akeeba.System.params.AjaxURL', 'index.php?option=com_akeeba&view=ConfigurationWizard&task=ajax');
+		$this->addJavascriptFile('media://com_akeeba/js/Backup.min.js');
+		$this->addJavascriptFile('media://com_akeeba/js/ConfigurationWizard.min.js');
+		$this->addJavascriptInline($js);
 
 		// Set the layour
 		$this->setLayout('wizard');

@@ -11,13 +11,8 @@ defined('_JEXEC') or die;
 
 <div class="j2store-product_without_options j2store-product-<?php echo $this->product->j2store_product_id; ?>">
 
-    <?php if( J2Store::product()->canShowSku($this->params) ): ?>
 	<?php echo $this->loadTemplate('sku'); ?>
-    <?php endif; ?>
-
-    <?php if( J2Store::product()->canShowprice($this->params) ): ?>
 	<?php echo $this->loadTemplate('price'); ?>
-    <?php endif; ?>
 
 	<?php if(J2Store::product()->managing_stock($this->product->variant)): ?>
 		<?php echo $this->loadTemplate('stock'); ?>

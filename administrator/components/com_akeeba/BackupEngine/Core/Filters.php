@@ -1,32 +1,34 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Core;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
+use Akeeba\Engine\Base\BaseObject;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Filter\Base as FilterBase;
 use Akeeba\Engine\Platform;
-use DirectoryIterator;
-use RuntimeException;
+use Psr\Log\LogLevel;
 
 /**
  * Akeeba filtering feature
  */
-class Filters
+class Filters extends BaseObject
 {
 	/** @var array An array holding data for all defined filters */
-	private $filter_registry = [];
+	private $filter_registry = array();
 
 	/** @var array Hash array with instances of all filters as $filter_name => filter_object */
-	private $filters = [];
+	private $filters = array();
 
 	/** @var bool True after the filter clean up has run */
 	private $cleanup_has_run = false;
@@ -37,15 +39,15 @@ class Filters
 	public function __construct()
 	{
 		// Load filter data from platform's database
-		Factory::getLog()->debug('Fetching filter data from database');
+		Factory::getLog()->log(LogLevel::DEBUG, 'Fetching filter data from database');
 		$this->filter_registry = Platform::getInstance()->load_filters();
 
 		// Load platform, plugin and core filters
-		$this->filters = [];
+		$this->filters = array();
 
-		$locations = [
-			Factory::getAkeebaRoot() . '/Filter',
-		];
+		$locations = array(
+			Factory::getAkeebaRoot() . '/Filter'
+		);
 
 		$platform_paths = Platform::getInstance()->getPlatformDirectories();
 
@@ -54,7 +56,7 @@ class Filters
 			$locations[] = $p . '/Filter';
 		}
 
-		Factory::getLog()->debug('Loading filters');
+		Factory::getLog()->log(LogLevel::DEBUG, 'Loading filters');
 
 		foreach ($locations as $folder)
 		{
@@ -68,7 +70,7 @@ class Filters
 				continue;
 			}
 
-			$di = new DirectoryIterator($folder);
+			$di = new \DirectoryIterator($folder);
 
 			foreach ($di as $file)
 			{
@@ -86,7 +88,7 @@ class Filters
 				$filename = $file->getFilename();
 
 				// Skip filter files starting with dot or dash
-				if (in_array(substr($filename, 0, 1), ['.', '_']))
+				if (in_array(substr($filename, 0, 1), array('.', '_')))
 				{
 					continue;
 				}
@@ -115,7 +117,7 @@ class Filters
 					continue;
 				}
 
-				Factory::getLog()->debug('-- Loading filter ' . $filter_name);
+				Factory::getLog()->log(LogLevel::DEBUG, '-- Loading filter ' . $filter_name);
 
 				// Add the filter
 				$this->filters[$filter_name] = Factory::getFilterObject($filter_name);
@@ -123,12 +125,12 @@ class Filters
 		}
 
 		// Load platform, plugin and core stacked filters
-		$locations = [
-			Factory::getAkeebaRoot() . '/Filter/Stack',
-		];
+		$locations = array(
+			Factory::getAkeebaRoot() . '/Filter/Stack'
+		);
 
 		$platform_paths       = Platform::getInstance()->getPlatformDirectories();
-		$platform_stack_paths = [];
+		$platform_stack_paths = array();
 
 		foreach ($platform_paths as $p)
 		{
@@ -138,7 +140,7 @@ class Filters
 		}
 
 		$config = Factory::getConfiguration();
-		Factory::getLog()->debug('Loading optional filters');
+		Factory::getLog()->log(LogLevel::DEBUG, 'Loading optional filters');
 
 		foreach ($locations as $folder)
 		{
@@ -152,9 +154,9 @@ class Filters
 				continue;
 			}
 
-			$di = new DirectoryIterator($folder);
+			$di = new \DirectoryIterator($folder);
 
-			/** @var DirectoryIterator $file */
+			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
 			{
 				if (!$file->isFile())
@@ -193,7 +195,7 @@ class Filters
 				}
 
 				// Make sure the JSON file also exists
-				if (!file_exists($folder . '/' . $bare_name . '.json'))
+				if ( !file_exists($folder . '/' . $bare_name . '.json'))
 				{
 					continue;
 				}
@@ -202,7 +204,7 @@ class Filters
 
 				if ($config->get($key, 0))
 				{
-					Factory::getLog()->debug('-- Loading optional filter ' . $filter_name);
+					Factory::getLog()->log(LogLevel::DEBUG, '-- Loading optional filter ' . $filter_name);
 					// Add the filter
 					$this->filters[$filter_name] = Factory::getFilterObject($filter_name);
 				}
@@ -213,26 +215,26 @@ class Filters
 	/**
 	 * Extended filtering information of a given object. Applies only to exclusion filters.
 	 *
-	 * @param   string|array  $test       The string to check for filter status (e.g. filename, dir name, table name, etc)
-	 * @param   string        $root       The exclusion root test belongs to
-	 * @param   string        $object     What type of object is it? dir|file|dbobject
-	 * @param   string        $subtype    Filter subtype (all|content|children)
-	 * @param   string        $by_filter  [out] The filter name which first matched $test, or an empty string
+	 * @param    string $test      The string to check for filter status (e.g. filename, dir name, table name, etc)
+	 * @param    string $root      The exclusion root test belongs to
+	 * @param    string $object    What type of object is it? dir|file|dbobject
+	 * @param    string $subtype   Filter subtype (all|content|children)
+	 * @param    string $by_filter [out] The filter name which first matched $test, or an empty string
 	 *
-	 * @return  bool  True if it is a filtered element
+	 * @return    bool    True if it is a filtered element
 	 */
 	public function isFilteredExtended($test, $root, $object, $subtype, &$by_filter)
 	{
-		if (!$this->cleanup_has_run)
+		if ( !$this->cleanup_has_run)
 		{
 			// Loop the filters and clean up those with no data
 			/**
-			 * @var string     $filter_name
+			 * @var string $filter_name
 			 * @var FilterBase $filter
 			 */
 			foreach ($this->filters as $filter_name => $filter)
 			{
-				if (!$filter->hasFilters())
+				if ( !$filter->hasFilters())
 				{
 					unset($this->filters[$filter_name]);
 				} // Remove empty filters
@@ -241,7 +243,7 @@ class Filters
 		}
 
 		$by_filter = '';
-		if (!empty($this->filters))
+		if ( !empty($this->filters))
 		{
 			foreach ($this->filters as $filter_name => $filter)
 			{
@@ -265,12 +267,12 @@ class Filters
 	/**
 	 * Returns the filtering status of a given object
 	 *
-	 * @param   string|array  $test     The string to check for filter status (e.g. filename, dir name, table name, etc)
-	 * @param   string        $root     The exclusion root test belongs to
-	 * @param   string        $object   What type of object is it? dir|file|dbobject
-	 * @param   string        $subtype  Filter subtype (all|content|children)
+	 * @param    string $test    The string to check for filter status (e.g. filename, dir name, table name, etc)
+	 * @param    string $root    The exclusion root test belongs to
+	 * @param    string $object  What type of object is it? dir|file|dbobject
+	 * @param    string $subtype Filter subtype (all|content|children)
 	 *
-	 * @return  bool  True if it is a filtered element
+	 * @return    bool    True if it is a filtered element
 	 */
 	public function isFiltered($test, $root, $object, $subtype)
 	{
@@ -282,30 +284,30 @@ class Filters
 	/**
 	 * Returns the inclusion filters for a specific object type
 	 *
-	 * @param   string  $object  The inclusion object (dir|db)
+	 * @param    string $object The inclusion object (dir|db)
 	 *
 	 * @return array
 	 */
 	public function &getInclusions($object)
 	{
-		$inclusions = [];
+		$inclusions = array();
 
-		if (!empty($this->filters))
+		if ( !empty($this->filters))
 		{
 			/**
-			 * @var string     $filter_name
+			 * @var string $filter_name
 			 * @var FilterBase $filter
 			 */
 			foreach ($this->filters as $filter_name => $filter)
 			{
 				if (!is_object($filter))
 				{
-					throw new RuntimeException("Object for filter $filter_name not found. The engine will now crash.");
+					Factory::getLog()->log(LogLevel::ERROR, "Object for filter $filter_name not found. The engine will now crash.");
 				}
 
 				$new_inclusions = $filter->getInclusions($object);
 
-				if (!empty($new_inclusions))
+				if ( !empty($new_inclusions))
 				{
 					$inclusions = array_merge($inclusions, $new_inclusions);
 				}
@@ -318,7 +320,7 @@ class Filters
 	/**
 	 * Returns the filter registry information for a specified filter class
 	 *
-	 * @param   string  $filter_name  The name of the filter we want data for
+	 * @param    string $filter_name The name of the filter we want data for
 	 *
 	 * @return    array    The filter data for the requested filter
 	 */
@@ -330,7 +332,7 @@ class Filters
 		}
 		else
 		{
-			$dummy = [];
+			$dummy = array();
 
 			return $dummy;
 		}
@@ -339,8 +341,8 @@ class Filters
 	/**
 	 * Replaces the filter data of a specific filter with the new data
 	 *
-	 * @param   string  $filter_name  The filter for which to modify the stored data
-	 * @param   string  $data         The new data
+	 * @param    string $filter_name The filter for which to modify the stored data
+	 * @param    string $data        The new data
 	 */
 	public function setFilterData($filter_name, &$data)
 	{
@@ -360,25 +362,31 @@ class Filters
 	/**
 	 * Get SQL statements to append to the database backup file
 	 *
-	 * @param   string  $root
+	 * @param string $root
 	 *
-	 * @return  array
+	 * @return string
 	 */
-	public function getExtraSQL(string $root): array
+	public function &getExtraSQL($root)
 	{
-		if (count($this->filters) < 1)
+		$ret = "";
+		if (count($this->filters) >= 1)
 		{
-			return [];
-		}
-
-		$ret = [];
-
-		/**
-		 * @var FilterBase $filter
-		 */
-		foreach ($this->filters as $filter)
-		{
-			$ret = array_merge($ret, $filter->getExtraSQL($root));
+			/**
+			 * @var string $filter_name
+			 * @var FilterBase $filter
+			 */
+			foreach ($this->filters as $filter_name => $filter)
+			{
+				$extra_sql = $filter->getExtraSQL($root);
+				if ( !empty($extra_sql))
+				{
+					if ( !empty($ret))
+					{
+						$ret .= "\n";
+					}
+					$ret .= $extra_sql;
+				}
+			}
 		}
 
 		return $ret;
@@ -387,8 +395,8 @@ class Filters
 	/**
 	 * Checks if there is an active filter for the object/subtype requested.
 	 *
-	 * @param   string  $object   The filtering object: dir|file|dbobject|db
-	 * @param   string  $subtype  The filtering subtype: all|content|children|inclusion
+	 * @param string $object  The filtering object: dir|file|dbobject|db
+	 * @param string $subtype The filtering subtype: all|content|children|inclusion
 	 *
 	 * @return bool
 	 */
@@ -421,6 +429,6 @@ class Filters
 	 */
 	public function reset()
 	{
-		$this->filter_registry = [];
+		$this->filter_registry = array();
 	}
 }

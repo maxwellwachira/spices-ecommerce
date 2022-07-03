@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 <metadata>
@@ -19,7 +19,7 @@
 				   description="COM_AKEEBA_VIEW_BACKUP_PROFILE_DESC"
 			/>
 
-			<field name="autostart" type="fancyradio"
+			<field name="autostart" type="radio"
 				   default="0"
 				   class="btn-group"
 				   label="COM_AKEEBA_VIEW_BACKUP_AUTOSTART_LABEL"
@@ -29,7 +29,7 @@
 				<option value="1">JYes</option>
 			</field>
 
-			<field name="akeeba_hide_toolbar" type="fancyradio"
+			<field name="akeeba_hide_toolbar" type="radio"
 				   default="0"
 				   class="btn-group"
 				   label="COM_AKEEBA_VIEW_BACKUP_HIDETOOLBAR_LABEL"

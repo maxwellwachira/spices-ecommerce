@@ -24,10 +24,10 @@ defined('_JEXEC') or die;
 <?php endif;?>
 
 <?php echo $this->loadTemplate('description'); ?>
-<?php if( J2Store::product()->canShowprice($this->params) ): ?>
+
 <?php echo $this->loadTemplate('price'); ?>
-<?php endif; ?>
-<?php if($this->params->get('list_show_product_sku', 1) && J2Store::product()->canShowSku($this->params) ) : ?>
+
+<?php if($this->params->get('list_show_product_sku', 1)) : ?>
 	<?php echo $this->loadTemplate('sku'); ?>
 <?php endif; ?>
 

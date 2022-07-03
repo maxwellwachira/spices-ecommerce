@@ -3,7 +3,7 @@
  * @package     Joomla.Platform
  * @subpackage  Archive
  *
- * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -189,7 +189,7 @@ class JArchiveZip implements JArchiveExtractable
 	 */
 	public static function hasNativeSupport()
 	{
-		return extension_loaded('zip');
+		return function_exists('zip_open') && function_exists('zip_read');
 	}
 
 	/**
@@ -253,11 +253,6 @@ class JArchiveZip implements JArchiveExtractable
 				$buffer = $this->_getFileData($i);
 				$path = JPath::clean($destination . '/' . $this->_metadata[$i]['name']);
 
-				if (strpos(JPath::clean(JPath::resolve($destination . '/' . $this->_metadata[$i]['name'])), JPath::clean(JPath::resolve($destination))) !== 0)
-				{
-					return $this->raiseWarning(100, 'Unable to write outside of destination path');
-				}
-
 				// Make sure the destination folder exists
 				if (!JFolder::create(dirname($path)))
 				{
@@ -287,9 +282,9 @@ class JArchiveZip implements JArchiveExtractable
 	 */
 	protected function extractNative($archive, $destination)
 	{
-		$zip = new \ZipArchive;
+		$zip = zip_open($archive);
 
-		if ($zip->open($archive) !== true)
+		if (!is_resource($zip))
 		{
 			return $this->raiseWarning(100, 'Unable to open archive');
 		}
@@ -301,34 +296,27 @@ class JArchiveZip implements JArchiveExtractable
 		}
 
 		// Read files in the archive
-		for ($index = 0; $index < $zip->numFiles; $index++)
+		while ($file = @zip_read($zip))
 		{
-			$file = $zip->getNameIndex($index);
-
-			if (substr($file, -1) === '/')
-			{
-				continue;
-			}
-
-			$buffer = $zip->getFromIndex($index);
-
-			if ($buffer === false)
+			if (!zip_entry_open($zip, $file, 'r'))
 			{
 				return $this->raiseWarning(100, 'Unable to read entry');
 			}
 
-			if (strpos(JPath::clean(JPath::resolve($destination . '/' . $file)), JPath::clean(JPath::resolve($destination))) !== 0)
+			if (substr(zip_entry_name($file), strlen(zip_entry_name($file)) - 1) != '/')
 			{
-				return $this->raiseWarning(100, 'Unable to write outside of destination path');
-			}
+				$buffer = zip_entry_read($file, zip_entry_filesize($file));
 
-			if (JFile::write($destination . '/' . $file, $buffer) === false)
-			{
-				return $this->raiseWarning(100, 'Unable to write entry');
+				if (JFile::write($destination . '/' . zip_entry_name($file), $buffer) === false)
+				{
+					return $this->raiseWarning(100, 'Unable to write entry');
+				}
+
+				zip_entry_close($file);
 			}
 		}
 
-		$zip->close();
+		@zip_close($zip);
 
 		return true;
 	}
@@ -454,7 +442,7 @@ class JArchiveZip implements JArchiveExtractable
 	}
 
 	/**
-	 * Returns the file data for a file by offset in the ZIP archive
+	 * Returns the file data for a file by offsest in the ZIP archive
 	 *
 	 * @param   integer  $key  The position of the file in the archive.
 	 *

@@ -99,17 +99,13 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 		}
 		$model->setState('list.ordering', $orderCol);
 
-		/*$listOrder = $app->getUserStateFromRequest('com_j2store.product.list.' . $itemid . '.filter_order_Dir',
+		$listOrder = $app->getUserStateFromRequest('com_j2store.product.list.' . $itemid . '.filter_order_Dir',
 				'filter_order_Dir', '', 'cmd');
 		if (!in_array(strtoupper($listOrder), array('ASC', 'DESC', '')))
 		{
 			$listOrder = 'ASC';
-		}*/
-
-        $listOrder = $params->get('list_order_direction','ASC');
+		}
 		$model->setState('list.direction', $listOrder);
-        $listOrder = $params->get('category_order_direction','ASC');
-        $model->setState('category_order_direction', $listOrder);
 
 		foreach($states as $key => $value){
 			$model->setState($key,$value);
@@ -144,7 +140,6 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 		$model->setState('search', $search);
 		//set product ids
 		$items = $model->getSFProducts();
-
 		$filter_items = $model->getSFAllProducts();
 		$filters = array();
 		//$filters = $this->getFilters($items);
@@ -301,12 +296,7 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 		$view->assign('currency', J2store::currency());
 
 		$view->assign('active_menu', $menu) ;
-		if(isset($menu->link) && isset($menu->id)){
-            $content ='var j2store_product_base_link ="'. $menu->link.'&Itemid='.$menu->id .'";';
-        }else{
-            $content ='var j2store_product_base_link = "";';
-        }
-
+		$content ='var j2store_product_base_link ="'. $menu->link.'&Itemid='.$menu->id .'";';
 		JFactory::getDocument()->addScriptDeclaration($content);
 
 		$this->display(in_array('browse', $this->cacheableTasks));
@@ -320,11 +310,7 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 
 			$item->product_short_desc = $item->introtext;
 			$item->product_long_desc = $item->fulltext;
-			$need_to_run_behaviour = true;
-			J2Store::plugin()->event('ProcessProductBehaviour',array(&$need_to_run_behaviour,$item));
-			if($need_to_run_behaviour){
-                F0FModel::getTmpInstance('Products', 'J2StoreModel')->runMyBehaviorFlag(true)->getProduct($item);
-            }
+			F0FModel::getTmpInstance('Products', 'J2StoreModel')->runMyBehaviorFlag(true)->getProduct($item);
 			$item->product_name = $item->title;
 		}
 
@@ -419,46 +405,8 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 					->setPlaceHolders(J2Store::product()->getPricingCalculators())
 					->getHtml();
 
-					//$view->product_filters = F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
-                    $tags = new JHelperTags;
-                    $tags->getItemTags('com_content.article', $this->item->product_source_id);
-                    $tag_options = array();
-                    $tag_options[''] = JText::_('J2STORE_SELECT_TAG');
-                    if(count($tags->itemTags) > 0){
-                        foreach($tags->itemTags as $product_tag) {
-                            $tag_options[$product_tag->alias] =  JText::_($product_tag->title);
-                        }
-                    }
+					$view->product_filters = F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
 
-                    $view->tag_lists = J2Html::select()->clearState()
-                        ->type('genericlist')
-                        ->name($this->form_prefix.'[main_tag]')
-                        ->attribs(array())
-                        ->value($this->item->main_tag)
-                        ->setPlaceHolders($tag_options)
-                        ->getHtml();
-
-                    //$view->product_filters = F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
-                    $productfilter_model = F0FModel::getTmpInstance('ProductFilters', 'J2StoreModel');
-                    $productfilter_model->setState('limit',10);
-                    $view->filter_limit = 10;
-                    if($this->item->j2store_product_id > 0) {
-                        $productfilter_model->setState('product_id',$this->item->j2store_product_id);
-                        $productfilter_list = $productfilter_model->getList();
-                        $product_filters = array();
-                        foreach($productfilter_list as $row) {
-                            if(!isset($product_filters[$row->group_id])){
-                                $product_filters[$row->group_id] = array();
-                            }
-                            $product_filters[$row->group_id]['group_name'] = $row->group_name;
-                            $product_filters[$row->group_id]['filters'][] = $row;
-                        }
-                        $this->product_filters = $product_filters;//F0FTable::getAnInstance('ProductFilter', 'J2StoreTable')->getFiltersByProduct($this->item->j2store_product_id);
-                    }else {
-                        $this->product_filters = array();
-                    }
-                    $this->item->productfilter_pagination = $productfilter_model->getPagination();
-                    $view->product_option_list =  $this->getProductOptionList($this->item->product_type);
 				}
 			}elseif($task =='setproductprice'){
 				$this->setproductprice();
@@ -470,19 +418,6 @@ class J2StoreControllerProducts extends J2StoreControllerProductsBase
 		return false;
 	}
 
-    public function getProductOptionList($product_type){
-        $db = JFactory::getDbo();
-        $query = $db->getQuery(true);
-        $query->select('j2store_option_id, option_unique_name, option_name');
-        $query->from('#__j2store_options');
-        //based on the product type
-        if(isset($product_type) && in_array($product_type,array('variable','flexivariable'))){
-            $query->where("type IN ('select' , 'radio' ,'checkbox')");
-        }
-        $query->where('enabled=1');
-        $db->setQuery($query);
-        return $db->loadObjectList();
-    }
 	/**
 	 * Method to get Filters and to assing in the browse view
 	 */

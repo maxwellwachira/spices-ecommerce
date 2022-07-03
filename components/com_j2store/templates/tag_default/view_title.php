@@ -11,8 +11,8 @@ defined('_JEXEC') or die;
 ?>
 
 <?php if($this->params->get('item_show_title', 1)): ?>
-	<h<?php echo $this->params->get('item_title_headertag', '2'); ?> class="product-title">
-		<?php echo $this->escape($this->product->product_name); ?>
+	<h<?php echo $this->params->get('item_title_headertag', '2'); ?> itemprop="name" class="product-title">
+		<?php echo $this->product->product_name; ?>
 	</h<?php echo $this->params->get('item_title_headertag', '2'); ?>>
 <?php endif; ?>
 

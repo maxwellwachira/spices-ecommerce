@@ -1,102 +1,91 @@
 <?php
 /**
- * @package   Usagestats
- * @copyright Copyright (c)2014-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
+ * @package     Usagestats
+ * @copyright   Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license     GNU GPL version 3 or later
  */
 
 class AkeebaUsagestats
 {
-	/**
-	 * Unique identifier for the site, created from server variables
-	 *
-	 * @var string
-	 */
-	private $siteId;
+    /** @var string Unique identifier for the site, created from server variables */
+    private $siteId;
+    /** @var array Associative array of data being sent */
+    private $data = array();
+    /** @var string Remote url to upload the stats */
+    private $remoteUrl = 'https://abrandnewsite.com/index.php';
 
-	/**
-	 * Associative array of data being sent
-	 *
-	 * @var array
-	 */
-	private $data = [];
+    public function setSiteId($siteId)
+    {
+        $this->siteId = $siteId;
+    }
 
-	/**
-	 * Remote url to upload the stats
-	 *
-	 * @var string
-	 */
-	private $remoteUrl = 'https://abrandnewsite.com/index.php';
+    /**
+     * Sets the value of a collected variable. Use NULL as value to unset it
+     *
+     * @param   string  $key        Variable name
+     * @param   string  $value      Variable value
+     */
+    public function setValue($key, $value)
+    {
+        if(is_null($value) && isset($this->data[$key]))
+        {
+            unset($this->data[$key]);
+        }
+        else
+        {
+            $this->data[$key] = $value;
+        }
+    }
 
-	/**
-	 * Set the unique, anonymous site identifier
-	 *
-	 * @param   string  $siteId  The site ID to set
-	 *
-	 * @return  void
-	 */
-	public function setSiteId($siteId)
-	{
-		$this->siteId = $siteId;
-	}
+    /**
+     * Uploads collected data to the remote server
+     *
+     * @param   bool    $useIframe  Should I create an iframe to upload data or should I use cURL/fopen?
+     *
+     * @return  string|bool     The HTML code if an iframe is requested or a boolean if we're using cURL/fopen
+     */
+    public function sendInfo($useIframe = false)
+    {
+        // No site ID? Well, simply do nothing
+        if(!$this->siteId)
+        {
+            return '';
+        }
 
-	/**
-	 * Sets the value of a collected variable. Use NULL to unset it.
-	 *
-	 * @param   string  $key    Variable name
-	 * @param   string  $value  Variable value
-	 */
-	public function setValue($key, $value)
-	{
-		$this->data[$key] = $value;
+        // First of all let's add the siteId
+        $this->setValue('sid', $this->siteId);
 
-		if (is_null($value))
-		{
-			unset($this->data[$key]);
-		}
-	}
+        // Then let's create the url
+        $url = array();
 
-	/**
-	 * Uploads collected data to the remote server
-	 *
-	 * @param   bool  $useIframe  Should I create an iframe to upload data or should I use cURL/fopen?
-	 *
-	 * @return  string|bool  The HTML code if an iframe is requested or a boolean if we're using cURL/fopen
-	 */
-	public function sendInfo($useIframe = false)
-	{
-		// No site ID? Well, simply do nothing
-		if (!$this->siteId)
-		{
-			return '';
-		}
+        foreach($this->data as $param => $value)
+        {
+            $url[] .= $param.'='.$value;
+        }
 
-		// First of all let's add the siteId
-		$this->setValue('sid', $this->siteId);
+        $url = $this->remoteUrl.'?'.implode('&', $url);
 
-		// Then let's create the url
-		$url = $this->remoteUrl . '?' . http_build_query($this->data);
+        // Should I create an iframe?
+        if($useIframe)
+        {
+            return '<!-- Anonymous usage statistics collection for Akeeba software --><iframe style="display: none" src="'.$url.'"></iframe>';
+        }
+        else
+        {
+            // Do we have cURL installed?
+            if(function_exists('curl_init'))
+            {
+                $ch = curl_init($url);
 
-		// Should I create an iframe?
-		if ($useIframe)
-		{
-			return '<!-- Anonymous usage statistics collection for Akeeba software --><iframe style="display: none" src="' . $url . '"></iframe>';
-		}
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 
-		// Do we have cURL installed?
-		if (
-			function_exists('curl_init')
-			&& function_exists('curl_setopt')
-			&& function_exists('curl_exec'))
-		{
-			$ch = curl_init($url);
-
-			curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-
-			return curl_exec($ch);
-		}
-
-		// We do not have cURL. Let's try with fopen instead.
-		return @fopen($url, 'r');
-	}
+                return curl_exec($ch);
+            }
+            else
+            {
+                // Nope, let's try with fopen and cross our fingers
+                return @fopen($url, 'r');
+            }
+        }
+    }
 }

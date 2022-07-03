@@ -50,12 +50,8 @@ class plgJ2StoreReport_itemised extends J2StoreReportPlugin
     	JToolBarHelper::title(JText::_('J2STORE_REPORT').'-'.JText::_('PLG_J2STORE_'.strtoupper($this->_element)),'j2store-logo');
 
 	   	$vars = new JObject();
-	   	//$this->includeCustomModel('Reportitemised');
-    	//$this->includeCustomTables();
-        F0FModel::addIncludePath(JPATH_SITE . '/plugins/j2store/' . $this->_element . '/' . $this->_element . '/models');
-        F0FModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_j2store/models');
-        F0FTable::addIncludePath(JPATH_SITE . '/plugins/j2store/' . $this->_element . '/' . $this->_element . '/tables');
-        F0FTable::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_j2store/tables');
+	   	$this->includeCustomModel('Reportitemised');
+    	$this->includeCustomTables();
 
     	$model = F0FModel::getTmpInstance('ReportItemised', 'J2StoreModel');
     	$model->setState('limit',$app->input->getInt('limit',0));
@@ -65,16 +61,12 @@ class plgJ2StoreReport_itemised extends J2StoreReportPlugin
     	$model->setState('filter_order', $app->input->getString('filter_order','oi.j2store_orderitem_id'));
     	$model->setState('filter_order_Dir', $app->input->getString('filter_order_Dir'));
 		$model->setState('filter_datetype', $app->input->getString('filter_datetype'));
-        try {
-            $list = $model->getData();
-            //$list = $model->getList();
-            $vars->list = $list;
-            $vars->total = $model->getTotal();
-            $vars->total = 0;
-        } catch (Exception $e) {
-            $vars->list = array();
-        }
-        $vars->state = $model->getState();
+
+    	$list = $model->getData();
+    	//$list = $model->getList();
+		$vars->state = $model->getState();
+    	$vars->list = $list;
+    	$vars->total = $model->getTotal();
     	$vars->pagination = $model->getPagination();
     	$vars->orderStatus =F0FModel::getTmpInstance('OrderStatuses','J2StoreModel')->enabled(1)->getList();
 		$vars->orderDateType = $this->getOrderDateType ();
@@ -106,15 +98,11 @@ class plgJ2StoreReport_itemised extends J2StoreReportPlugin
     	$app = JFactory::getApplication();
 
     	$ignore_column =array('sum','count','orderitem_quantity','product_source_id','id');
-    	//$this->includeCustomModel('Reportitemised');
+    	$this->includeCustomModel('Reportitemised');
     	if (!$this->_isMe($row))
     	{
     		return null;
     	}
-        F0FModel::addIncludePath(JPATH_SITE . '/plugins/j2store/' . $this->_element . '/' . $this->_element . '/models');
-        F0FModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_j2store/models');
-        F0FTable::addIncludePath(JPATH_SITE . '/plugins/j2store/' . $this->_element . '/' . $this->_element . '/tables');
-        F0FTable::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_j2store/tables');
     	$model = F0FModel::getTmpInstance('ReportItemised', 'J2StoreModel');
     	$items = $model->getData();
   		foreach($items as &$item){

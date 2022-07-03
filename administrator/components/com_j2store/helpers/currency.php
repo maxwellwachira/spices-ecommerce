@@ -366,7 +366,7 @@ class J2Currency {
   				'GBP' => 826,
   				'KRW' => 410,
   				'LKR' => 144,
-  				'SDG' => 736,
+  				'SDD' => 736,
   				'SRD' => 740,
   				'SZL' => 748,
   				'SEK' => 752,

@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,25 +14,26 @@ jimport('joomla.application.component.view');
 
 class K2ViewInfo extends K2View
 {
-    public function display($tpl = null)
+
+    function display($tpl = null)
     {
         jimport('joomla.filesystem.file');
         $user = JFactory::getUser();
-        $db = JFactory::getDbo();
+        $db = JFactory::getDBO();
         $db_version = $db->getVersion();
         $php_version = phpversion();
         $server = $this->get_server_software();
         $gd_check = extension_loaded('gd');
         $mb_check = extension_loaded('mbstring');
 
-        $media_folder_check = is_writable(JPATH_ROOT.'/media/k2');
-        $attachments_folder_check = is_writable(JPATH_ROOT.'/media/k2/attachments');
-        $categories_folder_check = is_writable(JPATH_ROOT.'/media/k2/categories');
-        $galleries_folder_check = is_writable(JPATH_ROOT.'/media/k2/galleries');
-        $items_folder_check = is_writable(JPATH_ROOT.'/media/k2/items');
-        $users_folder_check = is_writable(JPATH_ROOT.'/media/k2/users');
-        $videos_folder_check = is_writable(JPATH_ROOT.'/media/k2/videos');
-        $cache_folder_check = is_writable(JPATH_ROOT.'/cache');
+        $media_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2');
+        $attachments_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'attachments');
+        $categories_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'categories');
+        $galleries_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'galleries');
+        $items_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'items');
+        $users_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'users');
+        $videos_folder_check = is_writable(JPATH_ROOT.DS.'media'.DS.'k2'.DS.'videos');
+        $cache_folder_check = is_writable(JPATH_ROOT.DS.'cache');
 
         $this->assignRef('server', $server);
         $this->assignRef('php_version', $php_version);
@@ -51,11 +52,14 @@ class K2ViewInfo extends K2View
 
         JToolBarHelper::title(JText::_('K2_INFORMATION'), 'k2.png');
 
-        if (K2_JVERSION != '15') {
-            JToolBarHelper::preferences('com_k2', '(window.innerHeight) * 0.9', '(window.innerWidth) * 0.7', 'K2_SETTINGS');
-        } else {
+        if (K2_JVERSION != '15')
+        {
+            JToolBarHelper::preferences('com_k2', 550, 875, 'K2_PARAMETERS');
+        }
+        else
+        {
             $toolbar = JToolBar::getInstance('toolbar');
-            $toolbar->appendButton('Popup', 'config', 'K2_SETTINGS', 'index.php?option=com_k2&view=settings', '(window.innerWidth) * 0.7', '(window.innerHeight) * 0.9');
+            $toolbar->appendButton('Popup', 'config', 'Parameters', 'index.php?option=com_k2&view=settings');
         }
 
         $this->loadHelper('html');
@@ -64,14 +68,20 @@ class K2ViewInfo extends K2View
         parent::display($tpl);
     }
 
-    public function get_server_software()
+    function get_server_software()
     {
-        if (isset($_SERVER['SERVER_SOFTWARE'])) {
+        if (isset($_SERVER['SERVER_SOFTWARE']))
+        {
             return $_SERVER['SERVER_SOFTWARE'];
-        } elseif (($sf = getenv('SERVER_SOFTWARE'))) {
+        }
+        else if (($sf = getenv('SERVER_SOFTWARE')))
+        {
             return $sf;
-        } else {
+        }
+        else
+        {
             return JText::_('K2_NA');
         }
     }
+
 }

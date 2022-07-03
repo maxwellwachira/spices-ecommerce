@@ -1,17 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\Browser;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Model\Browser;
-use FOF40\View\DataView\Html as BaseView;
+use FOF30\View\DataView\Html as BaseView;
 
 class Html extends BaseView
 {
@@ -80,9 +80,6 @@ class Html extends BaseView
 
 	protected function onBeforeMain()
 	{
-		// Load the view-specific Javascript
-		$this->container->template->addJS('media://com_akeeba/js/Browser.min.js', true, false, $this->container->mediaVersion);
-
 		/** @var Browser $model */
 		$model = $this->getModel();
 

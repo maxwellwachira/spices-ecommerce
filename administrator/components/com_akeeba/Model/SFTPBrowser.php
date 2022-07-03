@@ -1,17 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-use FOF40\Model\Model;
-use Joomla\CMS\Language\Text;
+use FOF30\Model\Model;
+use JText;
 use RuntimeException;
 
 class SFTPBrowser extends Model
@@ -70,7 +70,7 @@ class SFTPBrowser extends Model
 	 *
 	 * @var  array
 	 */
-	public $parts = [];
+	public $parts = array();
 
 	/**
 	 * Path to the parent directory
@@ -90,14 +90,14 @@ class SFTPBrowser extends Model
 
 		// Parse directory to parts
 		$parsed_dir  = trim($dir, '/');
-		$this->parts = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
+		$this->parts = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
 
 		// Find the path to the parent directory
 		$this->parent_directory = '';
 
-		if (!empty($this->parts))
+		if (!empty($parts))
 		{
-			$copy_of_parts = $this->parts;
+			$copy_of_parts = $parts;
 			array_pop($copy_of_parts);
 
 			$this->parent_directory = '/';
@@ -150,7 +150,7 @@ class SFTPBrowser extends Model
 		}
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
-		$list = [];
+		$list = array();
 		$dir  = ltrim($dir, '/');
 
 		if (empty($dir))
@@ -161,14 +161,14 @@ class SFTPBrowser extends Model
 
 			// Parse directory to parts
 			$parsed_dir  = trim($dir, '/');
-			$this->parts = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
+			$this->parts = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
 
 			// Find the path to the parent directory
 			$this->parent_directory = '';
 
-			if (!empty($this->parts))
+			if (!empty($parts))
 			{
-				$copy_of_parts = $this->parts;
+				$copy_of_parts = $parts;
 				array_pop($copy_of_parts);
 
 				$this->parent_directory = '/';
@@ -184,7 +184,7 @@ class SFTPBrowser extends Model
 
 		if (!is_resource($handle))
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_SFTPBROWSER_ERROR_NOACCESS'));
+			throw new RuntimeException(JText::_('COM_AKEEBA_SFTPBROWSER_ERROR_NOACCESS'));
 		}
 
 		while (($entry = readdir($handle)) !== false)
@@ -220,7 +220,7 @@ class SFTPBrowser extends Model
 	public function doBrowse()
 	{
 		$error = '';
-		$list  = [];
+		$list = [];
 
 		try
 		{
@@ -231,13 +231,13 @@ class SFTPBrowser extends Model
 			$error = $e->getMessage();
 		}
 
-		$response_array = [
+		$response_array = array(
 			'error'       => $error,
 			'list'        => $list,
 			'breadcrumbs' => $this->parts,
 			'directory'   => $this->directory,
-			'parent'      => $this->parent_directory,
-		];
+			'parent'      => $this->parent_directory
+		);
 
 		return $response_array;
 	}

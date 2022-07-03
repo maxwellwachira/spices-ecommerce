@@ -1,9 +1,9 @@
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 var $K2 = jQuery.noConflict();
@@ -12,11 +12,28 @@ $K2(document).ready(function(){
 
 	// Magnific popup
 	if(typeof($K2.magnificPopup) !== 'undefined') {
-		// Images
-		$K2('[data-k2-modal="image"]').magnificPopup({type:'image', image: {titleSrc: function() {return '';}}});
+		// --- Backwards compatibility for users with overrides - START ---
+
+		// First remove possible attached events of the core modal in case it is loaded by a third party extension
+		$K2('.itemImage a.modal, .itemEditLink a.modal, .catItemEditLink a.modal, .catItemAddLink a.modal, .userItemAddLink a.modal, .userItemEditLink a.modal, .k2UserBlockActions a.modal, .k2UserBlockRenderedMenu a.modal, .commentToolbar a.modal').unbind('click');
+
+		// Item image
+		$K2('.itemImage a.modal').magnificPopup({type:'image', image: {titleSrc : function() {return '';}}});
+
+		// Edit links
+		$K2('.itemEditLink a.modal, .catItemEditLink a.modal, .catItemAddLink a.modal, .userItemAddLink a.modal, .userItemEditLink a.modal').magnificPopup({type:'iframe', modal: true});
+
+		// Any other link
+		$K2('.k2UserBlockActions a.modal, .k2UserBlockRenderedMenu a.modal, .commentToolbar a.modal').magnificPopup({type:'iframe'});
+
+		// --- Backwards compatibility for users with overrides - FINISH ---
+
+		// New layouts
+		// Image
+		$K2('[data-k2-modal="image"]').magnificPopup({type:'image', image: {titleSrc : function() {return '';}}});
 		// Edit links
 		$K2('[data-k2-modal="edit"]').magnificPopup({type:'iframe', modal: true});
-		// Generic iframe
+		// Rest links
 		$K2('[data-k2-modal="iframe"]').magnificPopup({type:'iframe'});
 	}
 

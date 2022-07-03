@@ -1,23 +1,67 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Toolbar;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-use FOF40\Toolbar\Toolbar as BaseToolbar;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Toolbar\Toolbar as JToolbar;
-use Joomla\CMS\Toolbar\ToolbarHelper;
+use FOF30\Toolbar\Toolbar as BaseToolbar;
+use JToolbar;
+use JToolbarHelper;
+use JText;
+use JFactory;
 
 class Toolbar extends BaseToolbar
 {
 	static $isJoomla3 = null;
+
+	protected function isJoomla3()
+	{
+		if (is_null(self::$isJoomla3))
+		{
+			self::$isJoomla3 = version_compare(JVERSION, '3.999.999', 'lt');
+		}
+
+		return self::$isJoomla3;
+	}
+
+	protected function setTitle($viewTitle)
+	{
+		$title = JText::_('COM_AKEEBA');
+
+		if ($this->isJoomla3())
+		{
+			$icon = 'akeeba';
+			$title .= ' <span style="display: none;"> - </span><small>';
+		}
+		else
+		{
+			$icon = 'akeeba-j4';
+			$title .= "<small> – ";
+		}
+
+		$title .= JText::_($viewTitle) . "</small>";
+
+		JToolbarHelper::title($title,$icon);
+	}
+
+	protected function backButton($label, $link)
+	{
+		if ($this->isJoomla3())
+		{
+			JToolbarHelper::back($label, $link);
+
+			return;
+		}
+
+		$bar = JToolbar::getInstance('toolbar');
+		$bar->appendButton('Link', 'chevron-left', $label, $link);
+	}
 
 	public function onAlices()
 	{
@@ -33,8 +77,8 @@ class Toolbar extends BaseToolbar
 		{
 			$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
 
-			ToolbarHelper::spacer();
-			ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/backup-now.html');
+			JToolbarHelper::spacer();
+			JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/backup-now.html');
 		}
 	}
 
@@ -44,64 +88,58 @@ class Toolbar extends BaseToolbar
 
 		$this->setTitle('COM_AKEEBA_CONFIG');
 
-		ToolbarHelper::preferences('com_akeeba', '500', '660');
-		ToolbarHelper::spacer();
-		ToolbarHelper::apply();
-		ToolbarHelper::save();
-		ToolbarHelper::spacer();
-		ToolbarHelper::custom('savenew', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
-		ToolbarHelper::cancel();
-		ToolbarHelper::spacer();
+		JToolbarHelper::preferences('com_akeeba', '500', '660');
+		JToolbarHelper::spacer();
+		JToolbarHelper::apply();
+		JToolbarHelper::save();
+		JToolbarHelper::spacer();
+		JToolbarHelper::custom('savenew', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
+		JToolbarHelper::cancel();
+		JToolbarHelper::spacer();
 
 		// Configuration wizard button. We apply styling to it.
-		$bar->appendButton('Link', 'lightning', '<strong>' . Text::_('COM_AKEEBA_CONFWIZ') . '</strong>', 'index.php?option=com_akeeba&view=ConfigurationWizard');
+		$bar->appendButton('Link', 'lightning', '<strong>' . JText::_('COM_AKEEBA_CONFWIZ') . '</strong>', 'index.php?option=com_akeeba&view=ConfigurationWizard');
 
-		ToolbarHelper::spacer();
+		JToolbarHelper::spacer();
 
-		if (AKEEBA_PRO)
-		{
-			$bar->appendButton('Link', 'calendar', Text::_('COM_AKEEBA_SCHEDULE'), 'index.php?option=com_akeeba&view=Schedule');
-		}
+		$bar->appendButton('Link', 'calendar', JText::_('COM_AKEEBA_SCHEDULE'), 'index.php?option=com_akeeba&view=Schedule');
 
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/configuration.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/configuration.html');
 
 		$js = <<< JS
-akeeba.Loader.add('akeeba.System', function(){
-    akeeba.System.documentReady(function(){
-	    var elButtons = document.querySelectorAll('#toolbar-lightning>button');
-	    akeeba.System.iterateNodes(elButtons, function (elButton) {
-			akeeba.System.addClass(elButton, 'btn-primary');        
-	    });
-    });
+;;
+
+jQuery(document).ready(function(){
+	jQuery('#toolbar-lightning>button').addClass('btn-primary');
 });
 
 JS;
-		$this->container->template->addJSInline($js);
+		JFactory::getDocument()->addScriptDeclaration($js);
 	}
 
 	public function onConfigurationWizardsMain()
 	{
 		$this->setTitle('COM_AKEEBA_CONFWIZ');
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/configuration-wizard.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/configuration-wizard.html');
 	}
 
 	public function onControlPanelsMain()
 	{
 		$this->setTitle('COM_AKEEBA_CONTROLPANEL');
-		ToolbarHelper::preferences('com_akeeba', '500', '660');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/control-panel.html');
+		JToolbarHelper::preferences('com_akeeba', '500', '660');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/using-akeeba-backup-component.html#control-panel');
 	}
 
 	public function onDatabaseFiltersMain()
 	{
 		$this->setTitle('COM_AKEEBA_DBFILTER');
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/database-tables-exclusion.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/database-tables-exclusion.html');
 	}
 
 	public function onDiscovers()
@@ -109,18 +147,18 @@ JS;
 		$this->setTitle('COM_AKEEBA_DISCOVER');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/discover-import-archives.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/ch03s02s05s03.html');
 	}
 
 	public function onFileFiltersMain()
 	{
 		$this->setTitle('COM_AKEEBA_FILEFILTERS');
 
-		ToolbarHelper::title(Text::_('COM_AKEEBA') . ': <small>' . Text::_('COM_AKEEBA_FILEFILTERS') . '</small>', 'akeeba');
+		JToolbarHelper::title(JText::_('COM_AKEEBA').': <small>'.JText::_('COM_AKEEBA_FILEFILTERS').'</small>','akeeba');
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/exclude-data-from-backup.html#files-and-directories-exclusion');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/exclude-data-from-backup.html#files-and-directories-exclusion');
 	}
 
 	public function onIncludeFoldersMain()
@@ -128,8 +166,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_INCLUDEFOLDER');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/off-site-directories-inclusion.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/off-site-directories-inclusion.html');
 	}
 
 	public function onLogs()
@@ -137,8 +175,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_LOG');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/view-log.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/view-log.html');
 	}
 
 	public function onManagesDefault()
@@ -147,9 +185,9 @@ JS;
 
 		if (AKEEBA_PRO)
 		{
-			$bar  = JToolbar::getInstance('toolbar');
-			$icon = $this->isJoomla3() ? 'folder-open' : 'search';
-			$bar->appendButton('Link', $icon, Text::_('COM_AKEEBA_DISCOVER'), 'index.php?option=com_akeeba&view=Discover');
+			$bar = JToolbar::getInstance('toolbar');
+			$icon = $this->isJoomla3() ? 'restore' : 'search';
+			$bar->appendButton('Link', $icon, JText::_('COM_AKEEBA_DISCOVER'), 'index.php?option=com_akeeba&view=Discover');
 		}
 
 		$user        = $this->container->platform->getUser();
@@ -158,31 +196,31 @@ JS;
 			'backup'    => $user->authorise('akeeba.backup', 'com_akeeba'),
 		];
 
-		if ($permissions['configure'] && AKEEBA_PRO)
+		if ($permissions['configure'])
 		{
-			ToolbarHelper::publish('restore', Text::_('COM_AKEEBA_BUADMIN_LABEL_RESTORE'));
+			JToolbarHelper::publish('restore', JText::_('COM_AKEEBA_BUADMIN_LABEL_RESTORE'));
 		}
 
 		if ($permissions['backup'])
 		{
-			ToolbarHelper::editList('showcomment', Text::_('COM_AKEEBA_BUADMIN_LOG_EDITCOMMENT'));
+			JToolbarHelper::editList('showcomment', JText::_('COM_AKEEBA_BUADMIN_LOG_EDITCOMMENT'));
 		}
 
 		if ($permissions['configure'] || $permissions['backup'])
 		{
-			ToolbarHelper::spacer();
+			JToolbarHelper::spacer();
 		}
 
 		if ($permissions['backup'])
 		{
-			ToolbarHelper::deleteList();
-			ToolbarHelper::custom('deletefiles', 'delete.png', 'delete_f2.png', Text::_('COM_AKEEBA_BUADMIN_LABEL_DELETEFILES'), true);
-			ToolbarHelper::spacer();
+			JToolbarHelper::deleteList();
+			JToolbarHelper::custom('deletefiles', 'delete.png', 'delete_f2.png', JText::_('COM_AKEEBA_BUADMIN_LABEL_DELETEFILES'), true);
+			JToolbarHelper::spacer();
 		}
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html');
 	}
 
 	public function onManagesShowcomment()
@@ -190,10 +228,10 @@ JS;
 		$this->setTitle('COM_AKEEBA_BUADMIN');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::save();
-		ToolbarHelper::cancel();
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html');
+		JToolbarHelper::save();
+		JToolbarHelper::cancel();
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html');
 	}
 
 	public function onMultipleDatabasesMain()
@@ -201,8 +239,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_MULTIDB');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/include-data-to-archive.html#multiple-db-definitions');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/include-data-to-archive.html#multiple-db-definitions');
 	}
 
 	public function onProfilesAdd()
@@ -211,8 +249,8 @@ JS;
 
 		$this->setTitle('COM_AKEEBA_PROFILES_PAGETITLE_NEW');
 
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
 	}
 
 	public function onProfilesBrowse()
@@ -220,14 +258,14 @@ JS;
 		$this->setTitle('COM_AKEEBA_PROFILES');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::addNew();
-		ToolbarHelper::custom('copy', 'copy.png', 'copy_f2.png', 'COM_AKEEBA_LBL_BATCH_COPY', false);
-		ToolbarHelper::spacer();
-		ToolbarHelper::deleteList();
-		ToolbarHelper::spacer();
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
+		JToolbarHelper::spacer();
+		JToolbarHelper::addNew();
+		JToolbarHelper::custom('copy', 'copy.png', 'copy_f2.png', 'COM_AKEEBA_LBL_BATCH_COPY', false);
+		JToolbarHelper::spacer();
+		JToolbarHelper::deleteList();
+		JToolbarHelper::spacer();
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
 	}
 
 	public function onProfilesEdit()
@@ -236,8 +274,8 @@ JS;
 
 		$this->setTitle('COM_AKEEBA_PROFILES_PAGETITLE_EDIT');
 
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/using-basic-operations.html#profiles-management');
 	}
 
 	public function onRegExDatabaseFiltersMain()
@@ -245,8 +283,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_REGEXDBFILTERS');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/regex-database-tables-exclusion.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/regex-database-tables-exclusion.html');
 	}
 
 	public function onRegExFileFiltersMain()
@@ -254,24 +292,24 @@ JS;
 		$this->setTitle('COM_AKEEBA_REGEXFSFILTERS');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/regex-files-directories-exclusion.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/regex-files-directories-exclusion.html');
 	}
 
 	public function onRemoteFilesDownloadToServer()
 	{
 		$this->setTitle('COM_AKEEBA_REMOTEFILES');
 
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/ch03s03s05s02.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/ch03s02s05s02.html');
 	}
 
 	public function onRemoteFilesListActions()
 	{
 		$this->setTitle('COM_AKEEBA_REMOTEFILES');
 
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/manage-remotely-stored-files.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/ch03s02s05s02.html');
 	}
 
 	public function onRestores()
@@ -279,8 +317,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_RESTORE');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html#integrated-restoration');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/adminsiter-backup-files.html#integrated-restoration');
 	}
 
 	public function onS3ImportsMain()
@@ -288,8 +326,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_S3IMPORT');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeebabackup .com/documentation/akeeba-backup-documentation/import-s3.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/ch03s02s05s03.html');
 	}
 
 	public function onS3ImportsDltoserver()
@@ -297,8 +335,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_S3IMPORT');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeebabackup .com/documentation/akeeba-backup-documentation/import-s3.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/ch03s02s05s03.html');
 	}
 
 	public function onSchedules()
@@ -306,8 +344,8 @@ JS;
 		$this->setTitle('COM_AKEEBA_SCHEDULE');
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-documentation/automating-your-backup.html');
+		JToolbarHelper::spacer();
+		JToolbarHelper::help(null, false, 'https://www.akeebabackup.com/documentation/akeeba-backup-documentation/automating-your-backup.html');
 	}
 
 	public function onStatisticsMain()
@@ -321,51 +359,8 @@ JS;
 
 		$this->backButton('COM_AKEEBA_CONTROLPANEL', 'index.php?option=com_akeeba');
 
-		$bar  = JToolbar::getInstance('toolbar');
+		$bar = JToolbar::getInstance('toolbar');
 		$icon = $this->isJoomla3() ? 'loop' : 'refresh';
 		$bar->appendButton('Link', $icon, 'COM_AKEEBA_TRANSFER_BTN_RESET', 'index.php?option=com_akeeba&view=Transfer&task=reset');
-	}
-
-	protected function isJoomla3()
-	{
-		if (is_null(self::$isJoomla3))
-		{
-			self::$isJoomla3 = version_compare(JVERSION, '3.999.999', 'lt');
-		}
-
-		return self::$isJoomla3;
-	}
-
-	protected function setTitle($viewTitle)
-	{
-		$title = Text::_('COM_AKEEBA');
-
-		if ($this->isJoomla3())
-		{
-			$icon  = 'akeeba';
-			$title .= ' <span style="display: none;"> - </span><small>';
-		}
-		else
-		{
-			$icon  = 'akeeba-j4';
-			$title .= "<small> – ";
-		}
-
-		$title .= Text::_($viewTitle) . "</small>";
-
-		ToolbarHelper::title($title, $icon);
-	}
-
-	protected function backButton($label, $link)
-	{
-		if ($this->isJoomla3())
-		{
-			ToolbarHelper::back($label, $link);
-
-			return;
-		}
-
-		$bar = JToolbar::getInstance('toolbar');
-		$bar->appendButton('Link', 'chevron-left', $label, $link);
 	}
 }

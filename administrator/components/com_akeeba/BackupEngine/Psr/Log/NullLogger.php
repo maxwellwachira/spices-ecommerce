@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Psr\Log;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * This Logger can be used to avoid conditional log calls
@@ -21,17 +23,16 @@ defined('AKEEBAENGINE') || die();
  */
 class NullLogger extends AbstractLogger
 {
-	/**
-	 * Logs with an arbitrary level.
-	 *
-	 * @param   mixed   $level
-	 * @param   string  $message
-	 * @param   array   $context
-	 *
-	 * @return null
-	 */
-	public function log($level, $message, array $context = [])
-	{
-		// noop
-	}
+    /**
+     * Logs with an arbitrary level.
+     *
+     * @param mixed $level
+     * @param string $message
+     * @param array $context
+     * @return null
+     */
+    public function log($level, $message, array $context = array())
+    {
+        // noop
+    }
 }

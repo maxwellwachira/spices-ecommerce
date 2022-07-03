@@ -2,7 +2,7 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -133,17 +133,17 @@ abstract class UpdateAdapter extends \JAdapterInstance
 	 * from their URL and enabled afterwards. If the URL fetch fails with a PHP fatal error (e.g. timeout) the faulty
 	 * update site will remain disabled the next time we attempt to load the update information.
 	 *
-	 * @param   int   $updateSiteId  The numeric ID of the update site to enable/disable
-	 * @param   bool  $enabled       Enable the site when true, disable it when false
+	 * @param   int   $update_site_id  The numeric ID of the update site to enable/disable
+	 * @param   bool  $enabled         Enable the site when true, disable it when false
 	 *
 	 * @return  void
 	 */
-	protected function toggleUpdateSite($updateSiteId, $enabled = true)
+	protected function toggleUpdateSite($update_site_id, $enabled = true)
 	{
-		$updateSiteId = (int) $updateSiteId;
+		$update_site_id = (int) $update_site_id;
 		$enabled = (bool) $enabled;
 
-		if (empty($updateSiteId))
+		if (empty($update_site_id))
 		{
 			return;
 		}
@@ -152,7 +152,7 @@ abstract class UpdateAdapter extends \JAdapterInstance
 		$query = $db->getQuery(true)
 			->update($db->qn('#__update_sites'))
 			->set($db->qn('enabled') . ' = ' . $db->q($enabled ? 1 : 0))
-			->where($db->qn('update_site_id') . ' = ' . $db->q($updateSiteId));
+			->where($db->qn('update_site_id') . ' = ' . $db->q($update_site_id));
 		$db->setQuery($query);
 
 		try

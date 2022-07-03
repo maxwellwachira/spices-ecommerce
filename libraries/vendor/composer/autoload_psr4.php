@@ -26,6 +26,7 @@ return array(
     'Joomla\\Image\\' => array($vendorDir . '/joomla/image/src'),
     'Joomla\\Filter\\' => array($vendorDir . '/joomla/filter/src'),
     'Joomla\\Filesystem\\' => array($vendorDir . '/joomla/filesystem/src'),
+    'Joomla\\Event\\Tests\\' => array($vendorDir . '/joomla/event/Tests'),
     'Joomla\\Event\\' => array($vendorDir . '/joomla/event/src'),
     'Joomla\\Data\\Tests\\' => array($vendorDir . '/joomla/data/Tests'),
     'Joomla\\Data\\' => array($vendorDir . '/joomla/data/src'),

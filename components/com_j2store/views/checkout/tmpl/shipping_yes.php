@@ -35,7 +35,7 @@ $shipping_selected_text = '';
 
 	        $css_id = $rate['element']."_".JFilterOutput::stringURLSafe($rate['name']);
 
-			$shipping_selected_text .= "<div class='shipping_element ".$css_id."_select_text' style='display:none;'>".JText::_ ( $select_text )."</div>"
+			$shipping_selected_text .= "<div class='shipping_element ".$css_id."_select_text hide'>".JText::_ ( $select_text )."</div>"
             ?>
             <input id="shipping_<?php echo $css_id; ?>" name="shipping_plugin" rel="<?php echo $rate['name']; ?>" type="radio" value="<?php echo $rate['element'] ?>" onClick="j2storeSetShippingRate('<?php echo $rate['name']; ?>','<?php echo $rate['price']; ?>',<?php echo $rate['tax']; ?>,<?php echo $rate['extra']; ?>, '<?php echo $rate['code']; ?>', true, '<?php echo $rate['element'];?>', '<?php echo $css_id; ?>' );" <?php echo $checked; ?> />
             <label for="shipping_<?php echo $css_id; ?>" onClick="j2storeSetShippingRate('<?php echo $rate['name']; ?>','<?php echo $rate['price']; ?>',<?php echo $rate['tax']; ?>,<?php echo $rate['extra']; ?>, '<?php echo $rate['code']; ?>', true, '<?php echo $rate['element'];?>', '<?php echo $css_id; ?>' );"><?php echo $rate['name']; ?> ( <?php echo $this->currency->format( $rate['total']); ?> )</label><br />
@@ -56,13 +56,11 @@ $shipping_selected_text = '';
 <?php
 echo $shipping_selected_text;
 if (!empty($this->default_rate) ) :
-	$default_rate = $this->default_rate;
-    $default_css_id = $default_rate['element']."_".JFilterOutput::stringURLSafe($default_rate['name']);
-?>
+	$default_rate = $this->default_rate; ?>
 <script type="text/javascript">
 (function($) {
 	$(document).ready(function(){
-		j2storeSetShippingRate('<?php echo $default_rate['name']; ?>','<?php echo $default_rate['price']; ?>',<?php echo $default_rate['tax']; ?>,<?php echo $default_rate['extra']; ?>, '<?php echo $default_rate['code']; ?>', true,'<?php echo $default_rate['element'];?>', '<?php echo $default_css_id; ?>' );
+		j2storeSetShippingRate('<?php echo $default_rate['name']; ?>','<?php echo $default_rate['price']; ?>',<?php echo $default_rate['tax']; ?>,<?php echo $default_rate['extra']; ?>, '<?php echo $default_rate['code']; ?>', true,'<?php echo $default_rate['element'];?>', '<?php echo $css_id; ?>' );
 });
 })(j2store.jQuery);
 </script>

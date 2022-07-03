@@ -9,7 +9,7 @@
 // No direct access
 defined('_JEXEC') or die;
 ?>
-<div class="product-<?php echo $this->product->j2store_product_id; ?> <?php echo $this->product->product_type; ?>-product">
+<div itemscope itemtype="https://schema.org/Product" class="product-<?php echo $this->product->j2store_product_id; ?> <?php echo $this->product->product_type; ?>-product">
 	<div class="row-fluid">
 		<div class="span6">
 			<?php $images = $this->loadTemplate('images');
@@ -25,21 +25,15 @@ defined('_JEXEC') or die;
 			<?php endif;?>
 
 			<div class="price-sku-brand-container row-fluid">
-                <?php if( J2Store::product()->canShowprice($this->params) ): ?>
 				<div class="span6">
 				<?php echo $this->loadTemplate('price'); ?>
 				</div>
-                <?php endif ?>
 
 				<div class="span6">
 				<?php if(isset($this->product->source->event->beforeDisplayContent)) : ?>
 					<?php echo $this->product->source->event->beforeDisplayContent; ?>
 				<?php endif;?>
-
-                <?php if( J2Store::product()->canShowSku($this->params) ): ?>
 					<?php echo $this->loadTemplate('sku'); ?>
-                <?php endif ?>
-
 					<?php echo $this->loadTemplate('brand'); ?>
 					<?php if($this->params->get('item_show_product_stock', 1) && J2Store::product()->managing_stock($this->product->variant)) : ?>
 						<?php echo $this->loadTemplate('stock'); ?>

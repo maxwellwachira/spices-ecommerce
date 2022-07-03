@@ -1,15 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Driver;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Driver\Query\Base as QueryBase;
 
@@ -18,7 +20,6 @@ use Akeeba\Engine\Driver\Query\Base as QueryBase;
  */
 class None extends Base
 {
-	public static $dbtech = 'none';
 	/**
 	 * The name of the database driver.
 	 *
@@ -27,12 +28,14 @@ class None extends Base
 	 */
 	public $name = 'none';
 
-	public function __construct(array $options)
-	{
-		$this->driverType = 'none';
+	public static $dbtech = 'none';
 
-		parent::__construct($options);
-	}
+    public function __construct(array $options)
+    {
+	    $this->driverType = 'none';
+
+        parent::__construct($options);
+    }
 
 	/**
 	 * Test to see if this db driver is available
@@ -46,10 +49,10 @@ class None extends Base
 		return true;
 	}
 
-	public function open()
-	{
-		return $this;
-	}
+    public function open()
+    {
+        return $this;
+    }
 
 	/**
 	 * Closes the database connection
@@ -72,8 +75,8 @@ class None extends Base
 	/**
 	 * Drops a table from the database.
 	 *
-	 * @param   string   $table     The name of the database table to drop.
-	 * @param   boolean  $ifExists  Optionally specify that the table must exist before it is dropped.
+	 * @param   string  $table    The name of the database table to drop.
+	 * @param   boolean $ifExists Optionally specify that the table must exist before it is dropped.
 	 *
 	 * @return  Base  Returns this object to support chaining.
 	 */
@@ -85,8 +88,8 @@ class None extends Base
 	/**
 	 * Method to escape a string for usage in an SQL statement.
 	 *
-	 * @param   string   $text   The string to be escaped.
-	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
+	 * @param   string  $text  The string to be escaped.
+	 * @param   boolean $extra Optional parameter to provide extra escaping.
 	 *
 	 * @return  string   The escaped string.
 	 */
@@ -96,9 +99,21 @@ class None extends Base
 	}
 
 	/**
+	 * Method to fetch a row from the result set cursor as an array.
+	 *
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
+	 *
+	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
+	 */
+	protected function fetchArray($cursor = null)
+	{
+		return false;
+	}
+
+	/**
 	 * Method to fetch a row from the result set cursor as an associative array.
 	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
 	 *
 	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
 	 */
@@ -108,9 +123,22 @@ class None extends Base
 	}
 
 	/**
+	 * Method to fetch a row from the result set cursor as an object.
+	 *
+	 * @param   mixed  $cursor The optional result set cursor from which to fetch the row.
+	 * @param   string $class  The class name to use for the returned row object.
+	 *
+	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
+	 */
+	protected function fetchObject($cursor = null, $class = 'stdClass')
+	{
+		return false;
+	}
+
+	/**
 	 * Method to free up the memory used for the result set.
 	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
 	 *
 	 * @return  void
 	 */
@@ -142,7 +170,7 @@ class None extends Base
 	/**
 	 * Get the number of returned rows for the previous executed SQL statement.
 	 *
-	 * @param   resource  $cursor  An optional database cursor resource to extract the row count from.
+	 * @param   resource $cursor An optional database cursor resource to extract the row count from.
 	 *
 	 * @return  integer   The number of returned rows.
 	 */
@@ -154,7 +182,7 @@ class None extends Base
 	/**
 	 * Get the current query object or a new QueryBase object.
 	 *
-	 * @param   boolean  $new  False to return the current query object, True to return a new QueryBase object.
+	 * @param   boolean $new False to return the current query object, True to return a new QueryBase object.
 	 *
 	 * @return  QueryBase  The current query object or a new object extending the QueryBase class.
 	 */
@@ -166,38 +194,38 @@ class None extends Base
 	/**
 	 * Retrieves field information about the given tables.
 	 *
-	 * @param   string   $table     The name of the database table.
-	 * @param   boolean  $typeOnly  True (default) to only return field types.
+	 * @param   string  $table    The name of the database table.
+	 * @param   boolean $typeOnly True (default) to only return field types.
 	 *
 	 * @return  array  An array of fields by table.
 	 */
 	public function getTableColumns($table, $typeOnly = true)
 	{
-		return [];
+		return array();
 	}
 
 	/**
 	 * Shows the table CREATE statement that creates the given tables.
 	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
+	 * @param   mixed $tables A table name or a list of table names.
 	 *
 	 * @return  array  A list of the create SQL for the tables.
 	 */
 	public function getTableCreate($tables)
 	{
-		return [];
+		return array();
 	}
 
 	/**
 	 * Retrieves field information about the given tables.
 	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
+	 * @param   mixed $tables A table name or a list of table names.
 	 *
 	 * @return  array  An array of keys for the table(s).
 	 */
 	public function getTableKeys($tables)
 	{
-		return [];
+		return array();
 	}
 
 	/**
@@ -207,7 +235,7 @@ class None extends Base
 	 */
 	public function getTableList()
 	{
-		return [];
+		return array();
 	}
 
 	/**
@@ -218,13 +246,13 @@ class None extends Base
 	 * set up as temporary, black hole or federated tables. These two types should never,
 	 * ever, have their data dumped in the SQL dump file.
 	 *
-	 * @param   bool  $abstract  Return or normal names? Defaults to true (names)
+	 * @param   bool $abstract Return or normal names? Defaults to true (names)
 	 *
 	 * @return  array
 	 */
 	public function getTables($abstract = true)
 	{
-		return [];
+		return array();
 	}
 
 	/**
@@ -250,7 +278,7 @@ class None extends Base
 	/**
 	 * Locks a table in the database.
 	 *
-	 * @param   string  $tableName  The name of the table to unlock.
+	 * @param   string $tableName The name of the table to unlock.
 	 *
 	 * @return  Base  Returns this object to support chaining.
 	 */
@@ -272,10 +300,10 @@ class None extends Base
 	/**
 	 * Renames a table in the database.
 	 *
-	 * @param   string  $oldTable  The name of the table to be renamed
-	 * @param   string  $newTable  The new name for the table.
-	 * @param   string  $backup    Table prefix
-	 * @param   string  $prefix    For the table - used to rename constraints in non-mysql databases
+	 * @param   string $oldTable The name of the table to be renamed
+	 * @param   string $newTable The new name for the table.
+	 * @param   string $backup   Table prefix
+	 * @param   string $prefix   For the table - used to rename constraints in non-mysql databases
 	 *
 	 * @return  Base  Returns this object to support chaining.
 	 */
@@ -287,7 +315,7 @@ class None extends Base
 	/**
 	 * Select a database for use.
 	 *
-	 * @param   string  $database  The name of the database to select for use.
+	 * @param   string $database The name of the database to select for use.
 	 *
 	 * @return  boolean  True if the database was successfully selected.
 	 */
@@ -344,30 +372,5 @@ class None extends Base
 	public function unlockTables()
 	{
 		return $this;
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an array.
-	 *
-	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
-	 *
-	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
-	 */
-	protected function fetchArray($cursor = null)
-	{
-		return false;
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an object.
-	 *
-	 * @param   mixed   $cursor  The optional result set cursor from which to fetch the row.
-	 * @param   string  $class   The class name to use for the returned row object.
-	 *
-	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
-	 */
-	protected function fetchObject($cursor = null, $class = 'stdClass')
-	{
-		return false;
 	}
 }

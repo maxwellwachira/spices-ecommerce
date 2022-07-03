@@ -1,21 +1,20 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use Akeeba\Engine\Util\Log\LogInterface;
-use Akeeba\Engine\Util\Log\WarningsLoggerAware;
-use Akeeba\Engine\Util\Log\WarningsLoggerInterface;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -23,10 +22,8 @@ use Psr\Log\LogLevel;
 /**
  * Writes messages to the backup log file
  */
-class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
+class Logger implements LoggerInterface
 {
-	use WarningsLoggerAware;
-
 	/** @var  string  Full path to log file */
 	protected $logName = null;
 
@@ -67,7 +64,7 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	/**
 	 * Clears the logfile
 	 *
-	 * @param   string  $tag  Backup origin
+	 * @param   string $tag Backup origin
 	 */
 	public function reset($tag = null)
 	{
@@ -76,7 +73,8 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 
 		// Get the file names for the default log and the tagged log
 		$currentLogName = $this->logName;
-		$this->logName  = $this->getLogFilename($tag);
+		$this->logName = $this->getLogFilename($tag);
+		$defaultLog = $this->getLogFilename(null);
 
 		// Close the file if it's open
 		if ($currentLogName == $this->logName)
@@ -89,38 +87,13 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 
 		// Reset the log file
 		$fp = @fopen($this->logName, 'w');
-		$hasWritten = false;
 
 		if ($fp !== false)
 		{
-			$hasWritten = fwrite($fp, '<' . '?' . 'php die(); ' . '?' . '>' . "\n") !== false;
 			@fclose($fp);
 		}
 
-		// If I could not write to a .log.php file try using a .log file instead.
-		if (!$hasWritten)
-		{
-			$this->logName  = $this->getLogFilename($tag, '');
-			$fp = @fopen($this->logName, 'w');
-			$hasWritten = false;
-
-			if ($fp !== false)
-			{
-				$hasWritten = fwrite($fp, "\n") !== false;
-				@fclose($fp);
-			}
-		}
-
-		// Delete the default log file(s) if they exists
-		$defaultLog     = $this->getLogFilename(null);
-
-		if (!empty($tag) && @file_exists($defaultLog))
-		{
-			@unlink($defaultLog);
-		}
-
-		$defaultLog     = $this->getLogFilename(null, '');
-
+		// Delete the default log file if it exists
 		if (!empty($tag) && @file_exists($defaultLog))
 		{
 			@unlink($defaultLog);
@@ -142,14 +115,8 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 *
 	 * @return  void
 	 */
-	public function log($level, $message = '', array $context = [])
+	public function log($level, $message = '', array $context = array())
 	{
-		// Warnings are enqueued no matter what is the minimum log level to report in the log file
-		if (in_array($level, [LogLevel::WARNING, LogLevel::NOTICE]))
-		{
-			$this->enqueueWarning($message);
-		}
-
 		// If we are told to not log anything we can't continue
 		if ($this->configuredLoglevel == 0)
 		{
@@ -208,15 +175,8 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 			return;
 		}
 
-		$translateRoot = true;
-
-		if (array_key_exists('root_translate', $context))
-		{
-			$translateRoot = ($context['root_translate'] === 1) || ($context['root_translate'] === '1') || ($context['root_translate'] === true);
-		}
-
 		// Replace the site's root with <root> in the log file
-		if ($translateRoot && !defined('AKEEBADEBUG'))
+		if (!defined('AKEEBADEBUG'))
 		{
 			$message = str_replace($this->site_root_untranslated, "<root>", $message);
 			$message = str_replace($this->site_root, "<root>", $message);
@@ -258,29 +218,27 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	/**
 	 * Calculates the absolute path to the log file
 	 *
-	 * @param   string  $tag  The backup run's tag
+	 * @param    string $tag The backup run's tag
 	 *
 	 * @return    string    The absolute path to the log file
 	 */
-	public function getLogFilename($tag = null, $extension = '.php')
+	public function getLogFilename($tag = null)
 	{
 		if (empty($tag))
 		{
-			$fileName = 'akeeba.log' . $extension;
+			$fileName = 'akeeba.log';
 		}
 		else
 		{
-			$fileName = "akeeba.$tag.log" . $extension;
+			$fileName = "akeeba.$tag.log";
 		}
 
 		// Get output directory
-		$registry        = Factory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$outputDirectory = $registry->get('akeeba.basic.output_directory');
 
 		// Get the log file name
-		$absoluteLogFilename = Factory::getFilesystemTools()->TranslateWinPath($outputDirectory . DIRECTORY_SEPARATOR . $fileName);
-
-		return $absoluteLogFilename;
+		return Factory::getFilesystemTools()->TranslateWinPath($outputDirectory . DIRECTORY_SEPARATOR . $fileName);
 	}
 
 	/**
@@ -296,7 +254,7 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 			@fclose($this->fp);
 		}
 
-		$this->fp         = null;
+		$this->fp = null;
 		$this->currentTag = null;
 	}
 
@@ -304,11 +262,11 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 * Open a new log instance with the specified tag. If another log is already open it is closed before switching to
 	 * the new log tag. If the tag is null use the default log defined in the logging system.
 	 *
-	 * @param   string|null  $tag  The log to open
+	 * @param  string|null  $tag  The log to open
 	 *
 	 * @return void
 	 */
-	public function open($tag = null, $extension = '.php')
+	public function open($tag = null)
 	{
 		// If the log is already open do nothing
 		if (is_resource($this->fp) && ($tag == $this->currentTag))
@@ -329,81 +287,19 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 		$this->currentTag = $tag;
 
 		// Get the log filename
-		$this->logName = $this->getLogFilename($tag, $extension);
+		$this->logName = $this->getLogFilename($tag);
 
 		// Touch the file
 		@touch($this->logName);
 
-		// Open the log file. DO NOT USE APPEND ('ab') MODE. I NEED TO SEEK INTO THE FILE. SEE FURTHER BELOW!
-		$this->fp = @fopen($this->logName, 'cb');
+		// Open the log file
+		$this->fp = @fopen($this->logName, 'ab');
 
 		// If we couldn't open the file set the file pointer to null
 		if ($this->fp === false)
 		{
 			$this->fp = null;
-
-			return;
 		}
-
-		// Go to the end of the file, emulating append mode. DO NOT REPLACE THE fopen() FILE MODE!
-		if (@fseek($this->fp, 0, SEEK_END) === -1)
-		{
-			@fclose($this->fp);
-			@unlink($this->logName);
-
-			$this->fp = null;
-
-			return;
-		}
-
-		/**
-		 * The following sounds pretty stupid but there is a reason for that convoluted code.
-		 *
-		 * Some hosts, like WP Engine, will now allow you to write to a log file with a .php extension. The code below
-		 * tries to anticipate that when the log extension is .php. It will try to write to the *.log.php file and the
-		 * text is actually resembling PHP code. Hosts like WP Engine will fail the fwrite() which will cause this
-		 * method to terminate early and return a null pointer. Our code will catch this case and try to use a .log
-		 * extension as a safe fallback.
-		 */
-		if ($extension !== '.php')
-		{
-			return;
-		}
-
-		// Try to write something into the file
-		$written = @fwrite($this->fp, '<?php die("test"); ?>' . "\n");
-
-		if ($written === false)
-		{
-			@fclose($this->fp);
-			@unlink($this->logName);
-
-			$this->fp = null;
-
-			$this->open($tag, '');
-
-			return;
-		}
-
-		// Store truncate offset, we will have to rewind the internal pointer to it
-		$truncate_point = ftell($this->fp) - $written;
-
-		if (ftruncate($this->fp, $truncate_point) === false)
-		{
-			@fclose($this->fp);
-			@unlink($this->logName);
-
-			$this->fp = null;
-
-			$this->open($tag, '');
-
-			return;
-		}
-
-		// Finally, move the file pointer at the truncation point. Otherwise PHP will append NULL bytes to the string
-		// to "pad" the file length to the internal file pointer. No need to check if the operation was successful,
-		// worst case scenario we will have some extra NULL bytes, there's no need to kill the log operation
-		@fseek($this->fp, $truncate_point);
 	}
 
 	/**
@@ -431,25 +327,13 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 * specific tag. The timestamp MUST be read from the log itself, not from the logger object. It is used by the
 	 * engine to find out the age of stalled backups which may have crashed.
 	 *
-	 * @param   string|null  $tag  The log tag for which the last timestamp is returned
+	 * @param   string|null $tag The log tag for which the last timestamp is returned
 	 *
 	 * @return  int|null  The timestamp of the last log message, in UNIX time. NULL if we can't get the timestamp.
 	 */
 	public function getLastTimestamp($tag = null)
 	{
 		$fileName = $this->getLogFilename($tag);
-
-		/**
-		 * The log file akeeba.tag.log.php may not exist but the akeeba.tag.log does. This would be the case in some bad
-		 * hosts, like WPEngine, which do not allow us to create .php files EVEN THOUGH that's the only way to ensure
-		 * the privileged information in the log file is not readable over the web. You can't fix bad hosts, you can
-		 * only work around them.
-		 */
-		if (!@file_exists($fileName) && @file_exists(substr($fileName, 0, -4)))
-		{
-			$fileName = substr($fileName, 0, -4);
-		}
-
 		$timestamp = @filemtime($fileName);
 
 		if ($timestamp === false)
@@ -463,12 +347,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	/**
 	 * System is unusable.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function emergency($message, array $context = [])
+	public function emergency($message, array $context = array())
 	{
 		$this->log(LogLevel::EMERGENCY, $message, $context);
 	}
@@ -479,12 +363,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 * Example: Entire website down, database unavailable, etc. This should
 	 * trigger the SMS alerts and wake you up.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function alert($message, array $context = [])
+	public function alert($message, array $context = array())
 	{
 		$this->log(LogLevel::ALERT, $message, $context);
 	}
@@ -494,12 +378,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 *
 	 * Example: Application component unavailable, unexpected exception.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function critical($message, array $context = [])
+	public function critical($message, array $context = array())
 	{
 		$this->log(LogLevel::CRITICAL, $message, $context);
 	}
@@ -508,12 +392,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 * Runtime errors that do not require immediate action but should typically
 	 * be logged and monitored.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function error($message, array $context = [])
+	public function error($message, array $context = array())
 	{
 		$this->log(LogLevel::ERROR, $message, $context);
 	}
@@ -524,12 +408,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 * Example: Use of deprecated APIs, poor use of an API, undesirable things
 	 * that are not necessarily wrong.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function warning($message, array $context = [])
+	public function warning($message, array $context = array())
 	{
 		$this->log(LogLevel::WARNING, $message, $context);
 	}
@@ -537,12 +421,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	/**
 	 * Normal but significant events.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function notice($message, array $context = [])
+	public function notice($message, array $context = array())
 	{
 		$this->log(LogLevel::NOTICE, $message, $context);
 	}
@@ -552,12 +436,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	 *
 	 * Example: User logs in, SQL logs.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function info($message, array $context = [])
+	public function info($message, array $context = array())
 	{
 		$this->log(LogLevel::INFO, $message, $context);
 	}
@@ -565,12 +449,12 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	/**
 	 * Detailed debug information.
 	 *
-	 * @param   string  $message
-	 * @param   array   $context
+	 * @param string $message
+	 * @param array  $context
 	 *
-	 * @return void
+	 * @return null
 	 */
-	public function debug($message, array $context = [])
+	public function debug($message, array $context = array())
 	{
 		$this->log(LogLevel::DEBUG, $message, $context);
 	}
@@ -584,10 +468,10 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 	{
 		// Get the site's translated and untranslated root
 		$this->site_root_untranslated = Platform::getInstance()->get_site_root();
-		$this->site_root              = Factory::getFilesystemTools()->TranslateWinPath($this->site_root_untranslated);
+		$this->site_root = Factory::getFilesystemTools()->TranslateWinPath($this->site_root_untranslated);
 
 		// Load the registry and fetch log level
-		$registry                 = Factory::getConfiguration();
+		$registry = Factory::getConfiguration();
 		$this->configuredLoglevel = $registry->get('akeeba.basic.log_level');
 		$this->configuredLoglevel = $this->configuredLoglevel * 1;
 	}

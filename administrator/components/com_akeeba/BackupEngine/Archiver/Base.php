@@ -1,32 +1,31 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
+use Akeeba\Engine\Base\BaseObject as BaseObject;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use Akeeba\Engine\Util\FileCloseAware;
 use Akeeba\Engine\Util\FileSystem;
-use Exception;
-use RuntimeException;
+use Psr\Log\LogLevel;
 
 /**
  * Abstract parent class of all archiver engines
  */
-abstract class Base
+abstract class Base extends BaseObject
 {
-	use FileCloseAware;
-
 	/** @var Filesystem Filesystem utilities object */
 	protected $fsUtils = null;
 
@@ -41,7 +40,7 @@ abstract class Base
 	 *
 	 * @codeCoverageIgnore
 	 *
-	 * @return  void
+	 * @return  Base
 	 */
 	public function __construct()
 	{
@@ -64,7 +63,7 @@ abstract class Base
 	 * Notifies the engine on the backup comment and converts it to plain text for
 	 * inclusion in the archive file, if applicable.
 	 *
-	 * @param   string  $comment  The archive's comment
+	 * @param   string $comment The archive's comment
 	 *
 	 * @return  void
 	 */
@@ -86,34 +85,33 @@ abstract class Base
 	/**
 	 * Adds a single file in the archive
 	 *
-	 * @param   string  $file        The absolute path to the file to add
-	 * @param   string  $removePath  Path to remove from $file
-	 * @param   string  $addPath     Path to prepend to $file
+	 * @param   string $file       The absolute path to the file to add
+	 * @param   string $removePath Path to remove from $file
+	 * @param   string $addPath    Path to prepend to $file
 	 *
-	 * @return  void
-	 *
-	 * @throws  Exception
+	 * @return  boolean
 	 */
-	public final function addFile($file, $removePath = '', $addPath = '')
+	public function addFile($file, $removePath = '', $addPath = '')
 	{
-		$storedName = $this->addRemovePaths($file, $removePath, $addPath);
+		$storedName = $this->_addRemovePaths($file, $removePath, $addPath);
 
-		$this->addFileRenamed($file, $storedName);
+		return $this->addFileRenamed($file, $storedName);
 	}
 
 	/**
 	 * Adds a file to the archive, given the stored name and its contents
 	 *
-	 * @param   string  $fileName        The base file name
-	 * @param   string  $addPath         The relative path to prepend to file name
-	 * @param   string  $virtualContent  The contents of the file to be archived
+	 * @param   string $fileName       The base file name
+	 * @param   string $addPath        The relative path to prepend to file name
+	 * @param   string $virtualContent The contents of the file to be archived
 	 *
-	 * @return  void
+	 * @return  boolean
 	 */
-	public final function addFileVirtual($fileName, $addPath, &$virtualContent)
+	public function addVirtualFile($fileName, $addPath = '', &$virtualContent)
 	{
-		$storedName  = $this->addRemovePaths($fileName, '', $addPath);
 		$mb_encoding = '8bit';
+
+		$storedName = $this->_addRemovePaths($fileName, '', $addPath);
 
 		if (function_exists('mb_internal_encoding'))
 		{
@@ -123,31 +121,35 @@ abstract class Base
 
 		try
 		{
-			$this->_addFile(true, $virtualContent, $storedName);
+			$ret = $this->_addFile(true, $virtualContent, $storedName);
 		}
 		catch (WarningException $e)
 		{
-			Factory::getLog()->warning($e->getMessage());
+			$this->setWarning($e->getMessage());
+			$ret = false;
 		}
-		finally
+		catch (ErrorException $e)
 		{
-			if (function_exists('mb_internal_encoding'))
-			{
-				mb_internal_encoding($mb_encoding);
-			}
+			$this->setError($e->getMessage());
+			$ret = false;
 		}
+
+		if (function_exists('mb_internal_encoding'))
+		{
+			mb_internal_encoding($mb_encoding);
+		}
+
+		return $ret;
 	}
 
 	/**
 	 * Adds a file to the archive, with a name that's different from the source
 	 * filename
 	 *
-	 * @param   string  $sourceFile  Absolute path to the source file
-	 * @param   string  $targetFile  Relative filename to store in archive
+	 * @param   string $sourceFile Absolute path to the source file
+	 * @param   string $targetFile Relative filename to store in archive
 	 *
-	 * @return  void
-	 *
-	 * @throws  Exception
+	 * @return  boolean
 	 */
 	public function addFileRenamed($sourceFile, $targetFile)
 	{
@@ -161,76 +163,67 @@ abstract class Base
 
 		try
 		{
-			$this->_addFile(false, $sourceFile, $targetFile);
+			$ret = $this->_addFile(false, $sourceFile, $targetFile);
 		}
 		catch (WarningException $e)
 		{
-			Factory::getLog()->warning($e->getMessage());
+			$this->setWarning($e->getMessage());
+			$ret = false;
 		}
-		finally
+		catch (ErrorException $e)
 		{
-			if (function_exists('mb_internal_encoding'))
-			{
-				mb_internal_encoding($mb_encoding);
-			}
+			$this->setError($e->getMessage());
+			$ret = false;
 		}
+
+		if (function_exists('mb_internal_encoding'))
+		{
+			mb_internal_encoding($mb_encoding);
+		}
+
+		return $ret;
 	}
 
 	/**
 	 * Adds a list of files into the archive, removing $removePath from the
 	 * file names and adding $addPath to them.
 	 *
-	 * @param   array   $fileList    A simple string array of filepaths to include
-	 * @param   string  $removePath  Paths to remove from the filepaths
-	 * @param   string  $addPath     Paths to add in front of the filepaths
+	 * @param   array  $fileList   A simple string array of filepaths to include
+	 * @param   string $removePath Paths to remove from the filepaths
+	 * @param   string $addPath    Paths to add in front of the filepaths
 	 *
-	 * @return  void
-	 *
-	 * @throws Exception
+	 * @return  boolean  True on success
 	 */
-	public final function addFileList(&$fileList, $removePath = '', $addPath = '')
+	public function addFileList(&$fileList, $removePath = '', $addPath = '')
 	{
 		if (!is_array($fileList))
 		{
-			Factory::getLog()->warning('addFileList called without a file list array');
+			$this->setWarning('addFileList called without a file list array');
 
-			return;
+			return false;
 		}
 
 		foreach ($fileList as $file)
 		{
-			$this->addFile($file, $removePath, $addPath);
+			if (!$this->addFile($file, $removePath, $addPath))
+			{
+				return false;
+			}
 		}
-	}
 
-	/**
-	 * Adds a file to the archive, given the stored name and its contents
-	 *
-	 * @param   string  $fileName        The base file name
-	 * @param   string  $addPath         The relative path to prepend to file name
-	 * @param   string  $virtualContent  The contents of the file to be archived
-	 *
-	 * @return  void
-	 *
-	 * @deprecated 7.0.0
-	 */
-	public final function addVirtualFile($fileName, $addPath, &$virtualContent)
-	{
-		Factory::getLog()->debug('DEPRECATED: addVirtualFile() has been renamed to addFileVirtual().');
-
-		$this->addFileVirtual($fileName, $addPath, $virtualContent);
+		return true;
 	}
 
 	/**
 	 * Initialises the archiver class, creating the archive from an existent
 	 * installer's JPA archive. MUST BE OVERRIDEN BY CHILDREN CLASSES.
 	 *
-	 * @param   string  $targetArchivePath  Absolute path to the generated archive
-	 * @param   array   $options            A named key array of options (optional)
+	 * @param    string $targetArchivePath Absolute path to the generated archive
+	 * @param    array  $options           A named key array of options (optional)
 	 *
 	 * @return  void
 	 */
-	abstract public function initialize($targetArchivePath, $options = []);
+	abstract public function initialize($targetArchivePath, $options = array());
 
 	/**
 	 * Makes whatever finalization is needed for the archive to be considered
@@ -247,16 +240,14 @@ abstract class Base
 	 *
 	 * @codeCoverageIgnore
 	 *
-	 * @param   integer  $index   The index in the source JPA archive's list currently in use
-	 * @param   integer  $offset  The source JPA archive's offset to use
+	 * @param   integer $index  The index in the source JPA archive's list currently in use
+	 * @param   integer $offset The source JPA archive's offset to use
 	 *
 	 * @return  array|bool  False if an error occurred, return array otherwise
 	 */
 	public function transformJPA($index, $offset)
 	{
 		static $totalSize = 0;
-
-		$xform_source = null;
 
 		// Do we have to open the file?
 		if (!$this->_xform_fp)
@@ -294,13 +285,13 @@ abstract class Base
 
 			if (array_key_exists($embedded_installer, $installerDescriptors))
 			{
-				$packages  = $installerDescriptors[$embedded_installer]['package'] ?? '';
-				$langPacks = $installerDescriptors[$embedded_installer]['language'] ?? '';
+				$packages  = $installerDescriptors[$embedded_installer]['package'];
+				$langPacks = $installerDescriptors[$embedded_installer]['language'];
 
 				if (empty($packages))
 				{
 					// No installer package specified. Pretend we are done!
-					$retArray = [
+					$retArray = array(
 						"filename" => '', // File name extracted
 						"data"     => '', // File data
 						"index"    => 0, // How many source JPA files I have
@@ -308,7 +299,7 @@ abstract class Base
 						"skip"     => false, // Skip this?
 						"done"     => true, // Are we done yet?
 						"filesize" => 0,
-					];
+					);
 
 					return $retArray;
 				}
@@ -326,7 +317,7 @@ abstract class Base
 
 				foreach ($langPacks as $langPack)
 				{
-					$filePath = $pathPrefix . $langPack;
+					$filePath  = $pathPrefix . $langPack;
 
 					if (!is_file($filePath))
 					{
@@ -334,12 +325,14 @@ abstract class Base
 					}
 
 					$packages[] = $langPack;
-					$totalSize  += (int) @filesize($filePath);
+					$totalSize += (int) @filesize($filePath);
 				}
 
 				if (count($packages) < $index)
 				{
-					throw new RuntimeException(__CLASS__ . ":: Installer package index $index not found for embedded installer $embedded_installer");
+					$this->setError(__CLASS__ . ":: Installer package index $index not found for embedded installer $embedded_installer");
+
+					return false;
 				}
 
 				$package = $packages[$index];
@@ -349,24 +342,30 @@ abstract class Base
 			}
 
 			// 2.3: Try to use sane default if the indicated installer doesn't exist
-			if (!is_null($xform_source) && !file_exists($xform_source) && (basename($xform_source) != 'angie.jpa'))
+			if (!file_exists($xform_source) && (basename($xform_source) != 'angie.jpa'))
 			{
-				throw new RuntimeException(__CLASS__ . ":: Installer package $xform_source of embedded installer $embedded_installer not found. Please go to the configuration page, select an Embedded Installer, save the configuration and try backing up again.");
+				$this->setError(__CLASS__ . ":: Installer package $xform_source of embedded installer $embedded_installer not found. Please go to the configuration page, select an Embedded Installer, save the configuration and try backing up again.");
+
+				return false;
 			}
 
 			// Try opening the file
-			if (!is_null($xform_source) && file_exists($xform_source))
+			if (file_exists($xform_source))
 			{
 				$this->_xform_fp = @fopen($xform_source, 'r');
 
 				if ($this->_xform_fp === false)
 				{
-					throw new RuntimeException(__CLASS__ . ":: Can't seed archive with installer package " . $xform_source);
+					$this->setError(__CLASS__ . ":: Can't seed archive with installer package " . $xform_source);
+
+					return false;
 				}
 			}
 			else
 			{
-				throw new RuntimeException(__CLASS__ . ":: Installer package " . $xform_source . " does not exist!");
+				$this->setError(__CLASS__ . ":: Installer package " . $xform_source . " does not exist!");
+
+				return false;
 			}
 		}
 
@@ -375,14 +374,16 @@ abstract class Base
 		if (!$offset)
 		{
 			// First run detected!
-			Factory::getLog()->debug('Initializing with JPA package ' . $xform_source);
+			Factory::getLog()->log(LogLevel::DEBUG, 'Initializing with JPA package ' . $xform_source);
 
 			// Skip over the header and check no problem exists
 			$offset = $this->_xformReadHeader();
 
 			if ($offset === false)
 			{
-				throw new RuntimeException('JPA package file was not read');
+				$this->setError('JPA package file was not read');
+
+				return false; // Oops! The package file doesn't exist or is corrupt
 			}
 
 			$headerDataLength = $offset;
@@ -399,9 +400,13 @@ abstract class Base
 
 			if (!$ret['skip'] && !$ret['done'])
 			{
-				Factory::getLog()->debug('  Adding ' . $ret['filename'] . '; Next offset:' . $offset);
+				Factory::getLog()->log(LogLevel::DEBUG, '  Adding ' . $ret['filename'] . '; Next offset:' . $offset);
+				$this->addVirtualFile($ret['filename'], '', $ret['data']);
 
-				$this->addFileVirtual($ret['filename'], '', $ret['data']);
+				if ($this->getError())
+				{
+					return false;
+				}
 			}
 			elseif ($ret['done'])
 			{
@@ -426,7 +431,7 @@ abstract class Base
 					$packages[] = $langPack;
 				}
 
-				Factory::getLog()->debug('  Done with package ' . $packages[$index]);
+				Factory::getLog()->log(LogLevel::DEBUG, '  Done with package ' . $packages[$index]);
 
 				if (count($packages) > ($index + 1))
 				{
@@ -437,25 +442,27 @@ abstract class Base
 				}
 				else
 				{
-					Factory::getLog()->debug('  Done with installer seeding.');
+					Factory::getLog()->log(LogLevel::DEBUG, '  Done with installer seeding.');
 				}
 			}
 			else
 			{
 				$reason = '  Skipping ' . $ret['filename'];
-				Factory::getLog()->debug($reason);
+				Factory::getLog()->log(LogLevel::DEBUG, $reason);
 			}
 		}
 		else
 		{
-			throw new RuntimeException('JPA extraction returned FALSE. The installer image is corrupt.');
+			$this->setError('JPA extraction returned FALSE. The installer image is corrupt.');
+
+			return false;
 		}
 
 		if ($ret['done'])
 		{
 			// We are finished! Close the file
-			$this->conditionalFileClose($this->_xform_fp);
-			Factory::getLog()->debug('Initializing with JPA package has finished');
+			fclose($this->_xform_fp);
+			Factory::getLog()->log(LogLevel::DEBUG, 'Initializing with JPA package has finished');
 		}
 
 		$ret['filesize'] = $totalSize;
@@ -484,32 +491,16 @@ abstract class Base
 	}
 
 	/**
-	 * The most basic file transaction: add a single entry (file or directory) to
-	 * the archive.
-	 *
-	 * @param   boolean  $isVirtual         If true, the next parameter contains file data instead of a file name
-	 * @param   string   $sourceNameOrData  Absolute file name to read data from or the file data itself is $isVirtual
-	 *                                      is true
-	 * @param   string   $targetName        The (relative) file name under which to store the file in the archive
-	 *
-	 * @return  boolean  True on success, false otherwise. DEPRECATED: Use exceptions instead.
-	 *
-	 * @throws  WarningException  When there's a warning (the backup integrity is NOT compromised)
-	 * @throws  ErrorException    When there's an error (the backup integrity is compromised – backup dead)
-	 */
-	abstract protected function _addFile($isVirtual, &$sourceNameOrData, $targetName);
-
-	/**
 	 * Removes the $p_remove_dir from $p_filename, while prepending it with $p_add_dir.
 	 * Largely based on code from the pclZip library.
 	 *
-	 * @param   string  $p_filename    The absolute file name to treat
-	 * @param   string  $p_remove_dir  The path to remove
-	 * @param   string  $p_add_dir     The path to prefix the treated file name with
+	 * @param   string $p_filename   The absolute file name to treat
+	 * @param   string $p_remove_dir The path to remove
+	 * @param   string $p_add_dir    The path to prefix the treated file name with
 	 *
 	 * @return  string  The treated file name
 	 */
-	private function addRemovePaths($p_filename, $p_remove_dir, $p_add_dir)
+	private function _addRemovePaths($p_filename, $p_remove_dir, $p_add_dir)
 	{
 		$p_filename   = $this->fsUtils->TranslateWinPath($p_filename);
 		$p_remove_dir = ($p_remove_dir == '') ? '' :
@@ -585,8 +576,8 @@ abstract class Base
 	 *
 	 * @codeCoverageIgnore
 	 *
-	 * @param   string  $p_dir   Source tree
-	 * @param   string  $p_path  Check if this is part of $p_dir
+	 * @param   string $p_dir  Source tree
+	 * @param   string $p_path Check if this is part of $p_dir
 	 *
 	 * @return  integer   0 if $p_path is not inside directory $p_dir,
 	 *                    1 if $p_path is inside directory $p_dir
@@ -598,9 +589,9 @@ abstract class Base
 
 		// ----- Explode dir and path by directory separator
 		$v_list_dir       = explode("/", $p_dir);
-		$v_list_dir_size  = count($v_list_dir);
+		$v_list_dir_size  = sizeof($v_list_dir);
 		$v_list_path      = explode("/", $p_path);
-		$v_list_path_size = count($v_list_path);
+		$v_list_path_size = sizeof($v_list_path);
 
 		// ----- Study directories paths
 		$i = 0;
@@ -665,6 +656,22 @@ abstract class Base
 	}
 
 	/**
+	 * The most basic file transaction: add a single entry (file or directory) to
+	 * the archive.
+	 *
+	 * @param   boolean $isVirtual        If true, the next parameter contains file data instead of a file name
+	 * @param   string  $sourceNameOrData Absolute file name to read data from or the file data itself is $isVirtual is
+	 *                                    true
+	 * @param   string  $targetName       The (relative) file name under which to store the file in the archive
+	 *
+	 * @return  boolean  True on success, false otherwise. DEPRECATED: Use exceptions instead.
+	 *
+	 * @throws  WarningException  When there's a warning (the backup integrity is NOT compromised)
+	 * @throws  ErrorException    When there's an error (the backup integrity is compromised – backup dead)
+	 */
+	abstract protected function _addFile($isVirtual, &$sourceNameOrData, $targetName);
+
+	/**
 	 * Skips over the JPA header entry and returns the offset file data starts from
 	 *
 	 * @codeCoverageIgnore
@@ -721,7 +728,7 @@ abstract class Base
 	 *
 	 * @codeCoverageIgnore
 	 *
-	 * @param   integer  $offset  The absolute data offset from archive's header
+	 * @param   integer $offset The absolute data offset from archive's header
 	 *
 	 * @return  array|bool  See description for more information
 	 */
@@ -730,13 +737,13 @@ abstract class Base
 		$false = false; // Used to return false values in case an error occurs
 
 		// Generate a return array
-		$retArray = [
+		$retArray = array(
 			"filename" => '', // File name extracted
 			"data"     => '', // File data
 			"offset"   => 0, // Offset in ZIP file
 			"skip"     => false, // Skip this?
 			"done"     => false // Are we done yet?
-		];
+		);
 
 		// If we can't open the file, return an error condition
 		if ($this->_xform_fp === false)

@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Filter Package
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -12,16 +12,17 @@ use Joomla\Language\Language;
 use Joomla\String\StringHelper;
 
 /**
- * OutputFilter is a class for processing an output string for "safe" display
+ * OutputFilter
  *
  * @since  1.0
  */
 class OutputFilter
 {
 	/**
-	 * Makes an object safe to display in forms.
+	 * Makes an object safe to display in forms
 	 *
-	 * Object parameters that are non-string, array, object or start with underscore will be converted
+	 * Object parameters that are non-string, array, object or start with underscore
+	 * will be converted
 	 *
 	 * @param   object   $mixed        An object to be parsed
 	 * @param   integer  $quoteStyle   The optional quote style for the htmlspecialchars function
@@ -31,23 +32,22 @@ class OutputFilter
 	 *
 	 * @since   1.0
 	 */
-	public static function objectHtmlSafe(&$mixed, $quoteStyle = \ENT_QUOTES, $excludeKeys = '')
+	public static function objectHtmlSafe(&$mixed, $quoteStyle = ENT_QUOTES, $excludeKeys = '')
 	{
-		if (\is_object($mixed))
+		if (is_object($mixed))
 		{
 			foreach (get_object_vars($mixed) as $k => $v)
 			{
-				if (\is_array($v) || \is_object($v) || $v == null || substr($k, 1, 1) == '_')
+				if (is_array($v) || is_object($v) || $v == null || substr($k, 1, 1) == '_')
 				{
 					continue;
 				}
 
-				if (\is_string($excludeKeys) && $k == $excludeKeys)
+				if (is_string($excludeKeys) && $k == $excludeKeys)
 				{
 					continue;
 				}
-
-				if (\is_array($excludeKeys) && \in_array($k, $excludeKeys))
+				elseif (is_array($excludeKeys) && in_array($k, $excludeKeys))
 				{
 					continue;
 				}
@@ -58,7 +58,7 @@ class OutputFilter
 	}
 
 	/**
-	 * Makes a string safe for XHTML output by escaping ampersands in links.
+	 * This method processes a string and replaces all instances of & with &amp; in links only.
 	 *
 	 * @param   string  $input  String to process
 	 *
@@ -81,10 +81,8 @@ class OutputFilter
 	}
 
 	/**
-	 * Generates a URL safe version of the specified string with language transliteration.
-	 *
 	 * This method processes a string and replaces all accented UTF-8 characters by unaccented
-	 * ASCII-7 "equivalents"; whitespaces are replaced by hyphens and the string is lowercased.
+	 * ASCII-7 "equivalents", whitespaces are replaced by hyphens and the string is lowercase.
 	 *
 	 * @param   string  $string    String to process
 	 * @param   string  $language  Language to transliterate to
@@ -100,7 +98,7 @@ class OutputFilter
 
 		// Transliterate on the language requested (fallback to current language if not specified)
 		$lang = empty($language) ? Language::getInstance() : Language::getInstance($language);
-		$str  = $lang->transliterate($str);
+		$str = $lang->transliterate($str);
 
 		// Trim white spaces at beginning and end of alias and make lowercase
 		$str = trim(StringHelper::strtolower($str));
@@ -115,7 +113,7 @@ class OutputFilter
 	}
 
 	/**
-	 * Generates a URL safe version of the specified string with unicode character replacement.
+	 * This method implements unicode slugs instead of transliteration.
 	 *
 	 * @param   string  $string  String to process
 	 *
@@ -149,7 +147,7 @@ class OutputFilter
 	}
 
 	/**
-	 * Makes a string safe for XHTML output by escaping ampersands.
+	 * Replaces &amp; with & for XHTML compliance
 	 *
 	 * @param   string  $text  Text to process
 	 *
@@ -163,7 +161,7 @@ class OutputFilter
 	}
 
 	/**
-	 * Cleans text of all formatting and scripting code.
+	 * Cleans text of all formatting and scripting code
 	 *
 	 * @param   string  $text  Text to clean
 	 *
@@ -181,13 +179,13 @@ class OutputFilter
 		$text = preg_replace('/&amp;/', ' ', $text);
 		$text = preg_replace('/&quot;/', ' ', $text);
 		$text = strip_tags($text);
-		$text = htmlspecialchars($text, \ENT_COMPAT, 'UTF-8');
+		$text = htmlspecialchars($text, ENT_COMPAT, 'UTF-8');
 
 		return $text;
 	}
 
 	/**
-	 * Strips `<img>` tags from a string.
+	 * Strip img-tags from string
 	 *
 	 * @param   string  $string  Sting to be cleaned.
 	 *
@@ -201,7 +199,7 @@ class OutputFilter
 	}
 
 	/**
-	 * Strips `<iframe>` tags from a string.
+	 * Strip iframe-tags from string
 	 *
 	 * @param   string  $string  Sting to be cleaned.
 	 *

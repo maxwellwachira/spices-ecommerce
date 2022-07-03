@@ -118,40 +118,22 @@ class J2StoreControllerCustomers extends F0FController
 
 	}
 
-    function saveCustomer(){
-        $app = JFactory::getApplication ();
-        $data = $app->input->getArray($_POST);
-        $address_id = $app->input->getInt('j2store_address_id');
-        $address = F0FTable::getAnInstance('Address','J2StoreTable');
-        $address->load($address_id);
-        $data['id'] = $data['j2store_address_id'];
-        unset( $data['j2store_address_id'] );
-        $data['user_id'] = $address->user_id;
-        $data['email'] = $address->email;
-        $selectableBase = J2Store::getSelectableBase();
-        if(!in_array($data['type'],array('billing','shipping'))){
-            $data['type'] = 'billing';
-        }
-        $data['admin_display_error'] = true;
-        $json = $selectableBase->validate($data, $data['type'], 'address');
-        if(empty($json['error'])){
-            $msg =JText::_('J2STORE_ADDRESS_SAVED_SUCCESSFULLY');
-            $msgType='message';
-            $address->bind($data);
-            if($address->save($data)){
-                $json['success']['url'] = "index.php?option=com_j2store&view=customer&task=editAddress&id=".$address->j2store_address_id."&tmpl=component";
-                $json['success']['msg'] = JText::_('J2STORE_ADDRESS_SAVED_SUCCESSFULLY');
-                $json['success']['address_id'] = $address->j2store_address_id;
-                $json['success']['msgType']='success';
-            }else{
-                $json['error']['message'] = $address->getError ();
-                $json['error']['msgType']='error';
-            }
-        }
-        echo json_encode($json);
-        $app->close();
-    }
-
+	function saveCustomer(){
+		$app = JFactory::getApplication ();
+		$data = $app->input->getArray($_POST);
+		$address_id = $app->input->getInt('j2store_address_id');
+		$address = F0FTable::getAnInstance('Address','J2StoreTable');
+		$address->load($address_id);
+		$msg =JText::_('J2STORE_ADDRESS_SAVED_SUCCESSFULLY');
+		$msgType='message';
+		$address->bind($data);
+		if(!$address->save($data)){
+			$msg =JText::_('J2STORE_ADDRESS_SAVED_SUCCESSFULLY');
+			$msgType='warning';
+		}
+		$url = "index.php?option=com_j2store&view=customer&task=editAddress&id=".$address->j2store_address_id."&tmpl=component";
+		$this->setRedirect($url, $msg,$msgType);
+	}
 	function changeEmail(){
 		// Initialise the App variables
 		$app=JFactory::getApplication();

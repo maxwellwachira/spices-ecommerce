@@ -1,39 +1,47 @@
 <?php
 /**
- * @version    2.10.x
- * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @version     2.7.x
+ * @package     K2
+ * @author      JoomlaWorks http://www.joomlaworks.net
+ * @copyright   Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license     GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
-require_once(JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
+require_once (JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
 
 class K2ElementHeader extends K2Element
 {
     public function fetchElement($name, $value, &$node, $control_name)
     {
-        if (version_compare(JVERSION, '2.5.0', 'ge')) {
-            return '<div class="jwHeaderContainer"><div class="jwHeaderContent">'.JText::_($value).'</div><div class="jwHeaderClr"></div></div>';
-        } else {
-            return '<div class="jwHeaderContainer15"><div class="jwHeaderContent">'.JText::_($value).'</div><div class="jwHeaderClr"></div></div>';
+
+        $document = JFactory::getDocument();
+        $document->addStyleSheet(JURI::root(true).'/media/k2/assets/css/k2.modules.css?v=2.7.0');
+        if (K2_JVERSION == '15')
+        {
+            return '<div class="paramHeaderContainer15"><div class="paramHeaderContent">'.JText::_($value).'</div><div class="k2clr"></div></div>';
+        }
+        else
+        {
+            return '<div class="paramHeaderContainer"><div class="paramHeaderContent">'.JText::_($value).'</div><div class="k2clr"></div></div>';
+
         }
     }
 
     public function fetchTooltip($label, $description, &$node, $control_name, $name)
     {
-        return null;
+        return NULL;
     }
+
 }
 
 class JFormFieldHeader extends K2ElementHeader
 {
-    public $type = 'header';
+    var $type = 'header';
 }
 
 class JElementHeader extends K2ElementHeader
 {
-    public $_name = 'header';
+    var $_name = 'header';
 }

@@ -22,11 +22,7 @@
   	  <field name="display_name" type="text" size="30" default="" label="j2store_plugin_display_name" description="j2store_plugin_display_name_desc"/>
   	   <field name="display_image" type="media" label="j2store_plugin_display_image" description="j2store_plugin_display_image_desc"/>
   	   <field name="moneyorder_information" type="editor" width="500" height="200" filter="safehtml" default="" label="j2store_moneyorder_information" description="j2store_moneyorder_information_desc"/>
-		  <field name="enable_strip_tags" class="btn-group" type="radio" default="0"
-				 label="J2STORE_PAYMENT_ENABLE_STRIP_TAGS_LABEL" description="J2STORE_PAYMENT_ENABLE_STRIP_TAGS_DESC">
-			  <option value="0">JNO</option>
-			  <option value="1">JYES</option>
-		  </field>
+
 		  <field name="payment_status" type="paymentstatus" default="4"
 				 addfieldpath="plugins/j2store/payment_moneyorder/payment_moneyorder/fields"
 				 label="j2store_default_payment_status" description="j2store_default_payment_status_desc"/>

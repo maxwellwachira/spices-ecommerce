@@ -1,19 +1,17 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util\Transfer;
 
-defined('AKEEBAENGINE') || die();
-
-use DirectoryIterator;
-use Exception;
-use RuntimeException;
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 /**
  * SFTP transfer object
@@ -86,11 +84,11 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array  $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
 	 *
 	 * @return  Sftp
 	 *
-	 * @throws  RuntimeException
+	 * @throws  \RuntimeException
 	 */
 	public function __construct(array $options)
 	{
@@ -101,7 +99,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 		if (isset($options['port']))
 		{
-			$this->port = (int) $options['port'];
+			$this->port = (int)$options['port'];
 		}
 
 		if (isset($options['username']))
@@ -133,47 +131,13 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	}
 
 	/**
-	 * Is this transfer method blocked by a server firewall?
-	 *
-	 * @param   array  $params  Any additional parameters you might need to pass
-	 *
-	 * @return  boolean  True if the firewall blocks connections to a known host
-	 */
-	public static function isFirewalled(array $params = [])
-	{
-		try
-		{
-			$connector = new static([
-				'host'      => 'test.rebex.net',
-				'port'      => 22,
-				'username'  => 'demo',
-				'password'  => 'password',
-				'directory' => '',
-			]);
-
-			$data = $connector->read('readme.txt');
-
-			if (empty($data))
-			{
-				return true;
-			}
-		}
-		catch (Exception $e)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Save all parameters on serialization except the connection resource
 	 *
 	 * @return  array
 	 */
 	public function __sleep()
 	{
-		return ['host', 'port', 'username', 'password', 'directory', 'privateKey', 'publicKey'];
+		return array('host', 'port', 'username', 'password', 'directory', 'privateKey', 'publicKey');
 	}
 
 	/**
@@ -185,6 +149,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	{
 		$this->connect();
 	}
+
 
 	public function __destruct()
 	{
@@ -199,14 +164,14 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	/**
 	 * Connect to the FTP server
 	 *
-	 * @throws  RuntimeException
+	 * @throws  \RuntimeException
 	 */
 	public function connect()
 	{
 		// Try to connect to the SSH server
 		if (!function_exists('ssh2_connect'))
 		{
-			throw new RuntimeException('Your web server does not have the SSH2 PHP module, therefore can not connect to SFTP servers.', 500);
+			throw new \RuntimeException('Your web server does not have the SSH2 PHP module, therefore can not connect to SFTP servers.', 500);
 		}
 
 		$this->connection = ssh2_connect($this->host, $this->port);
@@ -215,17 +180,17 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		{
 			$this->connection = null;
 
-			throw new RuntimeException(sprintf('Cannot connect to SFTP server [host:port] = %s:%s', $this->host, $this->port), 500);
+			throw new \RuntimeException(sprintf('Cannot connect to SFTP server [host:port] = %s:%s', $this->host, $this->port), 500);
 		}
 
 		// Attempt to authenticate
 		if (!empty($this->publicKey) && !empty($this->privateKey))
 		{
-			if (!@ssh2_auth_pubkey_file($this->connection, $this->username, $this->publicKey, $this->privateKey, $this->password))
+			if (!@ssh2_auth_pubkey_file($this->connection,$this->username, $this->publicKey, $this->privateKey, $this->password))
 			{
 				$this->connection = null;
 
-				throw new RuntimeException(sprintf('Cannot log in to SFTP server using key files [username:private_key_file:public_key_file:password] = %s:%s:%s:%s', $this->username, $this->privateKey, $this->publicKey, $this->password), 500);
+				throw new \RuntimeException(sprintf('Cannot log in to SFTP server using key files [username:private_key_file:public_key_file:password] = %s:%s:%s:%s', $this->username, $this->privateKey, $this->publicKey, $this->password), 500);
 			}
 		}
 		else
@@ -234,7 +199,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 			{
 				$this->connection = null;
 
-				throw new RuntimeException(sprintf('Cannot log in to SFTP server [username:password] = %s:%s', $this->username, $this->password), 500);
+				throw new \RuntimeException(sprintf('Cannot log in to SFTP server [username:password] = %s:%s', $this->username, $this->password), 500);
 			}
 		}
 
@@ -243,8 +208,42 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 		if ($this->sftpHandle === false)
 		{
-			throw new RuntimeException('Cannot start an SFTP session with the server', 500);
+			throw new \RuntimeException('Cannot start an SFTP session with the server', 500);
 		}
+	}
+
+	/**
+	 * Is this transfer method blocked by a server firewall?
+	 *
+	 * @param   array  $params  Any additional parameters you might need to pass
+	 *
+	 * @return  boolean  True if the firewall blocks connections to a known host
+	 */
+	public static function isFirewalled(array $params = array())
+	{
+		try
+		{
+			$connector = new static(array(
+				'host'			=> 'test.rebex.net',
+				'port'			=> 22,
+				'username'		=> 'demo',
+				'password'		=> 'password',
+				'directory'		=> '',
+			));
+
+			$data = $connector->read('readme.txt');
+
+			if (empty($data))
+			{
+				return true;
+			}
+		}
+		catch (\Exception $e)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -288,7 +287,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		{
 			if ($useExceptions)
 			{
-				throw new RuntimeException("Could not open remote SFTP file $remoteFilename for writing");
+				throw new \RuntimeException("Could not open remote SFTP file $remoteFilename for writing");
 			}
 
 			return false;
@@ -302,7 +301,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 			if ($useExceptions)
 			{
-				throw new RuntimeException("Could not open local file $localFilename for reading");
+				throw new \RuntimeException("Could not open local file $localFilename for reading");
 			}
 
 			return false;
@@ -311,7 +310,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		while (!feof($localFp))
 		{
 			$data = fread($localFp, 131072);
-			$ret  = @fwrite($fp, $data);
+			$ret = @fwrite($fp, $data);
 
 			if ($ret < strlen($data))
 			{
@@ -320,7 +319,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 				if ($useExceptions)
 				{
-					throw new RuntimeException("An error occurred while copying file $localFilename to $remoteFilename");
+					throw new \RuntimeException("An error occurred while copying file $localFilename to $remoteFilename");
 				}
 
 				return false;
@@ -346,7 +345,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 		if ($fp === false)
 		{
-			throw new RuntimeException("Can not download remote file $fileName");
+			throw new \RuntimeException("Can not download remote file $fileName");
 		}
 
 		$ret = '';
@@ -376,12 +375,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 
 		if ($fp === false)
 		{
-			if ($useExceptions)
-			{
-				throw new RuntimeException("Could not open remote SFTP file $remoteFilename for reading");
-			}
-
-			return false;
+			throw new \RuntimeException("Could not open remote SFTP file $remoteFilename for reading");
 		}
 
 		$localFp = @fopen($localFilename, 'w');
@@ -390,12 +384,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		{
 			fclose($fp);
 
-			if ($useExceptions)
-			{
-				throw new RuntimeException("Could not open local file $localFilename for writing");
-			}
-
-			return false;
+            throw new \RuntimeException("Could not open local file $localFilename for writing");
 		}
 
 		while (!feof($fp))
@@ -407,12 +396,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 				fclose($fp);
 				fclose($localFp);
 
-				if ($useExceptions)
-				{
-					throw new RuntimeException("An error occurred while copying file $remoteFilename to $localFilename");
-				}
-
-				return false;
+                throw new \RuntimeException("An error occurred while copying file $remoteFilename to $localFilename");
 			}
 
 			fwrite($localFp, $chunk);
@@ -437,7 +421,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		{
 			$ret = @ssh2_sftp_unlink($this->sftpHandle, $fileName);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$ret = false;
 		}
@@ -499,7 +483,6 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		else
 		{
 			$cmd = 'chmod ' . decoct($permissions) . ' ' . escapeshellarg($fileName);
-
 			return @ssh2_exec($this->connection, $cmd);
 		}
 	}
@@ -522,17 +505,17 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		return $ret;
 	}
 
-	/**
-	 * Checks if the given directory exists
-	 *
-	 * @param   string  $path  The full path of the remote directory to check
-	 *
-	 * @return  boolean  True if the directory exists
-	 */
-	public function isDir($path)
-	{
-		return @ssh2_sftp_stat($this->sftpHandle, $path);
-	}
+    /**
+     * Checks if the given directory exists
+     *
+     * @param   string   $path         The full path of the remote directory to check
+     *
+     * @return  boolean  True if the directory exists
+     */
+    public function isDir($path)
+    {
+        return @ssh2_sftp_stat($this->sftpHandle, $path);
+    }
 
 	/**
 	 * Get the current working directory
@@ -544,7 +527,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		return ssh2_sftp_realpath($this->sftpHandle, ".");
 	}
 
-	/**
+    /**
 	 * Returns the absolute remote path from a path relative to the initial directory configured when creating the
 	 * transfer object.
 	 *
@@ -567,7 +550,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	 *
 	 * @return  array|bool  A list of folders, or false if we could not get a listing
 	 *
-	 * @throws  RuntimeException  When the server is incompatible with our SFTP folder scanner
+	 * @throws  \RuntimeException  When the server is incompatible with our SFTP folder scanner
 	 */
 	public function listFolders($dir = null)
 	{
@@ -577,24 +560,24 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 		}
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
-		$list = [];
+		$list = array();
 		$dir  = ltrim($dir, '/');
 
 		try
 		{
-			$di = new DirectoryIterator("ssh2.sftp://" . $this->sftpHandle . "/$dir");
+			$di = new \DirectoryIterator("ssh2.sftp://" . $this->sftpHandle . "/$dir");
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			throw new RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
+			throw new \RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
 		}
 
 		if (!$di->valid())
 		{
-			throw new RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
+			throw new \RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
 		}
 
-		/** @var DirectoryIterator $entry */
+		/** @var \DirectoryIterator $entry */
 		foreach ($di as $entry)
 		{
 			if ($entry->isDot())
@@ -637,7 +620,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 	/**
 	 * Return the raw server listing for the requested folder.
 	 *
-	 * @param   string  $folder  The path name to list
+	 * @param   string  $folder        The path name to list
 	 *
 	 * @return  string
 	 */

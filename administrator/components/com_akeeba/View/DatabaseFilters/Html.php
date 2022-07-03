@@ -1,21 +1,23 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\DatabaseFilters;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Model\DatabaseFilters;
+use Akeeba\Backup\Admin\Model\Profiles;
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileIdAndName;
-use FOF40\View\DataView\Html as BaseView;
-use Joomla\CMS\HTML\HTMLHelper as JHtml;
-use Joomla\CMS\Language\Text as JText;
-use Joomla\CMS\Uri\Uri as JUri;
+use Akeeba\Engine\Platform;
+use FOF30\View\DataView\Html as BaseView;
+use JHtml;
+use JText;
+use JUri;
 
 /**
  * View for database table exclusion
@@ -39,13 +41,20 @@ class Html extends BaseView
 	public $roots = [];
 
 	/**
+	 * The view's interface data encoded in JSON format
+	 *
+	 * @var  string
+	 */
+	public $json = '';
+
+	/**
 	 * Main page
 	 */
 	public function onBeforeMain()
 	{
 		// Load Javascript files
-		$this->container->template->addJS('media://com_akeeba/js/FileFilters.min.js', true, false, $this->container->mediaVersion);
-		$this->container->template->addJS('media://com_akeeba/js/DatabaseFilters.min.js', true, false, $this->container->mediaVersion);
+		$this->addJavascriptFile('media://com_akeeba/js/FileFilters.min.js');
+		$this->addJavascriptFile('media://com_akeeba/js/DatabaseFilters.min.js');
 
 		/** @var DatabaseFilters $model */
 		$model = $this->getModel();
@@ -67,8 +76,8 @@ class Html extends BaseView
 
 		// Get a JSON representation of the available roots
 		$root_info = $model->get_roots();
-		$roots     = [];
-		$options   = [];
+		$roots     = array();
+		$options   = array();
 
 		if (!empty($root_info))
 		{
@@ -80,17 +89,11 @@ class Html extends BaseView
 			}
 		}
 
-		$siteRoot          = '[SITEDB]';
-		$selectOptions     = [
-			'list.select' => $siteRoot,
-			'id'          => 'active_root',
-		];
-		$this->root_select = JHtml::_('select.genericlist', $options, 'root', $selectOptions);
+		$site_root         = '[SITEDB]';
+		$attributes        = 'onchange="akeeba.Dbfilters.activeRootChanged ();"';
+		$this->root_select =
+			JHtml::_('select.genericlist', $options, 'root', $attributes, 'value', 'text', $site_root, 'active_root');
 		$this->roots       = $roots;
-		$platform          = $this->container->platform;
-
-		// Add script options
-		$platform->addScriptOptions('akeeba.System.params.AjaxURL', 'index.php?option=com_akeeba&view=DatabaseFilters&task=ajax');
 
 		switch ($task)
 		{
@@ -98,19 +101,18 @@ class Html extends BaseView
 			default:
 				$this->setLayout('default');
 
-				// Get the database entities GUI data
-				$platform->addScriptOptions('akeeba.DatabaseFilters.guiData', $model->make_listing($siteRoot));
-				$platform->addScriptOptions('akeeba.DatabaseFilters.viewType', 'list');
+				// Get a JSON representation of the database data
+				$json       = json_encode($model->make_listing($site_root));
+				$this->json = $json;
 
 				break;
 
 			case 'tabular':
 				$this->setLayout('tabular');
 
-				// Get the filter data for tabular display
-				$platform->addScriptOptions('akeeba.DatabaseFilters.guiData', $model->get_filters($siteRoot));
-				$platform->addScriptOptions('akeeba.DatabaseFilters.viewType', 'tabular');
-
+				// Get a JSON representation of the tabular filter data
+				$json       = json_encode($model->get_filters($site_root));
+				$this->json = $json;
 
 				break;
 		}
@@ -126,7 +128,6 @@ class Html extends BaseView
 		JText::script('COM_AKEEBA_DBFILTER_TABLE_PROCEDURE');
 		JText::script('COM_AKEEBA_DBFILTER_TABLE_FUNCTION');
 		JText::script('COM_AKEEBA_DBFILTER_TABLE_TRIGGER');
-		JText::script('COM_AKEEBA_DBFILTER_TABLE_META_ROWCOUNT');
 
 		$this->getProfileIdAndName();
 	}

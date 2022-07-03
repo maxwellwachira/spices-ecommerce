@@ -180,7 +180,7 @@ class j2storeCountryType{
 				$query->where('a.enabled=1')
 					->order('a.zone_name ASC');
 				//if(isset($this->country_id)) {
-					$query->where('a.country_id='.$db->q($this->country_id));
+					$query->where('a.country_id='.$this->country_id);
 				//}
 				$db->setQuery($query);
 				$sets1[$this->country_id] = $db->loadObjectList();
@@ -209,7 +209,7 @@ class j2storeCountryType{
 		$zones = $this->load();
 		$this->values = array();
 		if($form){
-			$this->values[] = JHTML::_('select.option', '', JText::_('J2STORE_SELECT_STATE') );
+			$this->values[] = JHTML::_('select.option', '0', JText::_('J2STORE_SELECT_STATE') );
 			//$options .= ' onchange="document.adminForm.submit( );"';
 		}
 		foreach($zones as $zone){

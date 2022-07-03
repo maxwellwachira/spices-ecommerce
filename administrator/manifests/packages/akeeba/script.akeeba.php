@@ -1,14 +1,11 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 // Protect from unauthorized access
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filesystem\Folder;
-
 defined('_JEXEC') or die();
 
 class Pkg_AkeebaInstallerScript
@@ -32,14 +29,14 @@ class Pkg_AkeebaInstallerScript
 	 *
 	 * @var   string
 	 */
-	protected $minimumPHPVersion = '7.2.0';
+	protected $minimumPHPVersion = '5.6.0';
 
 	/**
 	 * The minimum Joomla! version required to install this extension
 	 *
 	 * @var   string
 	 */
-	protected $minimumJoomlaVersion = '3.9.0';
+	protected $minimumJoomlaVersion = '3.8.0';
 
 	/**
 	 * The maximum Joomla! version this extension can be installed on
@@ -52,58 +49,11 @@ class Pkg_AkeebaInstallerScript
 	 * A list of extensions (modules, plugins) to enable after installation. Each item has four values, in this order:
 	 * type (plugin, module, ...), name (of the extension), client (0=site, 1=admin), group (for plugins).
 	 *
-	 * These extensions are ONLY enabled when you do a clean installation of the package, i.e. it will NOT run on update
-	 *
 	 * @var array
 	 */
-	protected $extensionsToEnable = [
-		['plugin', 'akeebabackup', 1, 'quickicon'],
-	];
-
-	/**
-	 * Like above, but enable these extensions on installation OR update. Use this sparingly. It overrides the
-	 * preferences of the user. Ideally, this should only be used for installer plugins.
-	 *
-	 * @var array
-	 */
-	protected $extensionsToAlwaysEnable = [
-		['plugin', 'akeebabackup', 1, 'installer'],
-	];
-
-	/**
-	 * A list of plugins to uninstall when installing or updating the package. Each item has two values, in this order:
-	 * name (element), folder.
-	 *
-	 * @var array
-	 */
-	protected $uninstallPlugins = [
-		['jsonapi', 'akeebabackup'],
-		['legacyapi', 'akeebabackup'],
-		['akeebaactionlog', 'system'],
-		['akeebaupdatecheck', 'system'],
-		['aklazy', 'system'],
-		['srp', 'system'],
-	];
-
-	/**
-	 * We remove some plugins' files. If Joomla fails to update them correctly you'd end up with an inaccessible site.
-	 * These will be updated / installed right after the preflight event so you don't ever lose their functionality.
-	 *
-	 * @var string[]
-	 */
-	protected $preRemoveFolders = [
-		// Current plugins
-		'plugins/actionlog/akeebabackup',
-		'plugins/console/akeebabackup',
-		'plugins/installer/akeebabackup',
-		'plugins/quickicon/akeebabackup',
-		'plugins/system/backuponupdate',
-		// Obsolete plugins
-		'plugins/system/akeebaactionlog',
-		'plugins/system/akeebaupdatecheck',
-		'plugins/system/aklazy',
-		'plugins/system/srp',
-	];
+	protected $extensionsToEnable = array(
+		array('plugin', 'akeebabackup', 1, 'quickicon'),
+    );
 
 	/**
 	 * =================================================================================================================
@@ -171,19 +121,6 @@ class Pkg_AkeebaInstallerScript
 		 */
 		$this->installOrUpdateFOF($parent);
 
-		// Remove plugins' files which load outside of the component. If any is not fully updated your site won't crash.
-		foreach ($this->preRemoveFolders as $folder)
-		{
-			$f = JPATH_ROOT . '/' . $folder;
-
-			if (!@file_exists($f) || !is_dir($f) || is_link($f))
-			{
-				continue;
-			}
-
-			Folder::delete($f);
-		}
-
 		return true;
 	}
 
@@ -197,45 +134,6 @@ class Pkg_AkeebaInstallerScript
 	 */
 	public function postflight($type, $parent)
 	{
-		// Always uninstall these plugins
-		if (isset($this->uninstallPlugins) && !empty($this->uninstallPlugins))
-		{
-			foreach ($this->uninstallPlugins as $pluginInfo)
-			{
-				try
-				{
-					$this->uninstallPlugin($pluginInfo[1], $pluginInfo[0]);
-				}
-				catch (Exception $e)
-				{
-					// No op.
-				}
-			}
-		}
-
-		// Joomla 3: Always uninstall plg_console_akeebabackup (it's J4 only)
-		if (version_compare(JVERSION, '3.999.999', 'le'))
-		{
-			$this->uninstallPlugin('console', 'akeebabackup');
-			// These dependencies are not removed when uninstalling a plugin while installing a package (thanks, Joomla)
-			$this->removeDependency('fof30', 'plg_console_akeebabackup');
-			$this->removeDependency('fof40', 'plg_console_akeebabackup');
-		}
-
-		// Always enable these extensions
-		if (isset($this->extensionsToAlwaysEnable) && !empty($this->extensionsToAlwaysEnable))
-		{
-			$this->enableExtensions($this->extensionsToAlwaysEnable);
-		}
-
-		// Joomla 4: Always enable the plg_console_akeebabackup plugin
-		if (version_compare(JVERSION, '3.999.999', 'gt'))
-		{
-			$this->enableExtensions([
-				['plugin', 'akeebabackup', 1, 'console'],
-			]);
-		}
-
 		/**
 		 * Try to install FEF. We only need to do this in postflight. A failure, while detrimental to the display of the
 		 * extension, is non-fatal to the installation and can be rectified by manual installation of the FEF package.
@@ -288,7 +186,7 @@ class Pkg_AkeebaInstallerScript
 	}
 
 	/**
-	 * Runs on installation (but not on upgrade). This happens in install and discover_install installation routes.
+	 * Tuns on installation (but not on upgrade). This happens in install and discover_install installation routes.
 	 *
 	 * @param   \JInstallerAdapterPackage  $parent  Parent object
 	 *
@@ -313,20 +211,20 @@ class Pkg_AkeebaInstallerScript
 	{
 		// Preload FOF classes required for the InstallScript. This is required since we'll be trying to uninstall FOF
 		// before uninstalling the component itself. The component has an uninstallation script which uses FOF, so...
-		@include_once(JPATH_LIBRARIES . '/fof40/include.php');
-		class_exists('FOF40\\Utils\\InstallScript\\BaseInstaller', true);
-		class_exists('FOF40\\Utils\\InstallScript\\Component', true);
-		class_exists('FOF40\\Utils\\InstallScript\\Module', true);
-		class_exists('FOF40\\Utils\\InstallScript\\Plugin', true);
-		class_exists('FOF40\\Utils\\InstallScript', true);
-		class_exists('FOF40\\Database\\Installer', true);
+		@include_once(JPATH_LIBRARIES . '/fof30/include.php');
+		class_exists('FOF30\\Utils\\InstallScript\\BaseInstaller', true);
+		class_exists('FOF30\\Utils\\InstallScript\\Component', true);
+		class_exists('FOF30\\Utils\\InstallScript\\Module', true);
+		class_exists('FOF30\\Utils\\InstallScript\\Plugin', true);
+		class_exists('FOF30\\Utils\\InstallScript', true);
+		class_exists('FOF30\\Database\\Installer', true);
 
 		/**
-		 * uninstall() is called before the component is uninstalled. Therefore there is a dependency to FOF 4 which
-		 * prevents FOF 4 from being removed at this point. Therefore we have to remove the dependency before removing
+		 * uninstall() is called before the component is uninstalled. Therefore there is a dependency to FOF 3 which
+		 * prevents FOF 3 from being removed at this point. Therefore we have to remove the dependency before removing
 		 * the component and hope nothing goes wrong.
 		 */
-		$this->removeDependency('fof40', $this->componentName);
+		$this->removeDependency('fof30', $this->componentName);
 
 		/**
 		 * uninstall() is called before the component is uninstalled. Therefore there is a dependency to FEF which
@@ -358,7 +256,7 @@ class Pkg_AkeebaInstallerScript
 	{
 		// Get the path to the FOF package
 		$sourcePath = $parent->getParent()->getPath('source');
-		$sourcePackage = $sourcePath . '/lib_fof40.zip';
+		$sourcePackage = $sourcePath . '/lib_fof30.zip';
 
 		// Extract and install the package
 		$package = JInstallerHelper::unpack($sourcePackage);
@@ -378,7 +276,7 @@ class Pkg_AkeebaInstallerScript
 		// Try to include FOF. If that fails then the FOF package isn't installed because its installation failed, not
 		// because we had a newer version already installed. As a result we have to abort the entire package's
 		// installation.
-		if (!defined('FOF40_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof40/include.php'))
+		if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
 		{
 			if (empty($error))
 			{
@@ -402,7 +300,7 @@ class Pkg_AkeebaInstallerScript
 	private function uninstallFOF($parent)
 	{
 		// Check dependencies on FOF
-		$dependencyCount = count($this->getDependencies('fof40'));
+		$dependencyCount = count($this->getDependencies('fof30'));
 
 		if ($dependencyCount)
 		{
@@ -421,7 +319,7 @@ class Pkg_AkeebaInstallerScript
 		            ->select('extension_id')
 		            ->from('#__extensions')
 		            ->where('type = ' . $db->quote('library'))
-		            ->where('element = ' . $db->quote('lib_fof40'));
+		            ->where('element = ' . $db->quote('lib_fof30'));
 
 		$db->setQuery($query);
 		$id = $db->loadResult();
@@ -521,14 +419,9 @@ class Pkg_AkeebaInstallerScript
 	/**
 	 * Enable modules and plugins after installing them
 	 */
-	private function enableExtensions($extensions = [])
+	private function enableExtensions()
 	{
-		if (empty($extensions))
-		{
-			$extensions = $this->extensionsToEnable;
-		}
-
-		foreach ($extensions as $ext)
+		foreach ($this->extensionsToEnable as $ext)
 		{
 			$this->enableExtension($ext[0], $ext[1], $ext[2], $ext[3]);
 		}
@@ -715,75 +608,5 @@ class Pkg_AkeebaInstallerScript
 		$dependencies = $this->getDependencies($package);
 
 		return in_array($dependency, $dependencies);
-	}
-
-	private function uninstallPlugin($folder, $element)
-	{
-		$db = Factory::getDbo();
-
-		// Does the plugin exist?
-		$query = $db->getQuery(true)
-			->select('*')
-			->from('#__extensions')
-			->where($db->qn('type') . ' = ' . $db->q('plugin'))
-			->where($db->qn('folder') . ' = ' . $db->q($folder))
-			->where($db->qn('element') . ' = ' . $db->q($element));
-		try
-		{
-			$result = $db->setQuery($query)->loadAssoc();
-
-			if (empty($result))
-			{
-				return;
-			}
-
-			$eid = $result['extension_id'];
-		}
-		catch (Exception $e)
-		{
-			return;
-		}
-
-		/**
-		 * Here's a bummer. If you try to uninstall a plugin Joomla throws a nonsensical error message about the
-		 * plugin's XML manifest missing -- after it has already uninstalled the plugin! This error causes the package
-		 * installation to fail which results in the extension being installed BUT the database record of the package
-		 * NOT being present which makes it impossible to uninstall.
-		 *
-		 * So I have to hack my way around it which is ugly but the only viable alternative :(
-		 */
-		try
-		{
-			// Safely delete the row in the extensions table
-			$row = JTable::getInstance('extension');
-			$row->load((int) $eid);
-			$row->delete($eid);
-
-			// Delete the plugin's files
-			$pluginPath = sprintf("%s/%s/%s", JPATH_PLUGINS, $folder, $element);
-
-			if (is_dir($pluginPath))
-			{
-				JFolder::delete($pluginPath);
-			}
-
-			// Delete the plugin's language files
-			$langFiles = [
-				sprintf("%s/language/en-GB/en-GB.plg_%s_%s.ini", JPATH_ADMINISTRATOR, $folder, $element),
-				sprintf("%s/language/en-GB/en-GB.plg_%s_%s.sys.ini", JPATH_ADMINISTRATOR, $folder, $element),
-			];
-
-			foreach ($langFiles as $file)
-			{
-				if (@is_file($file))
-				{
-					JFile::delete($file);
-				}
-			}
-		}
-		catch (Exception $e)
-		{
-			// I tried, I failed. Dear user, do NOT try to enable that old plugin. Bye!
-		}
 	}
 }

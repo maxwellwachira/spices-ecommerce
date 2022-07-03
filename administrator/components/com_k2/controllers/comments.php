@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -14,45 +14,47 @@ jimport('joomla.application.component.controller');
 
 class K2ControllerComments extends K2Controller
 {
+
     public function display($cachable = false, $urlparams = array())
     {
-        require_once(JPATH_SITE.'/components/com_k2/helpers/route.php');
+        require_once (JPATH_SITE.DS.'components'.DS.'com_k2'.DS.'helpers'.DS.'route.php');
         JRequest::setVar('view', 'comments');
         parent::display();
     }
 
-    public function publish()
+    function publish()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('comments');
         $model->publish();
     }
 
-    public function unpublish()
+    function unpublish()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('comments');
         $model->unpublish();
     }
 
-    public function remove()
+    function remove()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('comments');
         $model->remove();
     }
 
-    public function deleteUnpublished()
+    function deleteUnpublished()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('comments');
         $model->deleteUnpublished();
     }
 
-    public function saveComment()
+    function saveComment()
     {
         JRequest::checkToken() or jexit('Invalid Token');
         $model = $this->getModel('comments');
         $model->save();
     }
+
 }

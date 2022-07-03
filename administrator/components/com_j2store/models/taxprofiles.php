@@ -150,8 +150,8 @@ class J2StoreModelTaxprofiles extends F0FModel {
 			//first get rates
 			foreach($rates as $rate) {
 				if($rate['rate'] > 0) {
-					$amount = $this->getInclusiveTaxAmount($value, $rates, $rate);
-					$tax_total += $amount;
+					$divider = 1 + (($rate['rate'] / 100));
+					$tax_total += $value - ($value / $divider);
 				}
 			}
 			$amount = $tax_total;
@@ -169,8 +169,7 @@ class J2StoreModelTaxprofiles extends F0FModel {
 		$return = array();
 
 		if(!$taxprofile_id) return $return;
-        $tax_profile_model = $this;
-        J2Store::plugin()->event('BeforeGetTaxwithRates', array(&$tax_profile_model,$value, $taxprofile_id, $includes_tax,$type));
+
 		//get the rates.
 		$rates = $this->getRates($taxprofile_id);
 		$taxtotal = 0;
@@ -179,11 +178,15 @@ class J2StoreModelTaxprofiles extends F0FModel {
 			$total = 0;
 			//first get rates
 			foreach($rates as $rate) {
-                $amount = $this->getInclusiveTaxAmount($value, $rates, $rate);
-                $total += $amount;
-                $return[$rate['taxrate_id']]['name'] = $rate['name'];
-                $return[$rate['taxrate_id']]['rate'] = $rate['rate'];
-                $return[$rate['taxrate_id']]['amount'] = $amount;
+				if($rate['rate'] > 0) {
+					$divider = 1 + (($rate['rate'] / 100));
+					$amount = 0;
+					$amount = $value - ($value / $divider);
+					$total += $amount;
+					$return[$rate['taxrate_id']]['name'] = $rate['name'];
+					$return[$rate['taxrate_id']]['rate'] = $rate['rate'];
+					$return[$rate['taxrate_id']]['amount'] = $amount;
+				}
 			}
 			$taxtotal = $total;
 		} else {
@@ -258,31 +261,26 @@ class J2StoreModelTaxprofiles extends F0FModel {
 
 	public function getTaxRateItems($address_type, $country_id, $zone_id, $postcode, $taxprofile_id) {
 		static $ratesets;
+
 		if ( !is_array( $ratesets) )
 		{
 			$ratesets= array( );
 		}
 		if ( !isset( $ratesets[$address_type][$country_id][$zone_id][$postcode][$taxprofile_id]) )
 		{
-            $tax_profile = F0FTable::getAnInstance('Taxprofile' ,'J2StoreTable')->getClone();
-            $tax_profile->load($taxprofile_id);
-            $result = array();
-            if(isset($tax_profile->j2store_taxprofile_id) && $tax_profile->j2store_taxprofile_id > 0 && isset($tax_profile->enabled) && $tax_profile->enabled > 0){
-                $db = JFactory::getDbo();
-                $query = "SELECT tr2.j2store_taxrate_id, tr2.taxrate_name AS name, tr2.tax_percent AS rate FROM "
-                    . " #__j2store_taxrules tr1 LEFT JOIN "
-                    . " #__j2store_taxrates tr2 ON (tr1.taxrate_id = tr2.j2store_taxrate_id) LEFT JOIN "
-                    . " #__j2store_geozonerules z2gz ON (tr2.geozone_id = z2gz.geozone_id) LEFT JOIN "
-                    . " #__j2store_geozones gz ON (tr2.geozone_id = gz.j2store_geozone_id AND gz.enabled=1) WHERE tr1.taxprofile_id = " . (int)$taxprofile_id
-                    . " AND tr1.address = ".$db->q($address_type)
-                    . " AND z2gz.country_id = " . (int)$country_id
-                    . " AND gz.enabled = " . (int)1
-                    . " AND tr2.enabled = " . (int)1
-                    . " AND (z2gz.zone_id = 0 OR z2gz.zone_id = " . (int)$zone_id
-                    . ") ORDER BY tr1.ordering ASC";
-                $db->setQuery($query);
-                $result = $db->loadObjectList();
-            }
+			$db = JFactory::getDbo();
+			$query = "SELECT tr2.j2store_taxrate_id, tr2.taxrate_name AS name, tr2.tax_percent AS rate FROM "
+					. " #__j2store_taxrules tr1 LEFT JOIN "
+							. " #__j2store_taxrates tr2 ON (tr1.taxrate_id = tr2.j2store_taxrate_id) LEFT JOIN "
+									. " #__j2store_geozonerules z2gz ON (tr2.geozone_id = z2gz.geozone_id) LEFT JOIN "
+											. " #__j2store_geozones gz ON (tr2.geozone_id = gz.j2store_geozone_id) WHERE tr1.taxprofile_id = " . (int)$taxprofile_id
+											. " AND tr1.address = ".$db->q($address_type)
+											. " AND z2gz.country_id = " . (int)$country_id
+											. " AND (z2gz.zone_id = 0 OR z2gz.zone_id = " . (int)$zone_id
+											. ") ORDER BY tr1.ordering ASC";
+			//var_dump($query);
+			$db->setQuery($query);
+			$result = $db->loadObjectList();			
 			$ratesets[$address_type][$country_id][$zone_id][$postcode][$taxprofile_id] = $result;
 		}
 		
@@ -347,11 +345,15 @@ class J2StoreModelTaxprofiles extends F0FModel {
 				$total = 0;
 				//first get rates
 				foreach($rates as $rate) {
-                    $amount = $this->getInclusiveTaxAmount($value, $rates, $rate);
-                    $total += $amount;
-                    $return[$rate['taxrate_id']]['name'] = $rate['name'];
-                    $return[$rate['taxrate_id']]['rate'] = $rate['rate'];
-                    $return[$rate['taxrate_id']]['amount'] = $amount;
+					if($rate['rate'] > 0) {
+						$divider = 1 + (($rate['rate'] / 100));
+						$amount = 0;
+						$amount = $value - ($value / $divider);
+						$total += $amount;
+						$return[$rate['taxrate_id']]['name'] = $rate['name'];
+						$return[$rate['taxrate_id']]['rate'] = $rate['rate'];
+						$return[$rate['taxrate_id']]['amount'] = $amount;
+					}
 				}
 				$taxtotal = $total;
 			} else {
@@ -373,22 +375,5 @@ class J2StoreModelTaxprofiles extends F0FModel {
 			return (object) $result;
 	}
 
-	public function getInclusiveTaxAmount($value, $all_rates, $rate) {
-
-		$regular_rates  = array();
-		foreach ( $all_rates as $key => $single_rate ) {
-			if($single_rate['rate'] > 0) {
-				$regular_rates[ $key ] = $single_rate['rate'];
-			}
-		}
-		
-		$regular_tax_rate = 1 + ( array_sum( $regular_rates ) / 100 );
-
-		$the_rate       = ( $rate['rate'] / 100 ) / $regular_tax_rate;
-		$net_price      = $value - ( $the_rate * $value );
-		$amount = 0;
-		$amount = $value - $net_price;
-		return $amount;
-	}
 }
 

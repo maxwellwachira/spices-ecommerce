@@ -1,25 +1,26 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
 use Akeeba\Engine\Archiver\Directftp;
+use Akeeba\Engine\Archiver\Directftpcurl;
 use Akeeba\Engine\Archiver\Directsftp;
+use Akeeba\Engine\Archiver\Directsftpcurl;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Transfer\FtpCurl;
 use Akeeba\Engine\Util\Transfer\SftpCurl;
-use Exception;
-use FOF40\Model\Model;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Uri\Uri;
+use FOF30\Model\Model;
+use JText;
+use JUri;
 use RuntimeException;
 
 class Configuration extends Model
@@ -31,7 +32,7 @@ class Configuration extends Model
 	 */
 	public function saveEngineConfig()
 	{
-		$data = $this->getState('engineconfig', []);
+		$data = $this->getState('engineconfig', array());
 
 		// Forbid stupidly selecting the site's root as the output or temporary directory
 		if (array_key_exists('akeeba.basic.output_directory', $data))
@@ -43,10 +44,6 @@ class Configuration extends Model
 			if ($check == $folder)
 			{
 				$data['akeeba.basic.output_directory'] = '[DEFAULT_OUTPUT]';
-			}
-			else
-			{
-				$data['akeeba.basic.output_directory'] = Factory::getFilesystemTools()->rebaseFolderToStockDirs($data['akeeba.basic.output_directory']);
 			}
 		}
 
@@ -65,11 +62,10 @@ class Configuration extends Model
 	 * Test the FTP connection.
 	 *
 	 * @return  void
-	 * @throws  RuntimeException
 	 */
 	public function testFTP()
 	{
-		$config = [
+		$config = array(
 			'host'    => $this->getState('host'),
 			'port'    => $this->getState('port'),
 			'user'    => $this->getState('user'),
@@ -77,12 +73,12 @@ class Configuration extends Model
 			'initdir' => $this->getState('initdir'),
 			'usessl'  => $this->getState('usessl'),
 			'passive' => $this->getState('passive'),
-		];
+		);
 
 		// Check for bad settings
 		if (substr($config['host'], 0, 6) == 'ftp://')
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_CONFIG_FTPTEST_BADPREFIX'), 500);
+			throw new RuntimeException(JText::_('COM_AKEEBA_CONFIG_FTPTEST_BADPREFIX'), 500);
 		}
 
 		// Special case for cURL transport
@@ -95,19 +91,46 @@ class Configuration extends Model
 
 		// Perform the FTP connection test
 		$test = new Directftp();
-
 		$test->initialize('', $config);
+		$errorMessage = $test->getError();
+
+		if (!empty($errorMessage) && !$test->connect_ok)
+		{
+			throw new RuntimeException($errorMessage, 500);
+		}
+	}
+
+	/**
+	 * Test the connection to a remote FTP server using cURL transport
+	 *
+	 * @throws  RuntimeException
+	 */
+	private function testFtpCurl()
+	{
+		$options = array(
+			'host'        => $this->getState('host'),
+			'port'        => $this->getState('port'),
+			'username'    => $this->getState('user'),
+			'password'    => $this->getState('pass'),
+			'directory'   => $this->getState('initdir'),
+			'usessl'      => $this->getState('usessl'),
+			'passive'     => $this->getState('passive'),
+			'passive_fix' => $this->getState('passive_mode_workaround'),
+		);
+
+		$sftpTransfer = new FtpCurl($options);
+
+		$sftpTransfer->connect();
 	}
 
 	/**
 	 * Test the SFTP connection.
 	 *
 	 * @return  void
-	 * @throws  RuntimeException
 	 */
 	public function testSFTP()
 	{
-		$config = [
+		$config = array(
 			'host'    => $this->getState('host'),
 			'port'    => $this->getState('port'),
 			'user'    => $this->getState('user'),
@@ -115,12 +138,12 @@ class Configuration extends Model
 			'privkey' => $this->getState('privkey'),
 			'pubkey'  => $this->getState('pubkey'),
 			'initdir' => $this->getState('initdir'),
-		];
+		);
 
 		// Check for bad settings
 		if (substr($config['host'], 0, 7) == 'sftp://')
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBA_CONFIG_SFTPTEST_BADPREFIX'), 500);
+			throw new RuntimeException(JText::_('COM_AKEEBA_CONFIG_SFTPTEST_BADPREFIX'), 500);
 		}
 
 		// Special case for cURL transport
@@ -133,23 +156,50 @@ class Configuration extends Model
 
 		// Perform the FTP connection test
 		$test = new Directsftp();
-
 		$test->initialize('', $config);
+		$errorMessages = $test->getWarnings();
+		$errorMessage = array_shift($errorMessages);
+
+		if (!empty($errorMessage) && !$test->connect_ok)
+		{
+			throw new RuntimeException($errorMessage[0], 500);
+		}
+	}
+
+	/**
+	 * Test the connection to a remote SFTP server using cURL transport
+	 *
+	 * @throws  RuntimeException
+	 */
+	private function testSftpCurl()
+	{
+		$options = array(
+			'host'       => $this->getState('host'),
+			'port'       => $this->getState('port'),
+			'username'   => $this->getState('user'),
+			'password'   => $this->getState('pass'),
+			'directory'  => $this->getState('initdir'),
+			'privateKey' => $this->getState('privkey'),
+			'publicKey'  => $this->getState('pubkey')
+		);
+
+		$this->sftpTransfer = new SftpCurl($options);
+
+		$this->sftpTransfer->connect();
 	}
 
 	/**
 	 * Opens an OAuth window for the selected post-processing engine
 	 *
 	 * @return  void
-	 * @throws  Exception
 	 */
 	public function dpeOuthOpen()
 	{
 		$engine = $this->getState('engine');
-		$params = $this->getState('params', []);
+		$params = $this->getState('params', array());
 
 		// Get a callback URI for OAuth 2
-		$params['callbackURI'] = rtrim(Uri::base(), '/') . '/index.php?option=com_akeeba&view=Configuration&task=dpecustomapiraw&engine=' . $engine;
+		$params['callbackURI'] = JUri::base() . '/index.php?option=com_akeeba&view=Configuration&task=dpecustomapiraw&engine=' . $engine;
 
 		// Get the Input object
 		$params['input'] = $this->input->getData();
@@ -174,7 +224,7 @@ class Configuration extends Model
 	{
 		$engine = $this->getState('engine');
 		$method = $this->getState('method');
-		$params = $this->getState('params', []);
+		$params = $this->getState('params', array());
 
 		// Get the Input object
 		$params['input'] = $this->input->getData();
@@ -187,52 +237,5 @@ class Configuration extends Model
 		}
 
 		return $engineObject->customAPICall($method, $params);
-	}
-
-	/**
-	 * Test the connection to a remote FTP server using cURL transport
-	 *
-	 * @return  void
-	 * @throws  RuntimeException
-	 */
-	private function testFtpCurl()
-	{
-		$options = [
-			'host'        => $this->getState('host'),
-			'port'        => $this->getState('port'),
-			'username'    => $this->getState('user'),
-			'password'    => $this->getState('pass'),
-			'directory'   => $this->getState('initdir'),
-			'usessl'      => $this->getState('usessl'),
-			'passive'     => $this->getState('passive'),
-			'passive_fix' => $this->getState('passive_mode_workaround'),
-		];
-
-		$sftpTransfer = new FtpCurl($options);
-
-		$sftpTransfer->connect();
-	}
-
-	/**
-	 * Test the connection to a remote SFTP server using cURL transport
-	 *
-	 * @return  void
-	 * @throws  RuntimeException
-	 */
-	private function testSftpCurl()
-	{
-		$options = [
-			'host'       => $this->getState('host'),
-			'port'       => $this->getState('port'),
-			'username'   => $this->getState('user'),
-			'password'   => $this->getState('pass'),
-			'directory'  => $this->getState('initdir'),
-			'privateKey' => $this->getState('privkey'),
-			'publicKey'  => $this->getState('pubkey'),
-		];
-
-		$sftpTransfer = new SftpCurl($options);
-
-		$sftpTransfer->connect();
 	}
 }

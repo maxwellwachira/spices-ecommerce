@@ -1,19 +1,21 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Factory;
-use RuntimeException;
+use Psr\Log\LogLevel;
 
 /**
  * JPA creation class
@@ -50,27 +52,34 @@ class Jpa extends BaseArchiver
 	 * Initialises the archiver class, creating the archive from an existent
 	 * installer's JPA archive.
 	 *
-	 * @param   string  $targetArchivePath  Absolute path to the generated archive
-	 * @param   array   $options            A named key array of options (optional)
+	 * @param string $targetArchivePath Absolute path to the generated archive
+	 * @param array  $options           A named key array of options (optional)
 	 *
 	 * @return  void
 	 */
-	public function initialize($targetArchivePath, $options = [])
+	public function initialize($targetArchivePath, $options = array())
 	{
-		Factory::getLog()->debug(__CLASS__ . " :: new instance - archive $targetArchivePath");
+		Factory::getLog()->log(LogLevel::DEBUG, __CLASS__ . " :: new instance - archive $targetArchivePath");
 		$this->_dataFileName = $targetArchivePath;
 
-		// Should we enable Split ZIP feature?
-		$this->enableSplitArchives();
+		try
+		{
+			// Should we enable Split ZIP feature?
+			$this->enableSplitArchives();
 
-		// Should I use Symlink Target Storage?
-		$this->enableSymlinkTargetStorage();
+			// Should I use Symlink Target Storage?
+			$this->enableSymlinkTargetStorage();
 
-		// Try to kill the archive if it exists
-		$this->createNewBackupArchive();
+			// Try to kill the archive if it exists
+			$this->createNewBackupArchive();
 
-		// Write the initial instance of the archive header
-		$this->_writeArchiveHeader();
+			// Write the initial instance of the archive header
+			$this->_writeArchiveHeader();
+		}
+		catch (ErrorException $e)
+		{
+			$this->setError($e->getMessage());
+		}
 	}
 
 	/**
@@ -99,13 +108,15 @@ class Jpa extends BaseArchiver
 
 			if ($extension != '.jpa')
 			{
-				Factory::getLog()->debug('Renaming last JPA part to .JPA extension');
+				Factory::getLog()->log(LogLevel::DEBUG, 'Renaming last JPA part to .JPA extension');
 
 				$newName = $this->dataFileNameWithoutExtension . '.jpa';
 
 				if (!@rename($this->_dataFileName, $newName))
 				{
-					throw new RuntimeException('Could not rename last JPA part to .JPA extension.');
+					$this->setError('Could not rename last JPA part to .JPA extension.');
+
+					return;
 				}
 
 				$this->_dataFileName = $newName;
@@ -119,7 +130,14 @@ class Jpa extends BaseArchiver
 		}
 
 		// Re-write the archive header
-		$this->_writeArchiveHeader();
+		try
+		{
+			$this->_writeArchiveHeader();
+		}
+		catch (ErrorException $e)
+		{
+			$this->setError($e->getMessage());
+		}
 	}
 
 	/**
@@ -180,7 +198,10 @@ class Jpa extends BaseArchiver
 
 		$this->fclose($this->fp);
 
-		@chmod($this->_dataFileName, $this->getPermissions());
+		if (function_exists('chmod'))
+		{
+			@chmod($this->_dataFileName, 0644);
+		}
 	}
 
 	/**
@@ -213,10 +234,10 @@ class Jpa extends BaseArchiver
 	 * The most basic file transaction: add a single entry (file or directory) to
 	 * the archive.
 	 *
-	 * @param   bool    $isVirtual         If true, the next parameter contains file data instead of a file name
-	 * @param   string  $sourceNameOrData  Absolute file name to read data from or the file data itself is $isVirtual is
-	 *                                     true
-	 * @param   string  $targetName        The (relative) file name under which to store the file in the archive
+	 * @param bool   $isVirtual        If true, the next parameter contains file data instead of a file name
+	 * @param string $sourceNameOrData Absolute file name to read data from or the file data itself is $isVirtual is
+	 *                                 true
+	 * @param string $targetName       The (relative) file name under which to store the file in the archive
 	 *
 	 * @return boolean True on success, false otherwise
 	 *
@@ -243,14 +264,14 @@ class Jpa extends BaseArchiver
 		$compressionMethod = 0;
 		$zdata             = null;
 		// If we are continuing file packing we have an uncompressed, non-virtual file.
-		$isVirtual = $continueProcessingFile ? false : $isVirtual;
-		$resume    = $continueProcessingFile ? 0 : null;
+		$isVirtual         = $continueProcessingFile ? false : $isVirtual;
+		$resume            = $continueProcessingFile ? 0 : null;
 
-		if (!$continueProcessingFile)
+		if ( !$continueProcessingFile)
 		{
 			// Log the file being added
 			$messageSource = $isVirtual ? '(virtual data)' : "(source: $sourceNameOrData)";
-			Factory::getLog()->debug("-- Adding $targetName to archive $messageSource");
+			Factory::getLog()->log(LogLevel::DEBUG, "-- Adding $targetName to archive $messageSource");
 
 			// Write a file header
 			$this->writeFileHeader($sourceNameOrData, $targetName, $isVirtual, $isSymlink, $isDir, $compressionMethod, $zdata, $unc_len);
@@ -262,7 +283,7 @@ class Jpa extends BaseArchiver
 			$resume           = $configuration->get('volatile.engine.archiver.resume', 0);
 
 			// Log the file we continue packing
-			Factory::getLog()->debug("-- Resuming adding file $sourceNameOrData to archive from position $resume (total size $unc_len)");
+			Factory::getLog()->log(LogLevel::DEBUG, "-- Resuming adding file $sourceNameOrData to archive from position $resume (total size $unc_len)");
 		}
 
 		/* "File data" segment. */
@@ -292,7 +313,7 @@ class Jpa extends BaseArchiver
 			}
 		}
 
-		// Factory::getLog()->debug("DEBUG -- Added $targetName to archive");
+		// Factory::getLog()->log(LogLevel::DEBUG, "DEBUG -- Added $targetName to archive");
 
 		// Uncache data
 		$configuration->set('volatile.engine.archiver.sourceNameOrData', null);
@@ -354,7 +375,7 @@ class Jpa extends BaseArchiver
 		}
 
 		// Get real size before compression
-		[$fileSize, $fileModTime] =
+		list($fileSize, $fileModTime) =
 			$this->getFileSizeAndModificationTime($sourceNameOrData, $isVirtual, $isSymlink, $isDir);
 
 		// Decide if we will compress
@@ -363,7 +384,7 @@ class Jpa extends BaseArchiver
 		$storedName = $targetName;
 
 		/* "Entity Description Block" segment. */
-		$unc_len    = $fileSize; // File size
+		$unc_len = $fileSize; // File size
 		$storedName .= ($isDir) ? "/" : "";
 
 		/**
@@ -393,7 +414,7 @@ class Jpa extends BaseArchiver
 			$this->getZData($sourceNameOrData, $isVirtual, $compressionMethod, $zdata, $unc_len, $c_len);
 		}
 
-		$this->totalCompressedSize   += $c_len; // Update global data
+		$this->totalCompressedSize += $c_len; // Update global data
 		$this->totalUncompressedSize += $fileSize; // Update global data
 		$this->totalFilesCount++;
 
@@ -460,7 +481,7 @@ class Jpa extends BaseArchiver
 	/**
 	 * Creates a new part for the spanned archive
 	 *
-	 * @param   bool  $finalPart  Is this the final archive part?
+	 * @param   bool $finalPart Is this the final archive part?
 	 *
 	 * @return  bool  True on success
 	 */
@@ -509,7 +530,7 @@ class Jpa extends BaseArchiver
 			$this->_dataFileName = $this->dataFileNameWithoutExtension . '.j' . sprintf('%02d', $this->currentPartNumber);
 		}
 
-		Factory::getLog()->info('Creating new JPA part #' . $this->currentPartNumber . ', file ' . $this->_dataFileName);
+		Factory::getLog()->log(LogLevel::INFO, 'Creating new JPA part #' . $this->currentPartNumber . ', file ' . $this->_dataFileName);
 		$statistics = Factory::getStatistics();
 		$statistics->updateMultipart($this->totalParts);
 
@@ -519,7 +540,10 @@ class Jpa extends BaseArchiver
 		// Touch the new file
 		$result = @touch($this->_dataFileName);
 
-		chmod($this->_dataFileName, $this->getPermissions());
+		if (function_exists('chmod'))
+		{
+			chmod($this->_dataFileName, 0666);
+		}
 
 		// Try to write 6 bytes to it
 		if ($result)
@@ -532,7 +556,11 @@ class Jpa extends BaseArchiver
 			@unlink($this->_dataFileName);
 
 			$result = @touch($this->_dataFileName);
-			@chmod($this->_dataFileName, $this->getPermissions());
+
+			if (function_exists('chmod'))
+			{
+				chmod($this->_dataFileName, 0666);
+			}
 		}
 
 		return $result;

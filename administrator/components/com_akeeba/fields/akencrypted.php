@@ -1,20 +1,18 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
-defined('_JEXEC') || die();
-
-use Joomla\CMS\Form\FormHelper;
+defined('_JEXEC') or die();
 
 if (class_exists('JFormFieldUrlencoded'))
 {
 	return;
 }
 
-FormHelper::loadFieldClass('text');
+JFormHelper::loadFieldClass('text');
 
 class JFormFieldAkencrypted extends JFormFieldText
 {
@@ -30,12 +28,12 @@ class JFormFieldAkencrypted extends JFormFieldText
 		// If the Factory is not already loaded we have to load the
 		if (!class_exists('Akeeba\Engine\Factory'))
 		{
-			if (!defined('FOF40_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof40/include.php'))
+			if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
 			{
 				return $value;
 			}
 
-			$container = \FOF40\Container\Container::getInstance('com_akeeba', [], 'admin');
+			$container = \FOF30\Container\Container::getInstance('com_akeeba', array(), 'admin');
 
 			/** @var \Akeeba\Backup\Admin\Dispatcher\Dispatcher $dispatcher */
 			$dispatcher = $container->dispatcher;

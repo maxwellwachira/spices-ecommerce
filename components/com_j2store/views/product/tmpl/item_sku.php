@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 <?php if(!empty($this->product->variant->sku) && $this->params->get('show_sku', 1)) : ?>
 	<div class="product-sku">
 		<span class="sku-text"><?php echo JText::_('J2STORE_SKU')?></span>
-		<span class="sku"> <?php echo $this->escape($this->product->variant->sku); ?> </span>
+		<span class="sku"> <?php echo $this->product->variant->sku; ?> </span>
 	</div>
 <?php endif; ?>
 
@@ -20,10 +20,10 @@ defined('_JEXEC') or die;
 	<span class="manufacturer-brand-text"> <?php echo JText::_('J2STORE_PRODUCT_MANUFACTURER_NAME'); ?> </span>
 	<span class="manufacturer-brand">
 		<?php if(isset($this->product->brand_desc_id) && !empty($this->product->brand_desc_id)):?>
-            <?php $url = J2Store::article()->getArticleLink($this->product->brand_desc_id);?>
-			<a href="<?php echo $url;?>" target="_blank"><?php echo $this->escape($this->product->manufacturer);?></a>
+			<?php $url = JRoute::_('index.php?option=com_content&view=article&id='.$this->product->brand_desc_id);?>
+			<a href="<?php echo $url;?>" target="_blank"><?php echo $this->product->manufacturer;?></a>
 		<?php else:?>
-			<?php echo $this->escape($this->product->manufacturer); ?>
+			<?php echo $this->product->manufacturer; ?>
 		<?php endif;?>
 	</span>
 <?php endif; ?>

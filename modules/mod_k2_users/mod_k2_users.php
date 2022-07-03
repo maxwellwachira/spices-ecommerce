@@ -1,21 +1,22 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
-if (K2_JVERSION != '15') {
+if (K2_JVERSION != '15')
+{
     $language = JFactory::getLanguage();
-    $language->load('com_k2.dates', JPATH_ADMINISTRATOR, null, true);
+    $language->load('mod_k2.j16', JPATH_ADMINISTRATOR, null, true);
 }
 
-require_once(dirname(__FILE__).'/helper.php');
+require_once (dirname(__FILE__).DS.'helper.php');
 
 // Params
 $moduleclass_sfx = $params->get('moduleclass_sfx', '');
@@ -32,13 +33,16 @@ $userFeed = $params->get('userFeed', 1);
 $userItemCount = $params->get('userItemCount', 1);
 
 // User avatar
-if ($userAvatarWidthSelect == 'inherit') {
+if ($userAvatarWidthSelect == 'inherit')
+{
     $componentParams = JComponentHelper::getParams('com_k2');
     $avatarWidth = $componentParams->get('userImageWidth');
-} else {
+}
+else
+{
     $avatarWidth = $userAvatarWidth;
 }
 
 $users = modK2UsersHelper::getUsers($params);
 
-require(JModuleHelper::getLayoutPath('mod_k2_users', $getTemplate.'/default'));
+require (JModuleHelper::getLayoutPath('mod_k2_users', $getTemplate.DS.'default'));

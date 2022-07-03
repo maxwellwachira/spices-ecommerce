@@ -1,20 +1,21 @@
 <?php
 /**
  * Akeeba Engine
+ * The PHP-only site backup engine
  *
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-defined('AKEEBAENGINE') || die();
+// Protection against direct access
+defined('AKEEBAENGINE') or die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Pushbullet\Connector;
-use Exception;
 
 class PushMessages
 {
@@ -23,7 +24,7 @@ class PushMessages
 	 *
 	 * @var Connector[]
 	 */
-	private $connectors = [];
+	private $connectors = array();
 
 	/**
 	 * Should we send push messages?
@@ -38,7 +39,7 @@ class PushMessages
 	public function __construct()
 	{
 		$pushPreference = Platform::getInstance()->get_platform_configuration_option('push_preference', '0');
-		$apiKey         = Platform::getInstance()->get_platform_configuration_option('push_apikey', '');
+		$apiKey = Platform::getInstance()->get_platform_configuration_option('push_apikey', '');
 
 		// No API key? No push messages are enabled, so no point continuing really...
 		if (empty($apiKey))
@@ -68,7 +69,7 @@ class PushMessages
 						$connector->getDevices();
 						$this->connectors[] = $connector;
 					}
-					catch (Exception $e)
+					catch (\Exception $e)
 					{
 						Factory::getLog()->warning("Push messages cannot be sent with API key $key. Error received when trying to establish PushBullet connection: " . $e->getMessage());
 					}
@@ -107,7 +108,7 @@ class PushMessages
 			{
 				$connector->pushNote('', $subject, $details);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				Factory::getLog()->warning('Push messages suspended. Error received when trying to send push message:' . $e->getMessage());
 				$this->enabled = false;
@@ -138,7 +139,7 @@ class PushMessages
 			{
 				$connector->pushLink('', $subject, $url, $details);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				Factory::getLog()->warning('Push messages suspended. Error received when trying to send push message with a link:' . $e->getMessage());
 				$this->enabled = false;

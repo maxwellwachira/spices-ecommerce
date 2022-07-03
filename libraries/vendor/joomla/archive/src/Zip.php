@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Archive Package
  *
- * @copyright  Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -270,14 +270,14 @@ class Zip implements ExtractableInterface
 	 *
 	 * @return  boolean  True on success
 	 *
-	 * @throws  \RuntimeException
 	 * @since   1.0
+	 * @throws  \RuntimeException
 	 */
 	protected function extractNative($archive, $destination)
 	{
-		$zip = new \ZipArchive;
+		$zip = zip_open($archive);
 
-		if ($zip->open($archive) !== true)
+		if (!\is_resource($zip))
 		{
 			throw new \RuntimeException('Unable to open archive');
 		}
@@ -285,33 +285,31 @@ class Zip implements ExtractableInterface
 		// Make sure the destination folder exists
 		if (!Folder::create($destination))
 		{
-			throw new \RuntimeException('Unable to create destination folder ' . \dirname($destination));
+			throw new \RuntimeException('Unable to create destination folder ' . \dirname($path));
 		}
 
 		// Read files in the archive
-		for ($index = 0; $index < $zip->numFiles; $index++)
+		while ($file = @zip_read($zip))
 		{
-			$file = $zip->getNameIndex($index);
-
-			if (substr($file, -1) === '/')
-			{
-				continue;
-			}
-
-			$buffer = $zip->getFromIndex($index);
-
-			if ($buffer === false)
+			if (!zip_entry_open($zip, $file, 'r'))
 			{
 				throw new \RuntimeException('Unable to read ZIP entry');
 			}
 
-			if (File::write($destination . '/' . $file, $buffer) === false)
+			if (substr(zip_entry_name($file), \strlen(zip_entry_name($file)) - 1) != '/')
 			{
-				throw new \RuntimeException('Unable to write ZIP entry to file ' . $destination . '/' . $file);
+				$buffer = zip_entry_read($file, zip_entry_filesize($file));
+
+				if (File::write($destination . '/' . zip_entry_name($file), $buffer) === false)
+				{
+					throw new \RuntimeException('Unable to write ZIP entry to file ' . $destination . '/' . zip_entry_name($file));
+				}
+
+				zip_entry_close($file);
 			}
 		}
 
-		$zip->close();
+		@zip_close($zip);
 
 		return true;
 	}
@@ -435,7 +433,7 @@ class Zip implements ExtractableInterface
 	}
 
 	/**
-	 * Returns the file data for a file by offset in the ZIP archive
+	 * Returns the file data for a file by offsest in the ZIP archive
 	 *
 	 * @param   integer  $key  The position of the file in the archive.
 	 *

@@ -1,27 +1,26 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.7.x
  * @package    K2
- * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @author     JoomlaWorks http://www.joomlaworks.net
+ * @copyright  Copyright (c) 2006 - 2016 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
-defined('_JEXEC') or die;
+defined('_JEXEC') or die ;
 
-require_once(JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
+require_once (JPATH_ADMINISTRATOR.'/components/com_k2/elements/base.php');
 
 class K2ElementItemForm extends K2Element
 {
-    public function fetchElement($name, $value, &$node, $control_name)
+    function fetchElement($name, $value, &$node, $control_name)
     {
-        if (version_compare(JVERSION, '3.5', 'ge')) {
-            JHtml::_('behavior.framework');
-        }
+      if(version_compare(JVERSION, '3.5', 'ge')) {
+        JHtml::_('behavior.framework');
+      }
         $document = JFactory::getDocument();
         $document->addScriptDeclaration("
-        	/* Mootools Snippet */
 			window.addEvent('domready', function() {
 				if($('request-options')) {
 					$$('.panel')[0].setStyle('display', 'none');
@@ -42,18 +41,19 @@ class K2ElementItemForm extends K2Element
         return '';
     }
 
-    public function fetchTooltip($label, $description, &$node, $control_name, $name)
+    function fetchTooltip($label, $description, &$node, $control_name, $name)
     {
         return '';
     }
+
 }
 
 class JFormFielditemform extends K2ElementItemForm
 {
-    public $type = 'itemform';
+    var $type = 'itemform';
 }
 
 class JElementitemform extends K2ElementItemForm
 {
-    public $_name = 'itemform';
+    var $_name = 'itemform';
 }

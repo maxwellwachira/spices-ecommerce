@@ -36,27 +36,25 @@ $J2gridCol = ($this->params->get('bootstrap_version', 2) == 2) ? 'span' : 'col-m
 	      					$thumb_image = $cross_sell_product->thumb_image;
 	      					}
 
-
 	      				?>
 		   				<?php if(isset($thumb_image) &&  JFile::exists(JPATH::clean(JPATH_SITE.'/'.$thumb_image))):?>
 		   				<span class="cross-sell-product-image">
 		   					<a href="<?php echo $cross_sell_product->product_view_url; ?>">
-		   						<img alt="<?php echo $this->escape($cross_sell_product->product_name) ;?>" class="j2store-product-thumb-image-<?php echo $cross_sell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" />
+		   						<img alt="<?php echo $cross_sell_product->product_name ;?>" class="j2store-product-thumb-image-<?php echo $cross_sell_product->j2store_product_id; ?>"  src="<?php echo JUri::root().JPath::clean($thumb_image);?>" />
 		   					</a>
 		   				</span>
 					   	<?php endif; ?>
 
 						<h3 class="cross-sell-product-title">
 							<a href="<?php echo $cross_sell_product->product_view_url; ?>">
-								<?php echo $this->escape($cross_sell_product->product_name); ?>
+								<?php echo $cross_sell_product->product_name; ?>
 							</a>
 						</h3>
-                        <?php if( J2Store::product()->canShowprice($this->params) ): ?>
-                            <?php
-                            $this->product = $cross_sell_product;
-                            echo $this->loadAnyTemplate('site:com_j2store/product/item_price');
-                            ?>
-                        <?php endif; ?>
+
+						<?php
+						$this->product = $cross_sell_product;
+						echo $this->loadAnyTemplate('site:com_j2store/product/item_price');
+						?>
 					<?php if( J2Store::product()->canShowCart($this->params) ): ?>
 						<?php
 							$this->singleton_product = $cross_sell_product;

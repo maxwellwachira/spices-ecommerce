@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 	<div class="row-fluid">
 		<div class="span12">
 				<?php if($this->params->get('item_show_sdesc') || $this->params->get('item_show_ldesc') ):?>
-				<div class="product-description">
+				<div itemprop="description" class="product-description">
 					<?php echo $this->loadTemplate('sdesc'); ?>
 					<?php echo $this->loadTemplate('ldesc'); ?>
 				</div>

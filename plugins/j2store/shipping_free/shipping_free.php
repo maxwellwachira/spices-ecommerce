@@ -92,60 +92,58 @@ class plgJ2StoreShipping_Free extends J2StoreShippingPlugin
 	 * @param type obj $order
 	 * @return $results
 	 */
-    function onJ2StoreGetShippingRates($element, $order)
-    {
-        // Check if this is the right plugin
-        if (!$this->_isMe($element))
-        {
-            return null;
-        }
+	function onJ2StoreGetShippingRates($element, $order)
+	{
+		// Check if this is the right plugin
+		if (!$this->_isMe($element))
+		{
+			return null;
+		}
 
-        $vars = array();
-        //set the address
-        $order->setAddress();
-        $subtotal = $order->order_subtotal;
+		$vars = array();
+		//set the address
+		$order->setAddress();
+		$subtotal = $order->order_subtotal;
+		
+		$min_subtotal = (float) $this->params->get('min_subtotal', 0);
+		$max_subtotal = (float) $this->params->get('max_subtotal', -1);
+		
+		$status = true;
+		if($min_subtotal > 0 && $min_subtotal > $subtotal) {
+			$status = false;
+		}
+		if($max_subtotal > 0 && $subtotal > $max_subtotal ) {
+			$status = false;
+		}
 
-        $min_subtotal = (float) $this->params->get('min_subtotal', 0);
-        $max_subtotal = (float) $this->params->get('max_subtotal', -1);
-
-        $status = true;
-        $check_shipping_product = $this->params->get('check_shipping_product', 1);
+		$check_shipping_product = $this->params->get('check_shipping_product', 1);
         if($check_shipping_product && $status){
             $products = $order->getItems();
-            $subtotal = 0;
             $status = false;
             foreach($products as $product) {
-                if (isset($product->cartitem->shipping) && $product->cartitem->shipping && isset($product->cartitem->pricing->price)) {
-                    $subtotal += $product->cartitem->pricing->price * $product->cartitem->product_qty;
+                if (isset($product->cartitem->shipping) && $product->cartitem->shipping) {
                     $status = true;
+                    break;
                 }
             }
         }
-        if($min_subtotal > 0 && $min_subtotal > $subtotal) {
-            $status = false;
-        }
-        if($max_subtotal > 0 && $subtotal > $max_subtotal ) {
-            $status = false;
-        }
 
-
-
-        if(!$status) return $vars;
-
-        $geozones_taxes = array();
-        $params_geozones = $this->params->get('geozones');
-        $i=0;
-        $name = addslashes(JText::_($this->params->get('display_name', $this->_element)));
-        $vars[$i]['element'] = $this->_element;
-        $vars[$i]['name'] = $name;
-        $vars[$i]['code'] = '';
-        $vars[$i]['price'] = 0;
-        $vars[$i]['tax'] = 0;
-        $vars[$i]['extra'] = 0;
-        $vars[$i]['total'] = 0;
-
-        return $vars;
-    }
+		if(!$status) return $vars;
+		
+		$geozones_taxes = array();
+		$params_geozones = $this->params->get('geozones');
+		$i=0;
+			$name = addslashes(JText::_($this->params->get('display_name', $this->_element)));	
+			$vars[$i]['element'] = $this->_element;
+			$vars[$i]['name'] = $name;
+			$vars[$i]['code'] = '';
+			$vars[$i]['price'] = 0;
+			$vars[$i]['tax'] = 0;
+			$vars[$i]['extra'] = 0;
+			$vars[$i]['total'] = 0;
+	
+		return $vars;
+	}
 
 	/**
 	 * Method to exclude free shipping based on conditions

@@ -1,37 +1,34 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') || die();
+defined('_JEXEC') or die();
 
-use Akeeba\Backup\Admin\Model\Exceptions\FrozenRecordError;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
-use FOF40\Container\Container;
-use FOF40\Date\Date;
-use FOF40\Model\DataModel\Exception\RecordNotLoaded;
-use FOF40\Model\Model;
-use Joomla\CMS\Access\Access;
-use Joomla\CMS\Factory as JFactory;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Pagination\Pagination;
-use Joomla\CMS\User\User;
-use RuntimeException;
+use FOF30\Container\Container;
+use FOF30\Date\Date;
+use FOF30\Model\DataModel\Exception\RecordNotLoaded;
+use FOF30\Model\Model;
+use JFactory;
+use JFile;
+use JLoader;
+use JPagination;
+use JText;
 
 class Statistics extends Model
 {
 	/**
 	 * The JPagination object, used in the GUI
 	 *
-	 * @var  Pagination
+	 * @var  JPagination
 	 */
 	private $pagination;
 
@@ -112,18 +109,18 @@ class Statistics extends Model
 			}
 		}
 
-		$allStats = Platform::getInstance()->get_statistics_list([
+		$allStats = Platform::getInstance()->get_statistics_list(array(
 			'limitstart' => $limitstart,
 			'limit'      => $limit,
 			'filters'    => $filters,
-			'order'      => $order,
-		]);
+			'order'      => $order
+		));
 
-		$validRecords = Platform::getInstance()->get_valid_backup_records();
+		$validRecords    = Platform::getInstance()->get_valid_backup_records();
 
 		if (empty($validRecords))
 		{
-			$validRecords = [];
+			$validRecords = array();
 		}
 
 		// This will hold the entries whose files are no longer present and are
@@ -233,41 +230,33 @@ class Statistics extends Model
 	public function notifyFailed()
 	{
 		// Invalidate stale backups
-		try
-		{
-			Factory::resetState([
-				'global' => true,
-				'log'    => false,
-				'maxrun' => $this->container->params->get('failure_timeout', 180),
-			]);
-		}
-		catch (Exception $e)
-		{
-			// This will die if the output directory is invalid. Let it die, then.
-		}
+		Factory::resetState(array(
+			'global' => true,
+			'log'    => false,
+			'maxrun' => $this->container->params->get('failure_timeout', 180)
+		));
 
 		// Get the last execution and search for failed backups AFTER that date
 		$last = $this->getLastCheck();
 
 		// Get failed backups
-		$filters = [
-			['field' => 'status', 'operand' => '=', 'value' => 'fail'],
-			['field' => 'backupstart', 'operand' => '>', 'value' => $last],
-		];
+		$filters[] = array('field' => 'status', 'operand' => '=', 'value' => 'fail');
+		$filters[] = array('field' => 'origin', 'operand' => '<>', 'value' => 'restorepoint');
+		$filters[] = array('field' => 'backupstart', 'operand' => '>', 'value' => $last);
 
-		$failed = Platform::getInstance()->get_statistics_list(['filters' => $filters]);
+		$failed = Platform::getInstance()->get_statistics_list(array('filters' => $filters));
 
 		// Well, everything went ok.
 		if (!$failed)
 		{
-			return [
-				'message' => ["No need to run: no failed backups or notifications were already sent."],
-				'result'  => true,
-			];
+			return array(
+				'message' => array("No need to run: no failed backups or notifications were already sent."),
+				'result'  => true
+			);
 		}
 
 		// Whops! Something went wrong, let's start notifing
-		$superAdmins     = [];
+		$superAdmins     = array();
 		$superAdminEmail = $this->container->params->get('failure_email_address', '');
 
 		if (!empty($superAdminEmail))
@@ -282,17 +271,17 @@ class Statistics extends Model
 
 		if (empty($superAdmins))
 		{
-			return [
-				'message' => ["WARNING! Failed backup(s) detected, but there are no configured Super Administrators to receive notifications"],
-				'result'  => false,
-			];
+			return array(
+				'message' => array("WARNING! Failed backup(s) detected, but there are no configured Super Administrators to receive notifications"),
+				'result'  => false
+			);
 		}
 
-		$failedReport = [];
+		$failedReport = array();
 
 		foreach ($failed as $fail)
 		{
-			$string = "Description : " . $fail['description'] . "\n";
+			$string  = "Description : " . $fail['description'] . "\n";
 			$string .= "Start time  : " . $fail['backupstart'] . "\n";
 			$string .= "Origin      : " . $fail['origin'] . "\n";
 			$string .= "Type        : " . $fail['type'] . "\n";
@@ -364,13 +353,13 @@ ENDBODY;
 			{
 				$mailer = JFactory::getMailer();
 
-				$mailer->setSender([$mailfrom, $fromname]);
+				$mailer->setSender(array($mailfrom, $fromname));
 				$mailer->addRecipient($sa->email);
 				$mailer->setSubject($email_subject);
 				$mailer->setBody($email_body);
 				$mailer->Send();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				// Joomla! 3.5 is written by incompetent bonobos
 			}
@@ -380,13 +369,13 @@ ENDBODY;
 		// the same notification several times
 		$this->updateLastCheck(intval($last));
 
-		return [
-			'message' => [
+		return array(
+			'message' => array(
 				"WARNING! Found " . count($failed) . " failed backup(s)",
-				"Sent " . count($superAdmins) . " notifications",
-			],
-			'result'  => true,
-		];
+				"Sent " . count($superAdmins) . " notifications"
+			),
+			'result'  => true
+		);
 	}
 
 	/**
@@ -402,15 +391,15 @@ ENDBODY;
 
 		if ((!is_numeric($id)) || ($id <= 0))
 		{
-			throw new RecordNotLoaded(Text::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
+			throw new RecordNotLoaded(JText::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
 		}
 
-		// Try to delete files. This will check (and stop) if any record is a frozen one
+		// Try to delete files
 		$this->deleteFile();
 
 		if (!Platform::getInstance()->delete_statistics($id))
 		{
-			throw new RuntimeException($db->getError(), 500);
+			throw new \RuntimeException($db->getError(), 500);
 		}
 
 		return true;
@@ -423,21 +412,17 @@ ENDBODY;
 	 */
 	public function deleteFile()
 	{
+		JLoader::import('joomla.filesystem.file');
+
 		$id = $this->getState('id', 0);
 
 		if ((!is_numeric($id)) || ($id <= 0))
 		{
-			throw new RecordNotLoaded(Text::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
+			throw new RecordNotLoaded(JText::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
 		}
 
 		// Get the backup statistics record and the files to delete
 		$stat     = (array) Platform::getInstance()->get_statistics($id);
-
-		if ($stat['frozen'])
-		{
-			throw new FrozenRecordError(Text::_('COM_AKEEBA_BUADMIN_FROZENRECORD_ERROR'));
-		}
-
 		$allFiles = Factory::getStatistics()->get_all_filenames($stat, false);
 
 		// Remove the custom log file if necessary
@@ -462,7 +447,7 @@ ENDBODY;
 
 			if (!$new_status)
 			{
-				$new_status = File::delete($filename);
+				$new_status = JFile::delete($filename);
 			}
 
 			$status = $status ? $new_status : false;
@@ -472,67 +457,9 @@ ENDBODY;
 	}
 
 	/**
-	 * Get a Joomla! pagination object
-	 *
-	 * @param   array  $filters  Filters to apply. See Platform::get_statistics_list
-	 *
-	 * @return  Pagination
-	 */
-	public function &getPagination($filters = null)
-	{
-		if (empty($this->pagination))
-		{
-			// Prepare pagination values
-			$total      = Platform::getInstance()->get_statistics_count($filters);
-			$limitstart = $this->getState('limitstart', 0);
-			$limit      = $this->getState('limit', 10);
-
-			// Create the pagination object
-			$this->pagination = new Pagination($total, $limitstart, $limit);
-		}
-
-		return $this->pagination;
-	}
-
-	/**
-	 * Set the flag to hide the restoration instructions modal from the Manage Backups page
-	 *
-	 * @return  void
-	 */
-	public function hideRestorationInstructionsModal()
-	{
-		$this->container->params->set('show_howtorestoremodal', 0);
-		$this->container->params->save();
-	}
-
-	/**
-	 * Freeze or melt a backup report
-	 *
-	 * @param array $ids        Array of backup IDs that should be updated
-	 * @param int   $freeze     1= freeze, 0= melt
-	 *
-	 * @throws Exception
-	 */
-	public function freezeUnfreezeRecords(array $ids, $freeze)
-	{
-		if (!$ids)
-		{
-			return;
-		}
-
-		$freeze = (int) $freeze;
-
-		foreach ($ids as $id)
-		{
-			// If anything wrong happens, let the exception bubble up, so it will be reported
-			Platform::getInstance()->set_or_update_statistics($id, ['frozen' => $freeze]);
-		}
-	}
-
-	/**
 	 * Deletes the backup-specific log files of a stats record
 	 *
-	 * @param   array  $stat  The array holding the backup stats record
+	 * @param   array $stat The array holding the backup stats record
 	 *
 	 * @return  void
 	 */
@@ -544,85 +471,171 @@ ENDBODY;
 			return;
 		}
 
-		$logFileNames = [
-			'akeeba.' . $stat['tag'] . '.' . $stat['backupid'] . '.log',
-			'akeeba.' . $stat['tag'] . '.' . $stat['backupid'] . '.log.php',
-		];
+		$logFileName = 'akeeba.' . $stat['tag'] . '.' . $stat['backupid'] . '.log';
 
-		foreach ($logFileNames as $logFileName)
+		$logPath = dirname($stat['absolute_path']) . '/' . $logFileName;
+
+		if (@file_exists($logPath))
 		{
-			$logPath = dirname($stat['absolute_path']) . '/' . $logFileName;
-
-			if (@file_exists($logPath))
+			if (!@unlink($logPath))
 			{
-				if (!@unlink($logPath))
-				{
-					File::delete($logPath);
-				}
+				JFile::delete($logPath);
 			}
 		}
+	}
+
+	/**
+	 * Get a Joomla! pagination object
+	 *
+	 * @param   array  $filters  Filters to apply. See Platform::get_statistics_list
+	 *
+	 * @return  JPagination
+	 *
+	 */
+	public function &getPagination($filters = null)
+	{
+		if (empty($this->pagination))
+		{
+			// Import the pagination library
+			JLoader::import('joomla.html.pagination');
+
+			// Prepare pagination values
+			$total      = Platform::getInstance()->get_statistics_count($filters);
+			$limitstart = $this->getState('limitstart', 0);
+			$limit      = $this->getState('limit', 10);
+
+			// Create the pagination object
+			$this->pagination = new JPagination($total, $limitstart, $limit);
+		}
+
+		return $this->pagination;
 	}
 
 	/**
 	 * Returns the Super Users' email information. If you provide a comma separated $email list we will check that these
 	 * emails do belong to Super Users and that they have not blocked reception of system emails.
 	 *
-	 * @param   null|string  $email  A list of Super Users to email, null for all Super Users
+	 * @param   null|string  $email  A list of Super Users to email
 	 *
-	 * @return  User[]  The list of Super User objects
+	 * @return  array  The list of Super User emails
 	 */
 	private function getSuperUsers($email = null)
 	{
-		// Convert the email list to an array
-		$emails = [];
+		// Get a reference to the database object
+		$db = $this->container->db;
 
+		// Convert the email list to an array
 		if (!empty($email))
 		{
-			$temp   = explode(',', $email);
-			$emails = [];
+			$temp = explode(',', $email);
+			$emails = array();
 
 			foreach ($temp as $entry)
 			{
-				$emails[] = trim($entry);
+				$entry = trim($entry);
+				$emails[] = $db->q($entry);
 			}
 
 			$emails = array_unique($emails);
-			$emails = array_map('strtolower', $emails);
 		}
-
-		// Get all usergroups with Super User access
-		$db     = $this->getContainer()->db;
-		$q      = $db->getQuery(true)
-			->select([$db->qn('id')])
-			->from($db->qn('#__usergroups'));
-		$groups = $db->setQuery($q)->loadColumn();
-
-		// Get the groups that are Super Users
-		$groups = array_filter($groups, function ($gid) {
-			return Access::checkGroup($gid, 'core.admin');
-		});
-
-		$userList = [];
-
-		foreach ($groups as $gid)
+		else
 		{
-			$uids = Access::getUsersByGroup($gid);
-
-			array_walk($uids, function ($uid, $index) use (&$userList) {
-				$userList[$uid] = $this->container->platform->getUser($uid);
-			});
+			$emails = array();
 		}
 
-		if (empty($emails))
+		// Get a list of groups which have Super User privileges
+		$ret = array();
+
+		// Get a list of groups with core.admin (Super User) permissions
+		try
 		{
-			return $userList;
+			$query = $db->getQuery(true)
+						->select($db->qn('rules'))
+						->from($db->qn('#__assets'))
+						->where($db->qn('parent_id') . ' = ' . $db->q(0));
+			$db->setQuery($query, 0, 1);
+			$rulesJSON	 = $db->loadResult();
+			$rules		 = json_decode($rulesJSON, true);
+
+			$rawGroups = $rules['core.admin'];
+			$groups = array();
+
+			if (empty($rawGroups))
+			{
+				return $ret;
+			}
+
+			foreach ($rawGroups as $g => $enabled)
+			{
+				if ($enabled)
+				{
+					$groups[] = $db->q($g);
+				}
+			}
+
+			if (empty($groups))
+			{
+				return $ret;
+			}
+		}
+		catch (Exception $exc)
+		{
+			return $ret;
 		}
 
-		array_filter($userList, function (User $user) use ($emails) {
-			return in_array(strtolower($user->email), $emails);
-		});
+		// Get the user IDs of users belonging to the groups with the core.admin (Super User) privilege
+		try
+		{
+			$query = $db->getQuery(true)
+						->select($db->qn('user_id'))
+						->from($db->qn('#__user_usergroup_map'))
+						->where($db->qn('group_id') . ' IN(' . implode(',', $groups) . ')' );
+			$db->setQuery($query);
+			$rawUserIDs = $db->loadColumn(0);
 
-		return $userList;
+			if (empty($rawUserIDs))
+			{
+				return $ret;
+			}
+
+			$userIDs = array();
+
+			foreach ($rawUserIDs as $id)
+			{
+				$userIDs[] = $db->q($id);
+			}
+		}
+		catch (Exception $exc)
+		{
+			return $ret;
+		}
+
+		// Get the user information for the Super Users
+		try
+		{
+			$query = $db->getQuery(true)
+						->select(array(
+							$db->qn('id'),
+							$db->qn('username'),
+							$db->qn('email'),
+						))->from($db->qn('#__users'))
+						->where($db->qn('id') . ' IN(' . implode(',', $userIDs) . ')')
+						->where($db->qn('sendEmail') . ' = ' . $db->q('1'));
+
+			if (!empty($emails))
+			{
+				$query->where($db->qn('email') . 'IN(' . implode(',', $emails) . ')');
+			}
+
+			$db->setQuery($query);
+			$ret = $db->loadObjectList();
+		}
+		catch (Exception $exc)
+		{
+			return $ret;
+		}
+
+		return $ret;
 	}
 
 	/**
@@ -636,20 +649,20 @@ ENDBODY;
 	{
 		$db = $this->container->db;
 
-		$now      = new Date();
+		$now = new Date();
 		$nowToSql = $now->toSql();
 
 		$query = $db->getQuery(true)
-			->insert($db->qn('#__ak_storage'))
-			->columns([$db->qn('tag'), $db->qn('lastupdate')])
-			->values($db->q('akeeba_checkfailed') . ', ' . $db->q($nowToSql));
+					->insert($db->qn('#__ak_storage'))
+					->columns(array($db->qn('tag'), $db->qn('lastupdate')))
+					->values($db->q('akeeba_checkfailed') . ', ' . $db->q($nowToSql));
 
 		if ($exists)
 		{
 			$query = $db->getQuery(true)
-				->update($db->qn('#__ak_storage'))
-				->set($db->qn('lastupdate') . ' = ' . $db->q($nowToSql))
-				->where($db->qn('tag') . ' = ' . $db->q('akeeba_checkfailed'));
+						->update($db->qn('#__ak_storage'))
+						->set($db->qn('lastupdate') . ' = ' . $db->q($nowToSql))
+						->where($db->qn('tag') . ' = ' . $db->q('akeeba_checkfailed'));
 		}
 
 		try
@@ -671,9 +684,9 @@ ENDBODY;
 		$db = $this->container->db;
 
 		$query = $db->getQuery(true)
-			->select($db->qn('lastupdate'))
-			->from($db->qn('#__ak_storage'))
-			->where($db->qn('tag') . ' = ' . $db->q('akeeba_checkfailed'));
+					->select($db->qn('lastupdate'))
+					->from($db->qn('#__ak_storage'))
+					->where($db->qn('tag') . ' = ' . $db->q('akeeba_checkfailed'));
 
 		$datetime = $db->setQuery($query)->loadResult();
 
@@ -683,5 +696,16 @@ ENDBODY;
 		}
 
 		return $datetime;
+	}
+
+	/**
+	 * Set the flag to hide the restoration instructions modal from the Manage Backups page
+	 *
+	 * @return  void
+	 */
+	public function hideRestorationInstructionsModal()
+	{
+		$this->container->params->set('show_howtorestoremodal', 0);
+		$this->container->params->save();
 	}
 }

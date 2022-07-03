@@ -72,7 +72,7 @@ $( document ).on( 'click', '.j2store_add_to_cart_button', function(e) {
 		$( 'body' ).trigger( 'adding_to_cart', [ $thisbutton, data ] );
 		
 		var href = $thisbutton.attr('href');
-		if(typeof href === 'undefined' || href === '') {
+		if(typeof href !== 'undefined' || href == '') {
 			href = 'index.php';
 		}
 
@@ -125,7 +125,7 @@ $( document ).on( 'click', '.j2store_add_to_cart_button', function(e) {
 		/* Get input values from form */
 		var values = form.find('input[type=\'text\'], input[type=\'number\'], input[type=\'hidden\'], input[type=\'radio\']:checked, input[type=\'checkbox\']:checked, select, textarea');
 		form.find('input[type=\'submit\']').val(form.find('input[type=\'submit\']').data('cart-action-always'));
-		form.find('input[type=\'submit\']').attr('disabled',true);
+		
 		var href = form.attr('action');		
 		if(typeof href == 'undefined' || href == '') {
 			var href = 'index.php';
@@ -142,7 +142,6 @@ $( document ).on( 'click', '.j2store_add_to_cart_button', function(e) {
 	 	 });
 
 	 	j2Ajax.done(function(json) {
-			    form.find('input[type=\'submit\']').attr('disabled',false);
 	 	 		form.find('.j2success, .j2warning, .j2attention, .j2information, .j2error').remove();
 				$('.j2store-notification').hide();				
 				if (json['error']) {
@@ -169,7 +168,6 @@ $( document ).on( 'click', '.j2store_add_to_cart_button', function(e) {
 				
 				if (json['redirect']) {
 					window.location.href = json['redirect'];
-					return;
 				}
 				
 				if (json['success']) {					
@@ -457,8 +455,8 @@ function doAjaxFilter(pov_id, product_id, po_id, id) {
 							// main image change
                             if(response.main_image){
 
-                                /*$product.find('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
-                                j2store.jQuery('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);*/
+                                $product.find('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
+                                j2store.jQuery('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
                                 j2store.jQuery('.j2store-product-main-image-'+product_id).attr("src", response.main_image);
                                 $product.find('.j2store-mainimage .j2store-img-responsive').attr("src", response.main_image);
                                 $product.find('.j2store-product-additional-images .additional-mainimage').attr("src", response.main_image);
@@ -511,7 +509,7 @@ function doAjaxPrice(product_id, id) {
 		var form = $(id).closest('form');		
 		//sanity check
 		if(form.data('product_id') != product_id) return;
-		form.find('input[type=\'submit\']').attr('disabled',true);
+		
 		var values = form.serializeArray();
 		//pop these params from values-> task : add & view : mycart 			
 		values.pop({
@@ -574,7 +572,6 @@ function doAjaxPrice(product_id, id) {
 			return element !== undefined;
 		});
 		$( 'body' ).trigger( 'before_doAjaxPrice', [ form, values ] );
-		$('.j2store-notifications .j2error').html('');
 		$.ajax({
 			url : j2storeURL+ 'index.php?option=com_j2store&view=product&task=update',
 			type : 'get',
@@ -583,7 +580,7 @@ function doAjaxPrice(product_id, id) {
 			success : function(response) {
 				
 				var $product = $('.product-'+ product_id);
-				form.find('input[type=\'submit\']').attr('disabled',false);
+
 				if ($product.length
 						&& typeof response.error == 'undefined') {
 					//SKU
@@ -605,7 +602,6 @@ function doAjaxPrice(product_id, id) {
 					if (response.pricing.price) {
 						$product.find('.sale-price').html(response.pricing.price);
 					}
-
 					//afterDisplayPrice
 					if (response.afterDisplayPrice) {
 						$product.find('.afterDisplayPrice').html(response.afterDisplayPrice);
@@ -621,8 +617,8 @@ function doAjaxPrice(product_id, id) {
 					}
 					if(response.main_image){
 
-						/*$product.find('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
-						j2store.jQuery('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);*/
+						$product.find('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
+						j2store.jQuery('.j2store-product-thumb-image-'+product_id).attr("src", response.main_image);
 						j2store.jQuery('.j2store-product-main-image-'+product_id).attr("src", response.main_image);
 						$product.find('.j2store-mainimage .j2store-img-responsive').attr("src", response.main_image);
 						$product.find('.j2store-product-additional-images .additional-mainimage').attr("src", response.main_image);
@@ -646,8 +642,6 @@ function doAjaxPrice(product_id, id) {
 					if (response.weight) {
 						$product.find('.product-weight').html(response.weight);						
 					}
-					// discount text
-                    $product.find('.discount-percentage').html(response.pricing.discount_text);
 					// Trigger event
 					$( 'body' ).trigger( 'after_doAjaxFilter', [ $product, response ] );
 					$( 'body' ).trigger( 'after_doAjaxPrice', [ $product, response ] );

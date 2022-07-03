@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE install PUBLIC "-//Joomla! 1.6//DTD template 1.0//EN" "http://www.joomla.org/xml/dtd/1.6/template-install.dtd">
+<extension version="2.5" type="template" method="upgrade" client="site">
+	<name>Ripple</name>
+	<version>1.1</version>
+	<creationDate>February 03, 2018</creationDate>
+	<author>templateplazza.com</author>
+	<authorEmail>webmaster@templateplazza.com</authorEmail>
+	<authorUrl>http://www.templateplazza.com</authorUrl>
+	<copyright>Copyright (C), templateplazza.com. All Rights Reserved.</copyright>
+	<license>https://www.templateplazza.com/license</license>
+	<description>Ripple - Ecommerce Premium Template for Joomla 3.x.x</description>
+	<t3>
+		<base>base-bs3</base>
+	</t3>
+	<description>
+		<![CDATA[
+		<div align="center">
+			<div class="alert alert-success" style="background-color:#DFF0D8;border-color:#D6E9C6;color: #468847;padding: 1px 0;">
+				<a href="http://t3-framework.org/"><img src="http://joomlart.s3.amazonaws.com/images/jat3v3-documents/message-installation/logo.png" alt="some_text" width="300" height="99"></a>
+				<h4><a href="http://t3-framework.org/" title="">Home</a> | <a href="http://demo.t3-framework.org/" title="">Demo</a> | <a href="http://t3-framework.org/documentation" title="">Document</a> | <a href="https://github.com/t3framework/t3/blob/master/CHANGELOG.md" title="">Changelog</a></h4>
+				<p> </p>
+				<span style="color:#FF0000">Note: This templates requires T3 plugin to be installed and enabled.</span><p></p>
+				<p>Copyright 2004 - 2013 <a href='http://www.joomlart.com/' title='Visit Joomlart.com!'>JoomlArt.com</a>.</p>
+			</div>
+			<style>table.adminform{width: 100%;}</style>
+		</div>
+		]]>
+	</description>
+	<files>
+		<filename>component.php</filename>
+		<filename>favicon.ico</filename>
+		<filename>index.html</filename>
+		<filename>index.php</filename>
+		<filename>error.php</filename>
+		<filename>thememagic.xml</filename>
+		<filename>templateInfo.php</filename>
+		<filename>templateHook.php</filename>
+		<filename>template_preview.png</filename>
+		<filename>template_thumbnail.png</filename>
+		<filename>templateDetails.xml</filename>
+		<folder>etc</folder>
+		<folder>fonts</folder>
+		<folder>css</folder>
+		<folder>html</folder>
+		<folder>js</folder>
+		<folder>less</folder>
+		<folder>language</folder>
+		<folder>images</folder>
+		<folder>tpls</folder>
+	</files>
+
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.tpl_ripple.ini</language>
+		<language tag="en-GB">en-GB/en-GB.tpl_ripple.sys.ini</language>
+	</languages>
+
+	<positions>
+		<position>head-search</position>
+		<position>mainnav</position>
+		<position>blog</position>
+		<position>breadcrumbs</position>
+		<position>bottom1</position>
+		<position>bottom2</position>
+		<position>bottom3</position>
+		<position>bottom4</position>
+		<position>cart</position>
+		<position>content-top-1</position>
+		<position>content-top-2</position>
+		<position>content-top-3</position>
+		<position>content-top-4</position>
+		<position>content-bottom-1</position>
+		<position>content-bottom-2</position>
+		<position>description</position>
+		<position>features-1</position>
+		<position>features-2</position>
+		<position>features-3</position>
+		<position>features-4</position>
+		<position>footer</position>
+		<position>footnav</position>
+		<position>left</position>
+		<position>off-canvas</position>
+		<position>newsletter</position>
+		<position>position-1</position>
+		<position>position-2</position>
+		<position>position-3</position>
+		<position>position-4</position>
+		<position>position-5</position>
+		<position>position-6</position>
+		<position>position-7</position>
+		<position>position-8</position>
+		<position>portfolio</position>
+		<position>portfolio2</position>
+		<position>right</position>
+		<position>social</position>
+		<position>slider</position>
+		<position>tab1</position>
+		<position>tab2</position>
+		<position>tab3</position>
+		<position>tab4</position>
+		<position>tab5</position>
+		<position>tab6</position>
+		<position>tab7</position>
+		<position>tab8</position>
+		<position>topsl-1</position>
+		<position>topsl-2</position>
+		<position>topsl-3</position>
+		<position>topsl-4</position>
+		<position>debug</position>
+		<position>viewpoint-1</position>
+		<position>viewpoint-2</position>
+		<position>viewpoint-3</position>
+	</positions>
+
+	<config>
+		<fields name="params" addfieldpath="/plugins/system/t3/includes/depend">
+
+			<!-- Sample for add or disable template parameters -->
+			<!--fieldset name="menu_params" label="T3_PARAMS_MEGAMENU">
+				<field name="group_disable" type="t3depend" function="@group">
+					<option for="menu_as_bg" value="no">menu_as_bg</option>
+				</field>
+			</fieldset-->
+
+			<fieldset name="theme_params" label="T3_THEME_LABEL" description="T3_THEME_DESC">
+				<field name="logosticky" type="t3media" default=""
+							 label="T3_THEME_STICKY_LOGO_LABEL"
+							 description="T3_THEME_STICKY_LOGO_DESC"/>
+
+				<field name="boxed_layout" type="radio" class="t3onoff" default="0" label="T3_EXTRAS_BOXED_LAYOUT_LABEL" description="T3_EXTRAS_BOXED_LAYOUT_DESC">
+					<option value="0" class="off">JNO</option>
+					<option value="1" class="on">JYES</option>
+				</field>
+
+				<field name="header_parameter" type="t3depend" function="@legend" label="T3_THEME_HEADER_PARAMETER_LABEL"
+					description="T3_THEME_HEADER_PARAMETER_DESC"/>
+
+				<field name="affix_header" type="radio" class="t3onoff" default="0" global="0" label="T3_THEME_HEADER_STICKY_LABEL"
+							 description="T3_THEME_HEADER_STICKY_DESC">
+					<option value="0" class="off">JNO</option>
+					<option value="1" class="on">JYES</option>
+				</field>
+
+				<field name="parallax_parameter" type="t3depend" function="@legend" label="T3_THEME_PARALLAX_PARAMETER_LABEL"
+					description="T3_THEME_PARALLAX_PARAMETER_DESC"/>
+
+				<field name="bgparallax" type="t3media" default=""
+							 label="T3_THEME_PARALLAX_BG_LABEL"
+							 description="T3_THEME_PARALLAX_BG_DESC"/>
+
+            </fieldset>
+
+		</fields>
+
+
+
+	</config>
+
+	<updateservers>
+		<server type="collection">http://update.joomlart.com/service/tracking/list.xml</server>
+	</updateservers>
+
+</extension>

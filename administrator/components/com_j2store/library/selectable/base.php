@@ -122,9 +122,7 @@ class J2StoreSelectableBase {
 
 
 	function validate($formData, $area, $type='address') {
-        if(!in_array($area,array('billing','shipping','payment'))){
-            $area = 'billing';
-        }
+
 		$data = JArrayHelper::toObject($formData);
 		$fields = $this->getFields($area,$data,$type);
 		$json = array();
@@ -214,7 +212,7 @@ class J2StoreSelectableBase {
 	}
 
 
-	function handleZone(&$fields,$test,$data){
+	function handleZone(&$fields,$test=false,$data){
 		$types = array();
 		foreach($fields as $k => $field){
 			if($field->field_type=='zone' && !empty($field->field_options['zone_type'])){
@@ -686,8 +684,7 @@ class J2StoreSelectableBase {
 				$this->errors[] = 'Please specify a namekey';
 				return false;
 			}
-
-			if(strlen($field->field_namekey) > 50){
+			if($field->field_namekey > 50){
 				$this->errors[] = 'Please specify a shorter column name';
 				return false;
 			}
@@ -1325,6 +1322,9 @@ class j2storeZone extends j2storeSingledropdown{
 			if($allFields != null) {
 				$country = null;
 
+				if(empty( $country )){
+					$country = $country_id;
+				}
 				//no country id, then load it based on the zone default.
 				if(empty($country) && isset($field->field_default)) {
 					F0FTable::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_j2store/tables');

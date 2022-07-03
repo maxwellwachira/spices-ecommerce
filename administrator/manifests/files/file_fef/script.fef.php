@@ -1,27 +1,12 @@
 <?php
 /**
- * Akeeba Frontend Framework (FEF)
- *
- * @package       fef
- * @copyright (c) 2017-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license       GNU General Public License version 3, or later
+ *  @package     AkeebaFEF
+ *  @copyright   Copyright (c)2017-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ *  @license     GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') or die();
 
-use Joomla\CMS\Date\Date as JDate;
-use Joomla\CMS\Factory as JFactory;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Filesystem\Folder;
-use Joomla\CMS\Installer\Adapter\FileAdapter as JInstallerAdapterFile;
-use Joomla\CMS\Installer\Installer as JInstaller;
-use Joomla\CMS\Log\Log as JLog;
-
-/**
- * Akeeba FEF Installation Script
- *
- * @noinspection PhpUnused
- */
 class file_fefInstallerScript
 {
 	/**
@@ -29,14 +14,14 @@ class file_fefInstallerScript
 	 *
 	 * @var   string
 	 */
-	protected $minimumPHPVersion = '7.2.0';
+	protected $minimumPHPVersion = '5.4.0';
 
 	/**
 	 * The minimum Joomla! version required to install this extension
 	 *
 	 * @var   string
 	 */
-	protected $minimumJoomlaVersion = '3.9.0';
+	protected $minimumJoomlaVersion = '3.4.0';
 
 	/**
 	 * The maximum Joomla! version this extension can be installed on
@@ -46,11 +31,26 @@ class file_fefInstallerScript
 	protected $maximumJoomlaVersion = '4.0.99';
 
 	/**
+	 * The path, relative to JPATH_LIBRARIES, where FOF is expected to be found. If it's not there, the installation
+	 * will abort.
+	 *
+	 * @var   string
+	 */
+	protected $fofLibrariesPath = 'fof30';
+
+	/**
+	 * Constant used to detect whether FOF has been loaded
+	 *
+	 * @var   string
+	 */
+	protected $fofDefine = 'FOF30_INCLUDED';
+
+	/**
 	 * Joomla! pre-flight event. This runs before Joomla! installs or updates the component. This is our last chance to
 	 * tell Joomla! if it should abort the installation.
 	 *
-	 * @param   string                            $type    Installation type (install, update, discover_install)
-	 * @param   JInstaller|JInstallerAdapterFile  $parent  Parent object
+	 * @param   string     $type   Installation type (install, update, discover_install)
+	 * @param   JInstaller $parent Parent object
 	 *
 	 * @return  boolean  True to let the installation proceed, false to halt the installation
 	 */
@@ -86,7 +86,7 @@ class file_fefInstallerScript
 		if (!empty($this->minimumJoomlaVersion) && !version_compare(JVERSION, $this->minimumJoomlaVersion, 'ge'))
 		{
 			$jVersion = JVERSION;
-			$msg      = "<p>You need Joomla! $this->minimumJoomlaVersion or later to install this package but you only have $jVersion installed.</p>";
+			$msg = "<p>You need Joomla! $this->minimumJoomlaVersion or later to install this package but you only have $jVersion installed.</p>";
 
 			JLog::add($msg, JLog::WARNING, 'jerror');
 
@@ -97,7 +97,20 @@ class file_fefInstallerScript
 		if (!empty($this->maximumJoomlaVersion) && !version_compare(JVERSION, $this->maximumJoomlaVersion, 'le'))
 		{
 			$jVersion = JVERSION;
-			$msg      = "<p>You need Joomla! $this->maximumJoomlaVersion or earlier to install this package but you have $jVersion installed</p>";
+			$msg = "<p>You need Joomla! $this->maximumJoomlaVersion or earlier to install this package but you have $jVersion installed</p>";
+
+			JLog::add($msg, JLog::WARNING, 'jerror');
+
+			return false;
+		}
+
+		// Check if we have FOF installed
+		$fofPath = JPATH_LIBRARIES . '/' . $this->fofLibrariesPath;
+		$isFOFInstalled = @is_dir($fofPath);
+
+		if (!$isFOFInstalled)
+		{
+			$msg = "<p>You need to have FOF installed in $fofPath before installing this package.</p>";
 
 			JLog::add($msg, JLog::WARNING, 'jerror');
 
@@ -127,34 +140,19 @@ class file_fefInstallerScript
 					'media/fef/fonts/Ionicon/ionicons.eot',
 					'media/fef/fonts/Ionicon/ionicons.svg',
 					'media/fef/fonts/Ionicon/ionicons.ttf',
-					// Files renamed in 1.0.8
-					'css/reset.min.css',
-					'css/style.min.css',
-					// JavaScript: Irrelevant for Joomla
-					'js/darkmode.js',
-					'js/darkmode.min.js',
-					'js/darkmode.map',
-					'js/Darkmode.min.js',
-					'js/Darkmode.map',
-					'js/menu.js',
-					'js/menu.min.js',
-					'js/menu.map',
-					'js/Menu.min.js',
-					'js/Menu.map',
-					// JavaScript: Uncompressed and map files
-					'js/dropdown.js',
-					'js/dropdown.map',
-					'js/Dropdown.map',
-					'js/loader.js',
-					'js/loader.map',
-					'js/Loader.map',
-					'js/tabs.js',
-					'js/tabs.map',
-					'js/Tabs.map',
 				],
 				'folders' => [
 				],
 			];
+
+			// We need this trick to prevent the Akeeba font being removed on case-insensitive Windows and macOS filesystems
+			$phpOS = strtoupper(PHP_OS);
+
+			if (!in_array(substr($phpOS, 0, 3), ['MAC', 'WIN']))
+			{
+				// The beta had this folder uppercase, then we moved it to lowercase
+				$removeFiles['folders'][] = 'media/fef/fonts/Akeeba';
+			}
 
 			// Remove obsolete files and folders
 			$this->removeFilesAndFolders($removeFiles);
@@ -168,35 +166,46 @@ class file_fefInstallerScript
 	 * or updating your component. This is the last chance you've got to perform any additional installations, clean-up,
 	 * database updates and similar housekeeping functions.
 	 *
-	 * @param   string                 $type    install, update or discover_update
-	 * @param   JInstallerAdapterFile  $parent  Parent object
+	 * @param   string                $type   install, update or discover_update
+	 * @param   JInstallerAdapterFile $parent Parent object
 	 *
 	 * @throws  Exception
-	 *
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function postflight($type, JInstallerAdapterFile $parent)
 	{
-		// Remove the obsolete dependency to FOF
-		$isFOFInstalled = @is_dir(JPATH_LIBRARIES . '/fof30');
+		$this->loadFOF30();
 
-		if ($isFOFInstalled)
+		if (!defined($this->fofDefine))
 		{
-			// Remove self from FOF 3.0 dependencies
-			$this->removeDependency('fof30', 'file_fef');
+			return;
 		}
 
-		$this->bugfixFilesNotCopiedOnUpdate($parent);
+		// Install or update database
+		$db = JFactory::getDbo();
+
+		/** @var JInstaller $grandpa */
+		$grandpa = $parent->getParent();
+		$src = $grandpa->getPath('source');
+		$sqlSource = $src . '/sql';
+
+		$dbInstaller = new FOF30\Database\Installer($db, $sqlSource);
+		$dbInstaller->updateSchema();
+        $dbInstaller->nukeCache();
+
+		// Add self to FOF 3.0 dependency list
+		$this->addDependency('fof30', 'file_fef');
+
+		// Clear the FOF cache
+		$fakeController = \FOF30\Container\Container::getInstance('com_FOOBAR');
+		$fakeController->platform->clearCache();
 	}
 
 	/**
 	 * Runs on uninstallation
 	 *
-	 * @param   JInstallerAdapterFile  $parent  The parent object
+	 * @param   JInstallerAdapterFile $parent The parent object
 	 *
 	 * @throws  RuntimeException  If the uninstallation is not allowed
-	 *
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function uninstall($parent)
 	{
@@ -212,13 +221,17 @@ class file_fefInstallerScript
 			throw new RuntimeException($msg, 500);
 		}
 
-		Folder::delete(JPATH_SITE . '/media/fef');
+		// Remove self from FOF 3.0 dependencies
+		$this->removeDependency('fof30', 'file_fef');
+
+		JLoader::import('joomla.filesystem.folder');
+		JFolder::delete(JPATH_SITE . '/media/fef');
 	}
 
 	/**
 	 * Removes obsolete files and folders
 	 *
-	 * @param   array  $removeList  The files and directories to remove
+	 * @param   array $removeList The files and directories to remove
 	 */
 	protected function removeFilesAndFolders($removeList)
 	{
@@ -234,7 +247,7 @@ class file_fefInstallerScript
 					continue;
 				}
 
-				File::delete($f);
+				JFile::delete($f);
 			}
 		}
 
@@ -250,66 +263,89 @@ class file_fefInstallerScript
 					continue;
 				}
 
-				Folder::delete($f);
+				JFolder::delete($f);
 			}
 		}
 	}
+
 
 	/**
 	 * Is this package an update to the currently installed FEF? If not (we're a downgrade) we will return false
 	 * and prevent the installation from going on.
 	 *
-	 * @param   JInstallerAdapterFile  $parent  The parent object
+	 * @param   \JInstallerAdapterComponent $parent The parent object
 	 *
 	 * @return  bool  Am I an update to an existing version>
 	 */
 	protected function amIAnUpdate($parent)
 	{
+		/** @var JInstaller $grandpa */
 		$grandpa = $parent->getParent();
-		$source  = $grandpa->getPath('source');
-		$target  = JPATH_ROOT . '/media/fef';
 
-		if (!Folder::exists($source))
+		$source = $grandpa->getPath('source');
+
+		$target = JPATH_ROOT . '/media/fef';
+
+		if (!JFolder::exists($source . '/fef'))
 		{
 			// WTF? I can't find myself. I can't install anything.
 			return false;
 		}
 
 		// If FEF is not really installed (someone removed the directory instead of uninstalling?) I have to install it.
-		if (!Folder::exists($target))
+		if (!JFolder::exists($target))
 		{
 			return true;
 		}
 
-		$fefVersion = [];
+		$fefVersion = array();
 
-		if (File::exists($target . '/version.txt'))
+		if (JFile::exists($target . '/version.txt'))
 		{
-			$rawData                 = @file_get_contents($target . '/version.txt');
-			$rawData                 = ($rawData === false) ? "0.0.0\n2011-01-01\n" : $rawData;
-			$info                    = explode("\n", $rawData);
-			$fefVersion['installed'] = [
+			$rawData = @file_get_contents($target . '/version.txt');
+			$rawData = ($rawData === false) ? "0.0.0\n2011-01-01\n" : $rawData;
+			$info = explode("\n", $rawData);
+			$fefVersion['installed'] = array(
 				'version' => trim($info[0]),
-				'date'    => new JDate(trim($info[1])),
-			];
+				'date'    => new JDate(trim($info[1]))
+			);
 		}
 		else
 		{
-			$fefVersion['installed'] = [
+			$fefVersion['installed'] = array(
 				'version' => '0.0',
-				'date'    => new JDate('2011-01-01'),
-			];
+				'date'    => new JDate('2011-01-01')
+			);
 		}
 
-		$rawData               = @file_get_contents($source . '/version.txt');
-		$rawData               = ($rawData === false) ? "0.0.0\n2011-01-01\n" : $rawData;
-		$info                  = explode("\n", $rawData);
-		$fefVersion['package'] = [
+		$rawData = @file_get_contents($source . '/version.txt');
+		$rawData = ($rawData === false) ? "0.0.0\n2011-01-01\n" : $rawData;
+		$info = explode("\n", $rawData);
+		$fefVersion['package'] = array(
 			'version' => trim($info[0]),
-			'date'    => new JDate(trim($info[1])),
-		];
+			'date'    => new JDate(trim($info[1]))
+		);
 
-		return $fefVersion['package']['date']->toUNIX() >= $fefVersion['installed']['date']->toUNIX();
+		$haveToInstallFEF = $fefVersion['package']['date']->toUNIX() >= $fefVersion['installed']['date']->toUNIX();
+
+		return $haveToInstallFEF;
+	}
+
+	/**
+	 * Loads FOF 3.0 if it's not already loaded
+	 */
+	protected function loadFOF30()
+	{
+		// Load FOF if not already loaded
+		if (!defined($this->fofDefine))
+		{
+			$filePath = JPATH_LIBRARIES . '/' . $this->fofLibrariesPath . '/include.php';
+
+			if (!defined($this->fofDefine) && file_exists($filePath))
+			{
+				@include_once $filePath;
+			}
+		}
 	}
 
 	/**
@@ -335,12 +371,12 @@ class file_fefInstallerScript
 
 			if (empty($dependencies))
 			{
-				$dependencies = [];
+				$dependencies = array();
 			}
 		}
 		catch (Exception $e)
 		{
-			$dependencies = [];
+			$dependencies = array();
 		}
 
 		return $dependencies;
@@ -369,10 +405,10 @@ class file_fefInstallerScript
 			// Do nothing if the old key wasn't found
 		}
 
-		$object = (object) [
-			'key'   => $package,
-			'value' => json_encode($dependencies),
-		];
+		$object = (object)array(
+			'key' => $package,
+			'value' => json_encode($dependencies)
+		);
 
 		try
 		{
@@ -381,6 +417,24 @@ class file_fefInstallerScript
 		catch (Exception $e)
 		{
 			// Do nothing if the old key wasn't found
+		}
+	}
+
+	/**
+	 * Adds a package dependency to #__akeeba_common
+	 *
+	 * @param   string  $package     The package
+	 * @param   string  $dependency  The dependency to add
+	 */
+	protected function addDependency($package, $dependency)
+	{
+		$dependencies = $this->getDependencies($package);
+
+		if (!in_array($dependency, $dependencies))
+		{
+			$dependencies[] = $dependency;
+
+			$this->setDependencies($package, $dependencies);
 		}
 	}
 
@@ -404,121 +458,17 @@ class file_fefInstallerScript
 	}
 
 	/**
-	 * Fix for Joomla bug: sometimes files are not copied on update.
+	 * Do I have a dependency for a package in #__akeeba_common
 	 *
-	 * We have observed that ever since Joomla! 1.5.5, when Joomla! is performing an extension update some files /
-	 * folders are not copied properly. This seems to be a bit random and seems to be more likely to happen the more
-	 * added / modified files and folders you have. We are trying to work around it by retrying the copy operation
-	 * ourselves WITHOUT going through the manifest, based entirely on the conventions we follow.
+	 * @param   string  $package     The package
+	 * @param   string  $dependency  The dependency to check for
 	 *
-	 * @param   \Joomla\CMS\Installer\Adapter\FileAdapter  $parent
+	 * @return bool
 	 */
-	protected function bugfixFilesNotCopiedOnUpdate($parent)
+	protected function hasDependency($package, $dependency)
 	{
-		$source = $parent->getParent()->getPath('source');
-		$target = JPATH_SITE . '/media/fef';
+		$dependencies = $this->getDependencies($package);
 
-		$this->recursiveConditionalCopy($source, $target);
-	}
-
-	/**
-	 * Recursively copy a bunch of files, but only if the source and target file have a different size.
-	 *
-	 * @param   string  $source   Path to copy FROM
-	 * @param   string  $dest     Path to copy TO
-	 * @param   array   $ignored  List of entries to ignore (first level entries are taken into account)
-	 *
-	 * @return  void
-	 */
-	protected function recursiveConditionalCopy($source, $dest, $ignored = [])
-	{
-		// Make sure source and destination exist
-		if (!@is_dir($source))
-		{
-			return;
-		}
-
-		if (!@is_dir($dest))
-		{
-			if (!@mkdir($dest, 0755))
-			{
-				Folder::create($dest, 0755);
-			}
-		}
-
-		if (!@is_dir($dest))
-		{
-			// Cannot create folder $dest
-
-			return;
-		}
-
-		// List the contents of the source folder
-		try
-		{
-			$di = new DirectoryIterator($source);
-		}
-		catch (Exception $e)
-		{
-			return;
-		}
-
-		// Process each entry
-		foreach ($di as $entry)
-		{
-			// Ignore dot dirs (. and ..)
-			if ($entry->isDot())
-			{
-				continue;
-			}
-
-			$sourcePath = $entry->getPathname();
-			$fileName   = $entry->getFilename();
-
-			// Do not copy ignored files
-			if (!empty($ignored) && in_array($fileName, $ignored))
-			{
-				continue;
-			}
-
-			// If it's a directory do a recursive copy
-			if ($entry->isDir())
-			{
-				$this->recursiveConditionalCopy($sourcePath, $dest . DIRECTORY_SEPARATOR . $fileName);
-
-				continue;
-			}
-
-			// If it's a file check if it's missing or identical
-			$mustCopy   = false;
-			$targetPath = $dest . DIRECTORY_SEPARATOR . $fileName;
-
-			if (!@is_file($targetPath))
-			{
-				$mustCopy = true;
-			}
-			else
-			{
-				$sourceSize = @filesize($sourcePath);
-				$targetSize = @filesize($targetPath);
-
-				$mustCopy = $sourceSize != $targetSize;
-
-				if ((substr($targetPath, -4) === '.php') && function_exists('opcache_invalidate'))
-				{
-					opcache_invalidate($targetPath);
-				}
-			}
-
-			if (!$mustCopy)
-			{
-				continue;
-			}
-
-			if (!@copy($sourcePath, $targetPath))
-			{
-				File::copy($sourcePath, $targetPath);
-			}
-		}
+		return in_array($dependency, $dependencies);
 	}
 }

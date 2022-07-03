@@ -16,13 +16,10 @@ class J2StoreTableProduct extends F0FTable
 	public function __construct($table, $key, &$db, $config=array())
 	{
 		$query = $db->getQuery(true)
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('j2store_productimage_id'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('main_image'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('main_image_alt'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('thumb_image'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('thumb_image_alt'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('additional_images'))
-        ->select($db->qn('#__j2store_productimages').'.'.$db->qn('additional_images_alt'))
+		->select($db->qn('#__j2store_productimages').'.'.$db->qn('j2store_productimage_id'))
+		->select($db->qn('#__j2store_productimages').'.'.$db->qn('main_image'))
+		->select($db->qn('#__j2store_productimages').'.'.$db->qn('thumb_image'))
+		->select($db->qn('#__j2store_productimages').'.'.$db->qn('additional_images'))
 		->join('LEFT OUTER', $db->qn('#__j2store_productimages').' ON '.
 				$db->qn('#__j2store_products').'.'.$db->qn('j2store_product_id').' = '.
 				$db->qn('#__j2store_productimages').'.'.$db->qn('product_id')
@@ -404,8 +401,7 @@ class J2StoreTableProduct extends F0FTable
 			//first trigger the relevant catalog source plugins
 			$app = JFactory::getApplication();
 			J2Store::plugin()->importCatalogPlugins();
-            $product_obj = $this;
-			$app->triggerEvent('onJ2StoreAfterGetProduct', array(&$product_obj));
+			$app->triggerEvent('onJ2StoreAfterGetProduct', array(&$this));
 
 			$model = F0FModel::getTmpInstance('Products', 'J2StoreModel');
 			$sets[$this->j2store_product_id] = $model->getProduct($this);
@@ -435,8 +431,7 @@ class J2StoreTableProduct extends F0FTable
 	 */
 
 	public function get_vendor() {
-        $product_obj = $this;
-		JFactory::getApplication()->triggerEvent('onJ2StoreGetVendor', array(&$product_obj));
+		JFactory::getApplication()->triggerEvent('onJ2StoreGetVendor', array(&$this));
 		return $this->vendor;
 	}
 

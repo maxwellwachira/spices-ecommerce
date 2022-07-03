@@ -55,9 +55,8 @@ class J2StoreModelCartadmins extends F0FModel {
 		}				
 		try
 		{
-		    $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onBeforeAddCartItem', array(&$ref_model, $product, &$json ));
+			$result = $this->modelDispatcher->trigger('onBeforeAddCartItem', array(&$this, $product, &$json ));
 		}
 		catch (Exception $e)
 		{
@@ -188,9 +187,8 @@ class J2StoreModelCartadmins extends F0FModel {
 				//run model behaviors
 				try
 				{
-				    $ref_model = $this;
 					// Call the behaviors
-					$this->modelDispatcher->trigger('onGetCartItems', array(&$ref_model, &$item));
+					$this->modelDispatcher->trigger('onGetCartItems', array(&$this, &$item));
 				}
 				catch (Exception $e)
 				{
@@ -205,8 +203,8 @@ class J2StoreModelCartadmins extends F0FModel {
 				$orderitem = new JObject ();
 				// get product
 				$product = $product_helper->setId ( $item->product_id )->getProduct ();								
-				F0FModel::getTmpInstance ( 'Products', 'J2StoreModel' )->runMyBehaviorFlag ( true )->getProduct ( $product );
-
+				F0FModel::getTmpInstance ( 'Products', 'J2StoreModel' )->runMyBehaviorFlag ( true )->getProduct ( $product );		
+				
 				$orderitem->cartitem_id = $table->j2store_cartitem_id;
 				$orderitem->order_id = $order->order_id;
 				$orderitem->cart_id = $item->cart_id;
@@ -215,7 +213,7 @@ class J2StoreModelCartadmins extends F0FModel {
 				$orderitem->variant_id = $item->variant_id;
 				$orderitem->vendor_id = isset ( $item->vendor_id ) && $item->vendor_id ? $item->vendor_id : '0';
 				$orderitem->orderitem_name = $product->product_name;
-                $orderitem->product_params = $product->params;
+								
 				$orderitem->orderitem_sku = $variantTable->sku;
 				$orderitem->orderitem_quantity = J2Store::utilities ()->stock_qty ( $item->product_qty );
 				
@@ -232,19 +230,14 @@ class J2StoreModelCartadmins extends F0FModel {
 				}
 				
 				//product option 
-				$product_option_data = $product_helper->getOptionPrice ( $product_option_array, $product->j2store_product_id );
-                if(isset($item->product_type) && $item->product_type == 'flexivariable'){
-                    $product_option_data = array();
-                    $product_option_data ['option_data'] = $item->options;
-                    $product_option_data ['option_price'] = $item->option_price;
-                    $product_option_data ['option_weight'] = 0;
-                }
+				$product_option_data = $product_helper->getOptionPrice ( $product_option_array, $product->j2store_product_id );				
+				
 				$orderitem->orderitem_option_price = $item->option_price;
 				// price which is not processed
 				$orderitem->orderitem_price = $item->pricing->price;
 				$orderitem->orderitem_baseprice = $item->pricing->base_price;
 				//weight
-				$orderitem->orderitem_weight = isset($product->variant) && ($product->variant->weight) && ! empty ( $product->variant->weight ) ? $product->variant->weight : 0;
+				$orderitem->orderitem_weight = ($product->variant->weight) && ! empty ( $product->variant->weight ) ? $product->variant->weight : 0;
 				//tax profile
 				$orderitem->orderitem_taxprofile_id = $product->taxprofile_id;				
 				// just a placeholder and also used as reference for product options
@@ -260,7 +253,6 @@ class J2StoreModelCartadmins extends F0FModel {
 				//echo "<pre>";print_r($orderitem);exit;
 				//tax calculation
 				////////////////////////
-                $insert_item_attributes = true;
 				F0FModel::getTmpInstance ( 'Orderitem', 'J2StorModel' )->getOrderItemParams ( $orderitem, $item );
 				if ($orderitemTable->load ( array (
 						'order_id' => $order->order_id,
@@ -270,7 +262,6 @@ class J2StoreModelCartadmins extends F0FModel {
 				) )) {
 					$orderitemTable->orderitem_quantity += $item->product_qty;
 					$orderitem->orderitem_quantity = $orderitemTable->orderitem_quantity;
-                    $insert_item_attributes = false;
 				}
 				$orderitem->orderitemattributes = array ();
 				foreach ( $product_option_data ['option_data'] as $product_option ) {
@@ -287,11 +278,9 @@ class J2StoreModelCartadmins extends F0FModel {
 				}
 				
 				$orderitem->orderitem_weight_total = ($orderitem->orderitem_weight + (! empty ( $product_option_data ['option_weight'] ) ? $product_option_data ['option_weight'] : 0)) * $item->product_qty;
-                J2Store::plugin()->event('AfterAddOrderItem', array(&$orderitem));
+								
 				if ($orderitemTable->save ( $orderitem )) {
-				    if($insert_item_attributes){
-                        $order->saveOrderItemAttributes ( $orderitem->orderitemattributes, $orderitemTable );
-                    }
+					$order->saveOrderItemAttributes ( $orderitem->orderitemattributes, $orderitemTable );		
 					$order->cart_id = $cart->j2store_cart_id;			
 					$order->getAdminTotals ( );	
 					//return true;
@@ -481,9 +470,8 @@ class J2StoreModelCartadmins extends F0FModel {
 	
 		try
 		{
-            $ref_model = $this;
 			// Call the behaviors
-			$result = $this->modelDispatcher->trigger('onValidateCart', array(&$ref_model, $cartitem, $orderitem['orderitem_quantity']));
+			$result = $this->modelDispatcher->trigger('onValidateCart', array(&$this, $cartitem, $orderitem['orderitem_quantity']));
 		}
 		catch (Exception $e)
 		{
