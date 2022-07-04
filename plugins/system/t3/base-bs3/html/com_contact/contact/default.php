@@ -18,7 +18,7 @@ use Joomla\CMS\Router\Route;
 use Joomla\Component\Contact\Site\Helper\RouteHelper;
 
 jimport('joomla.html.html.bootstrap');
-
+$canEdit=0;
 $cparams = JComponentHelper::getParams('com_media');
 $tparams = $this->item->params;
 $htag    = $tparams->get('show_page_heading') ? 'h2' : 'h1';
