@@ -49,7 +49,7 @@ class JConfig {
 	public $offline_message = 'This site is down for maintenance.<br />Please check back again soon.';
 	public $offset = 'UTC';
 	public $offset_user = 'UTC';
-	public $password = '';
+	public $password = 'Db@maxwell';
 	public $robots = '';
 	public $secret = 'WcLp8YInrLMOPhqgVDVwi9ZL6HeHjB1A';
 	public $sef = '1';
