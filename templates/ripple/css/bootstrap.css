@@ -28,6 +28,16 @@ video {
   display: inline-block;
   vertical-align: baseline;
 }
+
+.wrapper-grid{
+
+display: grid;
+grid-template-column: repeat(auto-fit , minmax(10rem, 20rem);
+justify-content: center;
+}
+
+
+
 audio:not([controls]) {
   display: none;
   height: 0;

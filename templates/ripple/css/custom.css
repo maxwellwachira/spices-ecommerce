@@ -1,0 +1,56 @@
+
+
+            
+            .two {
+                display: grid;
+                grid-template-columns: repeat(3,1fr);
+                column-gap: 40px;
+                margin-left: 2rem;
+
+            }
+            .boldline{
+                height:3px;
+                background-color: black;
+                border: none;
+
+            }
+
+
+            .moveleft{
+                margin-left: 0;
+            }
+            .myspan
+            {
+                grid-column: 1/span 2;
+            }
+            .myalign
+            {
+                text-align: justify;
+            }
+
+            @media screen and (max-width: 640px){
+                .two{
+                    display: grid ;
+                    grid-template-columns: repeat(1, 1fr);
+                }
+                .myspan{
+                    display: none;
+                }
+                .disp{
+                    display: inline-grid;
+                }
+                .dispone{
+                    display:none;
+                }
+
+            }
+            @media screen and (min-width: 641px){
+
+                .disp{
+                    display: none;
+                }
+                .dispone{
+                    display: inline-grid;
+                }
+
+            }
